@@ -1,0 +1,224 @@
+code,term
+14A3.,H/O: myocardial infarct at less than 60
+14A4.,H/O: myocardial infarct at greater than 60
+14A5.,H/O: angina pectoris
+7920.,Saphenous vein graft bypass of coronary artery
+79200,Saphenous vein graft replacement of one coronary artery
+79201,Saphenous vein graft replacement of two coronary arteries
+79202,Saphenous vein graft replacement of three coronary arteries
+79203,Saphenous vein graft replacement of four+ coronary arteries
+7920y,Saphenous vein graft replacement of coronary artery OS
+7920z,Saphenous vein graft replacement coronary artery NOS
+7921.,Other autograft replacement of coronary artery
+79210,Autograft replacement of one coronary artery NEC
+79211,Autograft replacement of two coronary arteries NEC
+79212,Autograft replacement of three coronary arteries NEC
+79213,Autograft replacement of four of more coronary arteries NEC
+7921y,Other autograft replacement of coronary artery OS
+7921z,Other autograft replacement of coronary artery NOS
+7922.,Allograft bypass of coronary artery
+79220,Allograft replacement of one coronary artery
+79221,Allograft replacement of two coronary arteries
+79222,Allograft replacement of three coronary arteries
+79223,Allograft replacement of four or more coronary arteries
+7922y,Other specified allograft replacement of coronary artery
+7922z,Allograft replacement of coronary artery NOS
+7923.,Prosthetic bypass of coronary artery
+79230,Prosthetic replacement of one coronary artery
+79231,Prosthetic replacement of two coronary arteries
+79232,Prosthetic replacement of three coronary arteries
+79233,Prosthetic replacement of four or more coronary arteries
+7923z,Prosthetic replacement of coronary artery NOS
+7924.,Revision of bypass for coronary artery
+79240,Revision of bypass for one coronary artery
+79241,Revision of bypass for two coronary arteries
+79242,Revision of bypass for three coronary arteries
+79243,Revision of bypass for four or more coronary arteries
+79245,Revision of implantation of thoracic artery into heart
+7924y,Other specified revision of bypass for coronary artery
+7924z,Revision of bypass for coronary artery NOS
+7925.,Connection of mammary artery to coronary artery
+79251,Double implant of mammary arteries into coronary arteries
+79252,Single anast mammary art to left ant descend coronary art
+79254,Single implantation of mammary artery into coronary artery
+7925y,Connection of mammary artery to coronary artery OS
+7925z,Connection of mammary artery to coronary artery NOS
+7926.,Connection of other thoracic artery to coronary artery
+79260,Double anastom thoracic arteries to coronary arteries NEC
+79262,Single anastomosis of thoracic artery to coronary artery NEC
+79263,Single implantation thoracic artery into coronary artery NEC
+7926z,Connection of other thoracic artery to coronary artery NOS
+7927.,Other open operations on coronary artery
+79273,Transposition of coronary artery NEC
+79274,Exploration of coronary artery
+79275,Open angioplasty of coronary artery
+7927y,Other specified other open operation on coronary artery
+7927z,Other open operation on coronary artery NOS
+7928.,Percutaneous balloon angioplasty of coronary artery
+79280,Percut transluminal balloon angioplasty one coronary artery
+79281,Percut translum balloon angioplasty mult coronary arteries
+79282,Percut translum balloon angioplasty bypass graft coronary a
+7928y,Transluminal balloon angioplasty of coronary artery OS
+7928z,Transluminal balloon angioplasty of coronary artery NOS
+7929.,Other therapeutic transluminal operations on coronary artery
+79290,Percutaneous transluminal laser coronary angioplasty
+79291,Percut transluminal coronary thrombolysis with streptokinase
+79292,Percut translum inject therap subst to coronary artery NEC
+79293,Percutaneous rotational coronary endarterectomy
+7929y,Other therapeutic transluminal op on coronary artery OS
+7929z,Other therapeutic transluminal op on coronary artery NOS
+792A.,Diagnostic transluminal operations on coronary artery
+792Ay,Diagnostic transluminal operation on coronary artery OS
+792Az,Diagnostic transluminal operation on coronary artery NOS
+792B.,Repair of coronary artery NEC
+792B0,Endarterectomy of coronary artery NEC
+792By,Other specified repair of coronary artery
+792Bz,Repair of coronary artery NOS
+792C.,Other replacement of coronary artery
+792C0,Replacement of coronary arteries using multiple methods
+792Cy,Other specified replacement of coronary artery
+792Cz,Replacement of coronary artery NOS
+792D.,Other bypass of coronary artery
+792Dy,Other specified other bypass of coronary artery
+792Dz,Other bypass of coronary artery NOS
+792y.,Other specified operations on coronary artery
+792z.,Coronary artery operations NOS
+7A545,Rotary blade angioplasty
+7A6G1,Peroperative angioplasty
+G300.,Acute anterolateral myocardial infarction
+G301.,Other specified anterior myocardial infarction
+G3010,Acute anteroapical infarction
+G3011,Acute anteroseptal myocardial infarction
+G301z,Anterior myocardial infarction NOS
+G302.,Acute inferolateral myocardial infarction
+G303.,Acute inferoposterior infarction
+G304.,Posterior myocardial infarction NOS
+G305.,Lateral myocardial infarction NOS
+G306.,True posterior myocardial infarction
+G307.,Acute subendocardial infarction
+G308.,Inferior myocardial infarction NOS
+G30y.,Other acute myocardial infarction
+G30y0,Acute atrial infarction
+G30y1,Acute papillary muscle infarction
+G30y2,Acute septal infarction
+G30yz,Other acute myocardial infarction NOS
+G30z.,Acute myocardial infarction NOS
+G31..,Other acute and subacute ischaemic heart disease
+G310.,Post-myocardial infarction syndrome
+G3110,Aborted myocardial infarction
+G311z,Preinfarction syndrome NOS
+G312.,Coronary thrombosis not resulting in myocardial infarction
+G31y0,Acute coronary insufficiency
+G31y1,Microinfarction of heart
+G31y2,Subendocardial ischaemia
+G31yz,Other acute and subacute ischaemic heart disease NOS
+G33..,Angina
+G330.,Angina decubitus
+G3300,Nocturnal angina
+G330z,Angina decubitus NOS
+G331.,Prinzmetal's angina
+G33z.,Angina pectoris NOS
+G33z0,Status anginosus
+G33z1,Stenocardia
+G33z2,Syncope anginosa
+G34..,Other chronic ischaemic heart disease
+G3400,Single coronary vessel disease
+G3401,Double coronary vessel disease
+G341.,Aneurysm of heart
+G3410,Ventricular cardiac aneurysm
+G3412,Coronary artery aneurysm
+G3413,Acquired atrioventricular fistula of heart
+G341z,Aneurysm of heart NOS
+G343.,Generalised ischaemic myocardial dysfunction
+G34y.,Other specified chronic ischaemic heart disease
+G34y1,Chronic myocardial ischaemia
+G34yz,Other specified chronic ischaemic heart disease NOS
+G34z.,Other chronic ischaemic heart disease NOS
+G35..,Subsequent myocardial infarction
+G350.,Subsequent myocardial infarction of anterior wall
+G351.,Subsequent myocardial infarction of inferior wall
+G353.,Subsequent myocardial infarction of other sites
+G36..,Certain current complication follow acute myocardial infarct
+G360.,Haemopericardium/current comp folow acut myocard infarct
+G361.,Atrial septal defect/curr comp folow acut myocardal infarct
+G363.,Ruptur cardiac wall w'out haemopericard/cur comp fol ac MI
+G364.,Ruptur chordae tendinae/curr comp fol acute myocard infarct
+G365.,Rupture papillary muscle/curr comp fol acute myocard infarct
+G366.,"Thrombosis atrium,auric append&vent/curr comp foll acute MI"
+G3y..,Other specified ischaemic heart disease
+G3z..,Ischaemic heart disease NOS
+G70..,Atherosclerosis
+Gyu30,[X]Other forms of angina pectoris
+Gyu34,[X]Acute transmural myocardial infarction of unspecif site
+Gyu35,[X]Subsequent myocardial infarction of other sites
+Gyu36,[X]Subsequent myocardial infarction of unspecified site
+Ua1eH,Ischaemic chest pain
+X00tE,Coronary artery bypass grafting
+X00tO,Percutaneous endarterectomy of coronary artery
+X00tU,Insertion of coronary artery stent
+X2006,Triple vessel disease of the heart
+X2007,Angina at rest
+X2008,Stable angina
+X2009,Unstable angina
+X200A,New onset angina
+X200B,Coronary spasm
+X200D,Silent myocardial ischaemia
+X200E,Myocardial infarction
+X200a,Silent myocardial infarction
+X200c,Cardiac syndrome X
+X200d,Post-infarction ventricular septal defect
+X200e,Cardiac rupture after acute myocardial infarction
+X201u,Post-infarction pericarditis
+X202q,Mural thrombus
+X203v,Coronary artery thrombosis
+XE0Em,Coronary artery operation
+XE0En,Double anastomosis of mammary arteries to coronary arteries
+XE0Uh,Acute myocardial infarction
+XE0Ui,Worsening angina
+XE0Uk,Other cardiac wall aneurysm
+XE2Px,Single anastomosis of mammary artery to coronary artery NEC
+XE2aA,Old myocardial infarction
+XE2uV,Ischaemic heart disease
+XM0rN,Coronary atherosclerosis
+XM1LR,LIMA single anastomosis
+XM1LS,RIMA single anastomosis
+XM1M3,LIMA sequential anastomosis
+XM1M4,RIMA sequential anastomosis
+XM1Qk,Mural cardiac aneurysm
+Xa7nH,Exercise-induced angina
+XaAC3,Acute Q wave myocardial infarction
+XaAzi,Acute non-Q wave infarction
+XaBEB,[V]Presence of coronary artery bypass graft
+XaBL1,H/O: Myocardial infarction in last year
+XaBL2,H/O: Angina in last year
+XaC1g,[V]Status following coronary angioplasty NOS
+XaD2b,Postoperative myocardial infarction
+XaD2d,Postoperative transmural myocardial infarction anterior wall
+XaD2e,Postoperative transmural myocardial infarction inferior wall
+XaD2g,Postoperative transmural myocardial infarction unspec site
+XaD2h,Postoperative subendocardial myocardial infarction
+XaD2i,"Postoperative myocardial infarction, unspecified"
+XaDyk,Prosthetic graft patch angioplasty
+XaDyl,Percutaneous transluminal angioplasty of vascular graft
+XaEXt,Post infarct angina
+XaFsG,Refractory angina
+XaFsH,Transient myocardial ischaemia
+XaG1Q,Asymptomatic coronary heart disease
+XaINF,Acute coronary syndrome
+XaIwM,Acute ST segment elevation myocardial infarction
+XaIwY,Acute non-ST segment elevation myocardial infarction
+XaJIU,Coronary artery bypass graft occlusion
+XaJX0,Acute posterolateral myocardial infarction
+XaLSD,Insertion of drug-eluting coronary artery stent
+XaLgU,Perc translumin balloon angioplasty stenting coronary artery
+XaLgV,Perc translum ball angio insert 1-2 drug elut stents cor art
+XaLgW,Perc tran ball angio ins 3 or more drug elut stents cor art
+XaLgX,Perc translum balloon angioplasty insert 1-2 stents cor art
+XaLgY,Percutaneous cor balloon angiop 3 more stents cor art NEC
+XaLga,Perc translum balloon angioplasty stenting coronary art NOS
+XaLgc,Percutaneous transluminal balloon dilation cardiac conduit
+XaMKE,Percut translum cutting balloon angioplasty coronary artery
+XaQk7,History of myocardial infarction
+XaYYq,Coronary microvascular disease
+ZV457,[V]Presence of aortocoronary bypass graft
+ZV458,[V]Presence of coronary angioplasty implant and graft

@@ -1,0 +1,26 @@
+code,term
+G2...,Hypertensive disease
+G200.,Malignant essential hypertension
+G201.,Benign essential hypertension
+G202.,Systolic hypertension
+G20z.,Hypertension NOS (& [essential])
+G24..,Secondary hypertension
+G240.,Malignant secondary hypertension
+G2400,Secondary malignant renovascular hypertension
+G240z,Secondary malignant hypertension NOS
+G241.,Secondary benign hypertension
+G2410,Secondary benign renovascular hypertension
+G241z,Secondary benign hypertension NOS
+G244.,Hypertension secondary to endocrine disorders
+G24z.,Secondary hypertension NOS
+G24z0,Secondary renovascular hypertension NOS
+G24z1,Hypertension secondary to drug
+G2y..,Other specified hypertensive disease
+G2z..,Hypertensive disease NOS
+Gyu2.,[X]Hypertensive diseases
+Gyu20,[X]Other secondary hypertension
+XE0Ub,Hypertension
+XE0Uc,Essential hypertension
+XE0Ud,Essential hypertension NOS
+XM02V,Raised blood pressure
+XSDSb,Diastolic hypertension

@@ -1,0 +1,81 @@
+code,term
+M154.,Lupus erythematosus
+M1541,Discoid lupus erythematosus
+M154z,Lupus erythematosus NOS
+M160.,Psoriatic arthritis
+M1600,Psoriatic arthritis with spine involvement
+M160z,Psoriatic arthropathy NOS
+N000.,Systemic lupus erythematosus
+N004.,Polymyositis
+N040.,Rheumatoid arthritis
+N0402,Rheumatoid arthritis of shoulder
+N0403,Rheumatoid arthritis of sternoclavicular joint
+N0404,Rheumatoid arthritis of acromioclavicular joint
+N0405,Rheumatoid arthritis of elbow
+N0406,Rheumatoid arthritis of distal radioulnar joint
+N0407,Rheumatoid arthritis of wrist
+N0408,Rheumatoid arthritis of metacarpophalangeal joint
+N0409,Rheumatoid arthritis of PIP joint of finger
+N040A,Rheumatoid arthritis of DIP joint of finger
+N040B,Rheumatoid arthritis of hip
+N040C,Rheumatoid arthritis of sacroiliac joint
+N040D,Rheumatoid arthritis of knee
+N040E,Rheumatoid arthritis of tibiofibular joint
+N040F,Rheumatoid arthritis of ankle
+N040G,Rheumatoid arthritis of subtalar joint
+N040H,Rheumatoid arthritis of talonavicular joint
+N040J,Rheumatoid arthritis of other tarsal joint
+N040K,Rheumatoid arthritis of first metatarsophalangeal joint
+N040L,Rheumatoid arthritis of lesser metatarsophalangeal joint
+N040M,Rheumatoid arthritis of interphalangeal joint of toe
+N040Q,Rheumatoid bursitis
+N040T,Flare of rheumatoid arthritis
+N041.,Felty's syndrome
+N042.,Other rheumatoid arthropathy + visceral/systemic involvement
+N0420,Rheumatic carditis (?AND/OR [Rheumatoid carditis])
+N0421,Rheumatoid lung
+N0422,Rheumatoid nodule
+N042z,Rheumatoid arthropathy + visceral/systemic involvement NOS
+N043.,Systemic onset juvenile chronic arthritis
+N0430,Juvenile rheumatoid arthropathy unspecified
+N0431,Acute polyarticular juvenile rheumatoid arthritis
+N0432,Pauciarticular onset juvenile chronic arthritis
+N0433,Monarticular juvenile rheumatoid arthritis
+N043z,Juvenile rheumatoid arthritis NOS
+N044.,Jaccoud's syndrome
+N045.,Other juvenile arthritis
+N0453,Juvenile arthritis in Crohn's disease
+N0454,Juvenile arthritis in ulcerative colitis
+N04y.,Other specified inflammatory polyarthropathy
+N04y1,Seronegative arthritis
+N04yz,Other specified inflammatory polyarthropathy NOS
+N04z.,Inflammatory polyarthropathy NOS
+N10..,Inflammatory spondylopathies
+N241.,Myalgia and myositis unspecified
+N2411,Myositis unspecified
+N2412,Fibromyositis NOS
+N241z,Myalgia or myositis NOS
+Nyu15,[X]Other juvenile arthritis
+Nyu1G,"[X]Seropositive rheumatoid arthritis, unspecified"
+Nyu4E,"[X]Dermatopolymyositis, unspecified"
+X701i,Seronegative rheumatoid arthritis
+X701l,Rheumatoid vasculitis
+X701q,Polyarticular onset juvenile chronic arthritis
+X701t,Juvenile rheumatoid arthritis
+X701v,Juvenile psoriatic arthritis with psoriasis
+X701x,Juvenile ankylosing spondylitis
+X702I,Undifferentiated inflammatory polyarthritis
+X704h,Subacute cutaneous lupus erythematosus
+X704u,Juvenile dermatomyositis
+X7051,"Calcinos, Raynaud, sclerodactyly, oesophageal, telangiect"
+X705I,Adult onset Still's disease
+XE1DH,Dermatomyositis
+XE1DU,Rheumatoid arthritis and other inflammatory polyarthropathy
+XE1FJ,Polymyalgia rheumatica
+XE2Qc,Unspecified polyarthropathy or polyarthritis
+Xa1jE,Systemic sclerosis
+Xa3gL,Rheumatoid arthritis - multiple joint
+Xa3wk,Still's disease - juvenile rheumatoid arthritis
+XaBMO,Seropositive errosive rheumatoid arthritis
+XaQbV,Progressive systemic sclerosis
+Xaagc,Carditis due to rheumatic fever

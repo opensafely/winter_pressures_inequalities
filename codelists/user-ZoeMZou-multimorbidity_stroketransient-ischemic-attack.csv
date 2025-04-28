@@ -1,0 +1,62 @@
+code,term
+G6...,Cerebrovascular disease
+G610.,Cortical haemorrhage
+G611.,Internal capsule haemorrhage
+G612.,Basal ganglia haemorrhage
+G613.,Cerebellar haemorrhage
+G614.,Pontine haemorrhage
+G615.,Bulbar haemorrhage
+G616.,External capsule haemorrhage
+G617.,"Intracerebral haemorrhage, intraventricular"
+G618.,"Intracerebral haemorrhage, multiple localised"
+G61z.,Intracerebral haemorrhage NOS
+G63y0,Cerebral infarct due to thrombosis of precerebral arteries
+G63y1,Cerebral infarction due to embolism of precerebral arteries
+G640.,Cerebral thrombosis
+G6400,Cerebral infarction due to thrombosis of cerebral arteries
+G641.,Cerebral embolus
+G6410,Cerebral infarction due to embolism of cerebral arteries
+G653.,Carotid artery syndrome hemispheric
+G654.,Multiple and bilateral precerebral artery syndromes
+G65y.,Other transient cerebral ischaemia
+G65z.,Transient cerebral ischaemia NOS
+G65z0,Impending cerebral ischaemia
+G65z1,Intermittent cerebral ischaemia
+G66..,CVA - cerebrovascular accident (& unspecified [& stroke])
+G660.,Middle cerebral artery syndrome
+G661.,Anterior cerebral artery syndrome
+G662.,Posterior cerebral artery syndrome
+G663.,Brainstem stroke syndrome
+G664.,Cerebellar stroke syndrome
+G667.,Left sided cerebral hemisphere cerebrovascular accident
+G668.,Right sided cerebral hemisphere cerebrovascular accident
+G6760,"Cereb infarct due cerebral venous thrombosis, non-pyogenic"
+Gyu63,[X]Cerebrl infarctn due/unspcf occlusn or sten/cerebrl artrs
+Gyu64,[X]Other cerebral infarction
+Gyu65,[X]Occlusion and stenosis of other precerebral arteries
+Gyu66,[X]Occlusion and stenosis of other cerebral arteries
+Gyu6F,"[X]Intracerebral haemorrhage in hemisphere, unspecified"
+Gyu6G,[X]Cereb infarct due unsp occlus/stenos precerebr arteries
+X00D1,Cerebrovascular accident
+X00D3,CVA - cerebral artery occlusion
+X00D9,Brainstem infarction NOS
+X00DB,Pure motor lacunar infarction
+X00DC,Pure sensory lacunar infarction
+XE0VF,Cerebral parenchymal haemorrhage
+XE0VI,Cerebral arterial occlusion
+XE0VJ,Cerebral infarction NOS
+XE0VK,Transient ischaemic attack
+XE2aB,Stroke and cerebrovascular accident unspecified
+Xa00J,Cerebellar infarction
+Xa00K,Brainstem infarction
+Xa00M,Wallenberg syndrome
+Xa0kZ,Cerebral infarction
+XaBE2,"Cerebral palsy, not congenital or infantile, acute"
+XaBEC,Left sided cerebral infarction
+XaBED,Right sided cerebral infarction
+XaBM4,"Left sided intracerebral haemorrhage, unspecified"
+XaBM5,"Right sided intracerebral haemorrhage, unspecified"
+XaJgQ,Infarction of basal ganglia
+XaQbK,Pure motor lacunar syndrome
+XaQbM,Pure sensory lacunar syndrome
+XaX16,[V]Personal history of transient ischaemic attack

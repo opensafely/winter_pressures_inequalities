@@ -1,0 +1,74 @@
+code,term
+1C12.,Hearing difficulty
+1C131,Unilateral deafness
+1C132,Partial deafness
+1C133,Bilateral deafness
+2BL2.,O/E - slightly deaf
+2BL3.,O/E - significantly deaf
+2BL4.,O/E - very deaf
+2BL5.,O/E - completely deaf
+2BM2.,O/E -tune fork=conductive deaf
+2BM3.,O/E tune fork=perceptive deaf
+2BM4.,O/E - High tone deafness
+8D21.,Provide head worn hearing aid
+8D23.,Ear fitting hearing aid
+A5602,Rubella deafness
+F5801,Presbyacusis
+F5812,Noise-induced hearing loss
+F582.,Unspecified sudden hearing loss
+F590.,Conductive hearing loss
+F5900,Unspecified conductive hearing loss
+F5901,Conductive hearing loss due to disorder of external ear
+F5902,Conductive hearing loss due to disorder of tympanic membrane
+F5903,Conductive hearing loss due to disorder of middle ear
+F5904,Conductive hearing loss due to disorder of inner ear
+F5905,"Conductive hearing loss, bilateral"
+F5906,"Conduct hear loss,unilat+unrestric hearing on contralat side"
+F590y,Combined conductive hearing loss
+F590z,Conductive hearing loss NOS
+F5910,Unspecified perceptive hearing loss
+F5911,Cochlear hearing loss
+F5912,Neural hearing loss
+F5913,Central auditory dysfunction
+F5914,Congenital sensorineural deafness
+F5916,"Sensorineural hearing loss, bilateral"
+F5917,"Sensorineurl hear loss,unilat unrestrict hear/contralat side"
+F591y,Combined perceptive hearing loss
+F591z,Perceptive hearing loss NOS
+F592.,Mixed conductive and sensorineural hearing loss
+F5920,"Mix cond/sensneurl hear loss,unlat unrestrc hear/contrlat sd"
+F5921,"Mixed conductive and sensorineural hearing loss, bilateral"
+F593.,"Deaf mutism, NEC"
+F59y.,Other specified forms of hearing loss
+FyuU0,"[X]Deaf mutism, not elsewhere classified"
+FyuU1,[X]Other specified hearing loss
+P40..,Ear anomalies with hearing impairment
+Ua1rb,Fit hearing aid
+Ua1rd,Checking hearing aid
+Ua1rf,Hearing aid procedure
+X00h2,Insertn bone anchors subcutaneous bone anchored hearing aid
+X00kO,Chronic deafness
+X00kP,High frequency deafness
+X00kQ,Low frequency deafness
+X77tB,Deafness due to congenital anomaly NEC
+XE0s9,Hearing loss
+XE17N,Sensorineural hearing loss
+XE17O,Ototoxicity - deafness
+XE17P,Deafness NOS
+XE1o5,Injury to acoustic nerve
+XM0Cb,Deafness symptom
+XM1X8,O/E - deaf
+Xa0LN,Hearing aid worn
+Xa1pl,Hearing aid provision
+Xa2yW,Unable to use hearing aid
+Xa2yX,Does use hearing aid
+Xa2yZ,Difficulty using hearing aid
+Xa7SQ,Hearing problem
+XaFo1,Deteriorating hearing
+XaIRo,Hearing aid problem
+XaIxM,Difficulty hearing with background noise
+XaIxN,Difficulty hearing whispers
+XaOPs,Maternally inherited deafness
+XaPEU,[V]Bone anchored hearing aid in situ
+ZV412,[V]Problems with hearing
+ZV532,[V]Fitting or adjustment of hearing aid
