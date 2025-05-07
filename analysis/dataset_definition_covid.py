@@ -1,7 +1,7 @@
 from pathlib import Path 
 
 from datetime import date, datetime
-from ehrql import Dataset, create_dataset, case, when, maximum_of, minimum_of, years, days
+from ehrql import Dataset, create_dataset, case, when, maximum_of, minimum_of, years, days, show
 from ehrql.tables.tpp import (
   patients,
   medications,
@@ -27,7 +27,9 @@ dataset = create_dataset()
 study_start = "2020-03-01"
 end_date = "2025-04-01"
 
-covid_secondary =  dataset.covid_secondary_date = (
+# Study population is people with an infection event so identify whether these in either APC admission or emergency admission for each of COVID, RSV and flu
+
+covid_secondary_date = (
       apcs.sort_by(apcs.admission_date)
       .where(apcs.primary_diagnosis
       .is_in(codelists.covid_secondary_codelist) 
@@ -38,22 +40,34 @@ covid_secondary =  dataset.covid_secondary_date = (
       .admission_date
     )
 
-covid_emergency = emergency_care_diagnosis_matches(codelists.covid_primary_codelist).where(
-        emergency_care_diagnosis_matches.date.is_on_or_after(study_start)
-).sort_by(
-        emergency_care_diagnosis_matches.date
-).first_for_patient().date
+covid_emergency_date = emergency_care_diagnosis_matches(codelists.covid_attendance).where(
+       emergency_care_attendances.arrival_date
+        .is_on_or_between(study_start, end_date)).arrival_date.minimum_for_patient()
 
-covid_hosp_date = minimum_of(covid_secondary, covid_emergency),
-    
-index_date = covid_hospitalisation.date
+has_covid_admission = covid_secondary_date.is_not_null() | covid_emergency_date.is_not_null()
+index_date = minimum_of(covid_secondary_date, covid_emergency_date)
 
 #  ---------------------- Inclusion criteria --------------------------------
+# no admission for covid in year prior
+prior_secondary_date = (
+      apcs.sort_by(apcs.admission_date)
+      .where(apcs.primary_diagnosis
+      .is_in(codelists.covid_secondary_codelist) 
+      |apcs.secondary_diagnosis
+      .is_in(codelists.covid_secondary_codelist))
+      .where(apcs.admission_date.is_on_or_between(
+      (index_date - days(365)), (index_date - days(1)))).last_for_patient()
+      .admission_date
+    )
+prior_emergency_date = emergency_care_diagnosis_matches(codelists.covid_attendance).where(
+       emergency_care_attendances.arrival_date
+        .is_on_or_between((index_date - days(365)), (index_date - days(1)))).arrival_date.maximum_for_patient()
+has_prior_admission = prior_secondary_date.is_not_null() | prior_emergency_date.is_not_null()
 
 # Age 0 - 110 (as per WP2)
 age_at_start = patients.age_on(index_date)
-age_filter = (age_at_interval_start >= 0) & (
-    age_at_interval_start <= 110)
+age_filter = (age_at_start >= 0) & (
+    age_at_start <= 110)
 
 # Alive throughout the interval period (vs. at the beginning)
 was_alive = (
@@ -65,13 +79,15 @@ was_alive = (
 was_registered = practice_registrations.spanning((index_date - days(90)), index_date).exists_for_patient()
 
 # No missing data: known sex, IMD, practice region (as per WP 2) 
-was_female_or_male = patients.sex.is_in(["female", "male"])
-has_deprivation_index = addresses.for_patient_on(index_date).imd_rounded.is_not_null()
-has_region = practice_registrations.for_patient_on(index_date).practice_nuts1_region_name.is_not_null()
+is_female_or_male = patients.sex.is_in(["female", "male"])
 
-
-
-dataset.define_population(has_registration)
+dataset.define_population(
+    has_covid_admission
+    & was_alive
+    & was_registered
+    & is_female_or_male
+    & age_filter
+    & (~has_prior_admission))
 
 dataset.sex = patients.sex
 dataset.age = patients.age_on(index_date)

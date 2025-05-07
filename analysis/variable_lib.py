@@ -2,20 +2,12 @@ import operator
 from functools import reduce
 
 from ehrql.codes import SNOMEDCTCode, CTV3Code, ICD10Code
-from ehrql import case, days, when, any_of
+from ehrql import case, days, when
 from ehrql.tables.tpp import (emergency_care_attendances, 
 apcs, clinical_events, patients, ons_deaths, practice_registrations)
 
-def emergency_care_info(codelist):
-    conditions = [
-        getattr(emergency_care_attendances, column_name).is_in(codelist)
-        for column_name in [f"diagnosis_{i:02d}" for i in range(1, 25)]
-    ]
-
-    return {
-        "covid_emergency_date": minimum_of(conditions.date),
-        "covid_emergency": emergency_care_attendances.where(any_of(conditions))
-    }
+def any_of(conditions):
+    return reduce(operator.or_, conditions)
 
 def emergency_care_diagnosis_matches(codelist):
     conditions = [

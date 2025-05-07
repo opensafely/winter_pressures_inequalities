@@ -59,11 +59,13 @@ covid_secondary_codelist = codelist_from_csv(
   column = "icd10_code",
 )
 
+covid_attendance = ["1240751000000100"]
+
 # covariates 
 
 # migrant
 migrant_codelist = codelist_from_csv(
-    "codelists/opensafely-migration-status-codes.csv",
+    "codelists/user-YaminaB-migration-status.csv",
     column = "code",
 )
 
