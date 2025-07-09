@@ -2,9 +2,11 @@ import operator
 from functools import reduce
 
 from ehrql.codes import SNOMEDCTCode, CTV3Code, ICD10Code
-from ehrql import case, days, when
+from ehrql import case, days, years, when
 from ehrql.tables.tpp import (emergency_care_attendances, 
 apcs, clinical_events, patients, ons_deaths, practice_registrations)
+
+index_date = "2021-03-01"
 
 def any_of(conditions):
     return reduce(operator.or_, conditions)
@@ -15,6 +17,12 @@ def emergency_care_diagnosis_matches(codelist):
         for column_name in [f"diagnosis_{i:02d}" for i in range(1, 25)]
     ]
     return emergency_care_attendances.where(any_of(conditions))
+
+#hospital events occuring after index date but before end of follow up
+hospital_events = (
+  apcs.where(apcs.admission_date
+  .is_on_or_between(index_date, index_date + years(1)))
+)
 
 def hospitalisation_diagnosis_matches(codelist):
     code_strings = set()
@@ -43,3 +51,11 @@ def hospitalisation_diagnosis_matches(codelist):
         for code_string in code_strings
     ]
     return apcs.where(any_of(conditions))
+
+def hospitalisation_primary_secondary_diagnosis_matches(codelist):
+
+    conditions = [
+        (hospital_events.primary_diagnosis.is_in(codelist))|
+        (hospital_events.secondary_diagnosis.is_in(codelist))
+    ]
+    return hospital_events.where(any_of(conditions))
