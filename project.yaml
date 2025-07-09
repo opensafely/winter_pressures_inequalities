@@ -5,6 +5,7 @@ actions:
     run: >
       ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
       --test-data-file analysis/test_dataset_definition_covid.py
+      --start_date 2020-03-01
       --output output/dataset_covid.csv.gz
     outputs:
       highly_sensitive:
