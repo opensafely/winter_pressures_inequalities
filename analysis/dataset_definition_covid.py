@@ -42,12 +42,12 @@ prior_secondary_date = (
       |apcs.secondary_diagnosis
       .is_in(codelists.covid_secondary_codelist))
       .where(apcs.admission_date.is_on_or_between(
-      (start_date - days(365)), (start_date))).last_for_patient()
+      (start_date - days(365)), (start_date))).first_for_patient()
       .admission_date
     )
 prior_emergency_date = emergency_care_diagnosis_matches(codelists.covid_attendance).where(
        emergency_care_attendances.arrival_date
-        .is_on_or_between((start_date - days(365)), (start_date))).arrival_date.maximum_for_patient()
+        .is_on_or_between((start_date - days(365)), (start_date))).arrival_date.minimum_for_patient()
 has_prior_admission = prior_secondary_date.is_not_null() | prior_emergency_date.is_not_null()
 
 
@@ -74,7 +74,7 @@ dataset.define_population(
 
 dataset.sex = patients.sex
 dataset.age = age_at_start
-
+# below appears to run but columns not generated and test doesn't work..
 dataset.covid_sc_date = (
     hospitalisation_primary_secondary_diagnosis_matches(codelists.covid_secondary_codelist)
     .where(hospital_events.admission_date.is_on_or_between(start_date, start_date + years(1)))

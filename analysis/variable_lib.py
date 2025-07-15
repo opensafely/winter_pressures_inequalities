@@ -6,7 +6,7 @@ from ehrql import case, days, years, when
 from ehrql.tables.tpp import (emergency_care_attendances, 
 apcs, clinical_events, patients, ons_deaths, practice_registrations)
 
-index_date = "2021-03-01"
+start_date = "2021-03-01"
 
 def any_of(conditions):
     return reduce(operator.or_, conditions)
@@ -21,7 +21,7 @@ def emergency_care_diagnosis_matches(codelist):
 #hospital events occuring after index date but before end of follow up
 hospital_events = (
   apcs.where(apcs.admission_date
-  .is_on_or_between(index_date, index_date + years(1)))
+  .is_on_or_between(start_date, start_date + years(1)))
 )
 
 def hospitalisation_diagnosis_matches(codelist):

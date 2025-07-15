@@ -6,7 +6,12 @@ test_data = {
     # Expected in population with 3 months registration and no hospitalisation
     1: {
         "patients": {"date_of_birth": date(1970, 1, 1), "sex": "female"},
-        "apcs": [],
+        "apcs": [
+            {
+                "admission_date": date(2020, 9, 8),
+                "primary_diagnosis": "U071",
+            }
+        ],
         "emergency_care_attendances": [],
         "practice_registrations": [
             {
@@ -30,7 +35,7 @@ test_data = {
         "patients": {"date_of_birth": date(1990, 1, 1), "sex": "female"},
         "apcs": [
             {
-                "date": date(20, 3, 3),
+                "admission_date": date(2020, 2, 3),
                 "primary_diagnosis": "U071",
             },
            
@@ -63,12 +68,21 @@ test_data = {
             {
                 "start_date": date(2014, 5, 1),
                 "practice_pseudo_id": 54322,
-            },],
-        "expected_in_population": False,
+            },
+            ],
+        "expected_in_population": True,
+        "expected_columns": {
+            "sex": "male",
+            "age": 70,
+            "covid_sc_date": None,
+            "covid_emergency_date": date(2022, 5, 2),
+            "has_covid_admission": True,
+            "covid_admission_date": date(2022, 5, 1),
+        },
     },
     # Not expected in population - registration ends prior to index date
     4: {
-        "patients": [{"date_of_birth": date(2010, 1, 1), "sex": "male"}],
+        "patients": [{"date_of_birth": date(2001, 1, 1), "sex": "male"}],
         "apcs": [],
         "emergency_care_attendances": [],
         "practice_registrations": [
