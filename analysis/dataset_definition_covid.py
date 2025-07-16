@@ -74,7 +74,8 @@ dataset.define_population(
 
 dataset.sex = patients.sex
 dataset.age = age_at_start
-# below appears to run but columns not generated and test doesn't work..
+
+# Define outcome
 dataset.covid_sc_date = (
     hospitalisation_primary_secondary_diagnosis_matches(codelists.covid_secondary_codelist)
     .where(hospital_events.admission_date.is_on_or_between(start_date, start_date + years(1)))
@@ -87,3 +88,4 @@ dataset.covid_emergency_date = emergency_care_diagnosis_matches(codelists.covid_
 
 dataset.has_covid_admission = dataset.covid_sc_date.is_not_null() | dataset.covid_emergency_date.is_not_null()
 dataset.covid_admission_date = minimum_of(dataset.covid_sc_date, dataset.covid_emergency_date)
+

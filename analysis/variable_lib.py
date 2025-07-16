@@ -2,11 +2,11 @@ import operator
 from functools import reduce
 
 from ehrql.codes import SNOMEDCTCode, CTV3Code, ICD10Code
-from ehrql import case, days, years, when
+from ehrql import case, days, years, when, get_parameter
 from ehrql.tables.tpp import (emergency_care_attendances, 
 apcs, clinical_events, patients, ons_deaths, practice_registrations)
 
-start_date = "2021-03-01"
+start_date = get_parameter("start_date")
 
 def any_of(conditions):
     return reduce(operator.or_, conditions)

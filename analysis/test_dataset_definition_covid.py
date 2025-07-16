@@ -61,7 +61,7 @@ test_data = {
         "emergency_care_attendances": [
             {
             "diagnosis_01": "1240751000000100",
-            "arrival_date": date(2022, 5, 2),
+            "arrival_date": date(2020, 5, 2),
             }
             ],
         "practice_registrations": [
@@ -75,9 +75,9 @@ test_data = {
             "sex": "male",
             "age": 70,
             "covid_sc_date": None,
-            "covid_emergency_date": date(2022, 5, 2),
+            "covid_emergency_date": date(2020, 5, 2),
             "has_covid_admission": True,
-            "covid_admission_date": date(2022, 5, 1),
+            "covid_admission_date": date(2020, 5, 2),
         },
     },
     # Not expected in population - registration ends prior to index date
