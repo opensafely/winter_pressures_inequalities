@@ -12,7 +12,6 @@ from ehrql.tables.tpp import (
   vaccinations,
   apcs,
   emergency_care_attendances,
-  parents,
   ethnicity_from_sus
 )
 
@@ -21,7 +20,11 @@ import codelists
 from variable_lib import (
   emergency_care_diagnosis_matches,
   hospitalisation_primary_secondary_diagnosis_matches,
-  hospital_events
+  hospital_events,
+  get_latest_ethnicity,
+  gp_events,
+  first_gp_event,
+  rural_urban_5
 )
 
 dataset = create_dataset()
@@ -74,8 +77,25 @@ dataset.define_population(
 
 dataset.sex = patients.sex
 dataset.age = age_at_start
+dataset.urban_rural_5 = rural_urban_5(start_date)
+dataset.ethnicity16 = get_latest_ethnicity(
+    start_date,
+    ethnicity_from_sus,
+    ethnicity_codelist=codelists.ethnicity16_codes,
+    grouping=16,
+)
+dataset.ethnicity6 = get_latest_ethnicity(
+    start_date,
+    ethnicity_from_sus,
+    ethnicity_codelist=codelists.ethnicity6_codes,
+    grouping=6,
+)
 
-# Define outcome
+# Define outcome - primary care or secondary care COVID
+# extract date of first episode 
+dataset.covid_primary_date = (
+      first_gp_event(codelists.covid_primary_codelist).date
+    )
 dataset.covid_sc_date = (
     hospitalisation_primary_secondary_diagnosis_matches(codelists.covid_secondary_codelist)
     .where(hospital_events.admission_date.is_on_or_between(start_date, start_date + years(1)))

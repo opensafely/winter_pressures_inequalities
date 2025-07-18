@@ -6,10 +6,15 @@ from ehrql import (
 ## exposures 
 
 # ethnicity codes
-ethnicity_codes = codelist_from_csv(
+ethnicity6_codes = codelist_from_csv(
   "codelists/opensafely-ethnicity-snomed-0removed.csv",
   column = "code",
   category_column = "Grouping_6",
+)
+ethnicity16_codes = codelist_from_csv(
+  "codelists/opensafely-ethnicity-snomed-0removed.csv",
+  column = "code",
+  category_column = "Grouping_16",
 )
 
 ##outcomes
