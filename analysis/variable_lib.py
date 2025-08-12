@@ -4,7 +4,7 @@ from functools import reduce
 from ehrql.codes import SNOMEDCTCode, CTV3Code, ICD10Code
 from ehrql import case, years, when, get_parameter
 from ehrql.tables.tpp import (emergency_care_attendances, 
-apcs, clinical_events, ethnicity_from_sus, addresses)
+apcs, clinical_events, ethnicity_from_sus, addresses, medications)
 
 start_date = get_parameter("start_date")
 
@@ -24,6 +24,24 @@ def first_gp_event(codelist, where = True):
         .where(gp_events.snomedct_code.is_in(codelist))
         .sort_by(clinical_events.date)
         .first_for_patient()
+    )
+
+def has_prior_event(codelist, start_date, where=True):
+    prior_events = clinical_events.where(clinical_events.date.is_on_or_before(start_date))
+    return (
+        prior_events
+        .where(where)
+        .where(prior_events.snomedct_code.is_in(codelist))
+        .exists_for_patient()
+    )
+
+# query prior_meds for existence of event-in-codelist, returns a patientSeries
+def has_prior_meds(codelist, start_date, where=True):
+    prior_meds = medications.where(medications.date.is_on_or_before(start_date))
+    return (
+        prior_meds.where(where)
+        .where(prior_meds.dmd_code.is_in(codelist))
+        .exists_for_patient()
     )
 
 def emergency_care_diagnosis_matches(codelist):
