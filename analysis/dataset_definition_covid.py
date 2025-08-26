@@ -37,14 +37,19 @@ start_date = get_parameter("start_date")
 
 #  ---------------------- Inclusion criteria --------------------------------
 # assessed each year
-# Registered at start date
-# Create dataset that can be applied for all three infections
-was_registered = practice_registrations.spanning((start_date - days(90)), start_date).exists_for_patient()
-
 # Age 0 - 110 (as per WP2)
 age_at_start = patients.age_on(start_date)
 age_filter = (age_at_start >= 0) & (
     age_at_start <= 110)
+
+# Registered at start date
+# Create dataset that can be applied for all three infections
+# if age <1 change inclusion
+was_registered = case(
+    when((age_at_start < 1) & (practice_registrations.start_date.is_on_or_before(start_date))).then(True),
+    when(practice_registrations.spanning((start_date - days(90)), start_date).exists_for_patient()).then(True),
+otherwise = False,
+),
 
 # Alive at start date
 was_alive = (patients.is_alive_on(start_date))
