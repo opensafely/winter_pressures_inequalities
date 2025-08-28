@@ -161,15 +161,17 @@ def has_crd(start_date, where=True):
 def has_severe_obesity(start_date): 
     # Severe obesity only defined for people aged 18 and over
     aged18plus = patients.age_on(start_date) >= 18
-    # Last BMI stage event
+    # Last BMI stage event - within last 2 years
     date_bmi_stage = last_prior_event(
         codelists.bmi_stage, 
-        start_date
+        start_date,
+        where = clinical_events.date.is_on_or_between(start_date - years(2), start_date)
     ).date
-    # Last severe obesity event
+    # Last severe obesity event - within las 2 years
     date_sev_obesity = last_prior_event(
         codelists.sev_obesity, 
-        start_date
+        start_date,
+        where = clinical_events.date.is_on_or_between(start_date - years(2), start_date)
     ).date
     # Last BMI event not null
     event_bmi = last_prior_event(

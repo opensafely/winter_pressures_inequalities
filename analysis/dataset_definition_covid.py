@@ -30,10 +30,11 @@ from variable_lib import (
 )
 
 from clinical_risk_grps import *
+from vaccine_history import *
 
 dataset = create_dataset()
 
-start_date = get_parameter("start_date")
+start_date = date.fromisoformat(get_parameter("start_date"))
 
 #  ---------------------- Inclusion criteria --------------------------------
 # assessed each year
@@ -46,10 +47,13 @@ age_filter = (age_at_start >= 0) & (
 # Create dataset that can be applied for all three infections
 # if age <1 change inclusion
 was_registered = case(
-    when((age_at_start < 1) & (practice_registrations.start_date.is_on_or_before(start_date))).then(True),
-    when(practice_registrations.spanning((start_date - days(90)), start_date).exists_for_patient()).then(True),
-otherwise = False,
-),
+    when((age_at_start < 1)).then(
+        practice_registrations.where(practice_registrations.start_date.is_on_or_before(start_date)).exists_for_patient()
+    ),
+    when((age_at_start >= 1)).then(
+        practice_registrations.spanning_with_systmone(start_date - days(90), start_date).exists_for_patient()
+    )
+)
 
 # Alive at start date
 was_alive = (patients.is_alive_on(start_date))
@@ -64,6 +68,19 @@ dataset.define_population(
     & age_filter
     )
 
+# EXPOSURE
+dataset.ethnicity16 = get_latest_ethnicity(
+    start_date,
+    ethnicity_from_sus,
+    ethnicity_codelist=codelists.ethnicity16_codes,
+    grouping=16,
+)
+dataset.ethnicity6 = get_latest_ethnicity(
+    start_date,
+    ethnicity_from_sus,
+    ethnicity_codelist=codelists.ethnicity6_codes,
+    grouping=6,
+)
 # COVARIATES
 # demographics
 dataset.sex = patients.sex
@@ -77,18 +94,7 @@ dataset.age_group = case(
     when((dataset.age >= 80) & (dataset.age < 111)).then("adult_80+")
 )
 dataset.urban_rural_5 = rural_urban_5(start_date)
-dataset.ethnicity16 = get_latest_ethnicity(
-    start_date,
-    ethnicity_from_sus,
-    ethnicity_codelist=codelists.ethnicity16_codes,
-    grouping=16,
-)
-dataset.ethnicity6 = get_latest_ethnicity(
-    start_date,
-    ethnicity_from_sus,
-    ethnicity_codelist=codelists.ethnicity6_codes,
-    grouping=6,
-)
+
 
 imd_rounded = addresses.for_patient_on(start_date).imd_rounded
 max_imd = 32844
@@ -105,15 +111,60 @@ dataset.imd_quintile = case(
 # Comorbidity - add cms once finalised by Zoe and Shrinkhala
 
 #******** High risk vaccination group for COVID at start date - code from comparative spring booster 2023 
-# Clinical risk groups stay the same but age restrictions change through follow-up but for he purposes of this 
-# analysis the at risk groups are informative enough.
-# Note: Currently no restriction on when obesity measured prior to start date
-dataset.covid_atrisk = covid_atrisk(start_date) # at risk (at least one of the conditions above)
-dataset.flu_atrisk = flu_atrisk(start_date) 
+# Clinical risk groups stay the same but age restrictions change through follow-up
+# Will be assessed at start_date and determine if eligible at that point
+dataset.covid_atrisk_grp = covid_atrisk(start_date) # in clinical risk group
+dataset.flu_atrisk_grp = flu_atrisk(start_date) 
+# define eligibility based on age as well
+if start_date.year==2022 :
+    dataset.vacc_elig_covid = case(
+        when((dataset.age>= 16) | (dataset.age>12 & dataset.age< 16 & dataset.covid_atrisk_grp==True)).then(True),
+    )
+if start_date.year==2023 :
+    dataset.vacc_elig_covid = case(
+        when((dataset.age>=50) | (dataset.age >=5 & dataset.age <50 & dataset.covid_atrisk_grp==True)).then(True),
+    )
+if start_date.year==2024 :
+    dataset.vacc_elig_covid = case(
+        when((dataset.age>=65) | (dataset.age >=0 & dataset.age <65 & dataset.covid_atrisk_grp==True)).then(True),
+    )
+else :
+    # fix this when Eli gets back to you
+    dataset.vacc_elig_covid = dataset.age<-50
+
+# Flu eligibility
+dataset.vacc_elig_flu = case(
+    when((dataset.age>=65) | ((dataset.age >= 2) & (dataset.age < 17)) | ((dataset.age > 0) & (dataset.flu_atrisk_grp==True))).then(True),
+    otherwise = False
+)
+
+# RSV eligibility - age 75 to 79 only. Not including pregnanacy currently.
+dataset.vacc_elig_rsv = case(
+    when((dataset.age >= 75) & (dataset.age < 80)).then(True),
+    otherwise = False
+)
 
 # vaccination status for flu, COVID (season prior and current season) & RSV (ever)
 
-# BMI - part of risk groups
+add_vaccine_history(
+    dataset = dataset, index_date = start_date, 
+    target_disease = "SARS-2 Coronavirus", target_disease_short ="covid", 
+    number_of_vaccines = 5
+)
+
+add_vaccine_history(
+    dataset = dataset, index_date = start_date, 
+    target_disease = "Influenza", target_disease_short ="flu", 
+    number_of_vaccines = 5
+)
+
+add_vaccine_history(
+    dataset = dataset, index_date = start_date, 
+    target_disease = "RSV", target_disease_short ="rsv", 
+    number_of_vaccines = 10
+)
+
+# BMI - part of risk groups so defining severe obesity
 dataset.severe_obesity = has_severe_obesity(start_date) 
 # date of latest severe obesity measure
 date_bmi_stage = last_prior_event(
@@ -125,7 +176,20 @@ date_sev_obesity = last_prior_event(
         codelists.sev_obesity, 
         start_date
     ).date
-dataset.severe_obesity_date = maximum_of(date_bmi_stage, date_sev_obesity)
+event_bmi = last_prior_event(
+        codelists.bmi, 
+        start_date,
+        where=(
+            clinical_events.numeric_value.is_not_null() & 
+            # Ignore out-of-range values
+            (clinical_events.numeric_value > 4) & 
+            (clinical_events.numeric_value < 200)
+        )
+    )
+dataset.severe_obesity_date = case(
+    when(dataset.severe_obesity == True).then(maximum_of(date_bmi_stage, date_sev_obesity, event_bmi.date)),
+    otherwise = None
+)
 
 # Migrant status
 dataset.migrant = has_prior_event(codelists.migrant_codelist, start_date)
@@ -167,3 +231,24 @@ dataset.flu_emergency_date = emergency_care_diagnosis_matches(codelists.flu_atte
 
 dataset.has_flu_admission = dataset.flu_sc_date.is_not_null() | dataset.flu_emergency_date.is_not_null()
 dataset.flu_admission_date = minimum_of(dataset.flu_sc_date, dataset.flu_emergency_date)
+
+# RSV outcome - check these with Em's code
+ #infant and infant subgroup cohorts
+dataset.rsv_primary_date = case(
+    when(dataset.age <= 2).then(
+        minimum_of((first_gp_event(codelists.rsv_primary_codelist).date),(emergency_care_diagnosis_matches(codelists.bronchiolitis_attendance))
+        .arrival_date.minimum_for_patient())
+    ),
+    when(dataset.age > 2).then(
+        first_gp_event(codelists.rsv_primary_codelist).date
+    )
+)
+
+#extract rsv secondary care dates for 'specific' phenotype
+  
+#extract date of first episode - looking at the first date for which there is
+#a code in the RSV secondary codelist as the primary or secondary diagnosis
+dataset.rsv_secondary_date = (
+hospitalisation_primary_secondary_diagnosis_matches(codelists.rsv_secondary_codelist)
+.admission_date.minimum_for_patient()
+)
