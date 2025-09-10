@@ -151,7 +151,7 @@ def get_latest_ethnicity(
             when(latest_ethnicity_from_codes_category_num == "9").then("Pakistani"),
             when(latest_ethnicity_from_codes_category_num == "10").then("Bangladeshi"),
             when(latest_ethnicity_from_codes_category_num == "11").then(
-                "Other South Asian"
+                "Other Asian"
             ),
             when(latest_ethnicity_from_codes_category_num == "12").then("Caribbean"),
             when(latest_ethnicity_from_codes_category_num == "13").then("African"),
@@ -173,7 +173,7 @@ def get_latest_ethnicity(
             when(ethnicity_from_sus.code == "H").then("Indian"),
             when(ethnicity_from_sus.code == "J").then("Pakistani"),
             when(ethnicity_from_sus.code == "K").then("Bangladeshi"),
-            when(ethnicity_from_sus.code == "L").then("Other South Asian"),
+            when(ethnicity_from_sus.code == "L").then("Other Asian"),
             when(ethnicity_from_sus.code == "M").then("Caribbean"),
             when(ethnicity_from_sus.code == "N").then("African"),
             when(ethnicity_from_sus.code == "P").then("Other Black"),

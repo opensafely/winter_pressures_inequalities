@@ -11,6 +11,7 @@ test_data = {
             "start_date": date(2015, 1, 1),
             "imd_rounded": 100,
             },
+        "ons_deaths": [],
         "clinical_events": [
             {
                 "snomedct_code": "185984009", # White British ethnic group
@@ -58,7 +59,20 @@ test_data = {
                 "practice_systmone_go_live_date": date(2001,5,1),
             },
         ],
-        "vaccinations": [],
+        "vaccinations": [
+            {
+                "date": date(2019,10,3),
+                "target_disease": "INFLUENZA",
+            },
+            {
+                "date": date(2017,11,3),
+                "target_disease": "INFLUENZA",
+            },
+            {
+                "date": date(2016,10,14),
+                "target_disease": "INFLUENZA",
+            },
+        ],
         "expected_in_population": True,
         "expected_columns": {
             "sex": "female",
@@ -87,7 +101,10 @@ test_data = {
             "has_flu_admission": False,
             "flu_admission_date": None,
             "rsv_primary_date": date(2021, 1, 8),
-            "rsv_secondary_date": None 
+            "rsv_secondary_date": None,
+            "vax_flu_1_date": date(2016,10,14),
+            "vax_flu_2_date": date(2017,11,3),
+            "vax_flu_3_date": date(2019,10,3),
         },
     },
     # Not expected in population, age >110
@@ -98,6 +115,7 @@ test_data = {
             "start_date": date(2014, 5, 1),
             "imd_rounded": 32500,
             },
+        "ons_deaths": [],
         "clinical_events": [
             {
             "snomedct_code": "17095009", # Norwegian White ethnic grouo
@@ -137,6 +155,7 @@ test_data = {
             "start_date": date(2014, 5, 1),
             "imd_rounded": 32300,
             },
+        "ons_deaths": [],
         "clinical_events": [
             {
                 "snomedct_code": "186001005", # Indian ethnic group
@@ -181,7 +200,12 @@ test_data = {
                 "practice_systmone_go_live_date": date(2001,5,1),
             },
             ],
-        "vaccinations": [],
+        "vaccinations": [
+            {
+                "date": date(2020,10,3),
+                "target_disease": "SARS-2 Coronavirus",
+            },
+        ],
         "expected_in_population": True,
         "expected_columns": {
             "sex": "male",
@@ -208,6 +232,7 @@ test_data = {
             "flu_emergency_date": None,
             "has_flu_admission": True,
             "flu_admission_date": date(2020, 9, 11),
+            "vax_covid_1_date": None,
         },
     },
     # Not expected in population - registration ends prior to index date
@@ -225,6 +250,7 @@ test_data = {
             "imd_rounded": 2000,
             },
         ],
+        "ons_deaths": [],
         "clinical_events": [
             {
             "snomedct_code": "186001005", # Indian ethnicity
@@ -260,6 +286,7 @@ test_data = {
             "start_date": date(2011, 1, 1),  
             "imd_rounded": 2000,
             },
+        "ons_deaths": [],
         "clinical_events": [
             {
             "snomedct_code": "186001005", # Indian ethnicity
@@ -292,6 +319,7 @@ test_data = {
             "start_date": date(2011, 1, 1),  
             "imd_rounded": 2000,
             },
+        "ons_deaths": [],
         "clinical_events": [
             {
             "snomedct_code": "186001005", # Indian ethnicity
@@ -320,6 +348,7 @@ test_data = {
             "start_date": date(2014, 5, 1),
             "imd_rounded": 32300,
             },
+        "ons_deaths": [],
         "clinical_events": [
             {
                 "snomedct_code": "186001005", # Indian ethnic group
@@ -403,6 +432,7 @@ test_data = {
             "start_date": date(2010, 5, 1),
             "imd_rounded": 13136,
             },
+        "ons_deaths": [],
         "clinical_events": [
             {
                 "snomedct_code": "33897005", # Chinese ethnic group - other
@@ -476,6 +506,7 @@ test_data = {
             "start_date": date(2010, 5, 1),
             "imd_rounded": 32700,
             },
+        "ons_deaths": [],
         "clinical_events": [
             {
                 "snomedct_code": "76574004", # White ethnic group - Swiss=Any other White background

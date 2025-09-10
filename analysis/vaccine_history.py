@@ -21,13 +21,13 @@ from ehrql.tables.tpp import (
 #####################################################
 
 
-def add_vaccine_history(dataset, index_date, target_disease, target_disease_short, number_of_vaccines = 10):
+def add_vaccine_history(dataset, start_date, target_disease, target_disease_short, number_of_vaccines = 10):
 
     # select all vaccination events that target {target_disease} on or before {index_date}
-    covid_vaccinations = (
+    type_vaccinations = (
         vaccinations
         .where(vaccinations.target_disease == target_disease)
-        .where(vaccinations.date <= index_date)
+        .where(vaccinations.date <= start_date)
         .sort_by(vaccinations.date)
     )
         
@@ -39,8 +39,8 @@ def add_vaccine_history(dataset, index_date, target_disease, target_disease_shor
     for i in range(1, number_of_vaccines + 1):
 
         # vaccine variables
-        current_vax = covid_vaccinations.where(covid_vaccinations.date>previous_vax_date).first_for_patient()
+        current_vax = type_vaccinations.where(type_vaccinations.date>previous_vax_date).first_for_patient()
         dataset.add_column(f"vax_{target_disease_short}_{i}_date", current_vax.date)
-        dataset.add_column(f"vax_{target_disease_short}_{i}_type", current_vax.product_name)
+
         
         previous_vax_date = current_vax.date
