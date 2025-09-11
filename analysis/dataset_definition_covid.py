@@ -59,7 +59,7 @@ was_registered = case(
 was_alive = ((patients.date_of_death.is_after(start_date) | patients.date_of_death.is_null())
 )
 
-# No missing data: known sex, IMD, practice region (as per WP 2) 
+# known sex
 has_known_sex = patients.sex.is_in(["female", "male", "intersex"])
 
 dataset.define_population(
@@ -154,7 +154,7 @@ dataset.vacc_elig_rsv = case(
 )
 
 # vaccination status for flu, COVID (season prior and current season) & RSV (ever)
-
+# Need vaccinations for year of follow-up so start at end of period then look back for vaccinations both during follow-up and year prior.
 add_vaccine_history(
     dataset = dataset, start_date = (start_date + days(364)), 
     target_disease = "SARS-2 Coronavirus", target_disease_short ="covid", 
