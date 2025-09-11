@@ -1,24 +1,65 @@
 version: '4.0'
-# To use the same code to generate a study cohort each year that can be used for each disease.
+# Generates cohorts for COVID outcome.
 actions:
-  generate_dataset_2020:
-    run: >
-      ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
-      --test-data-file analysis/test_dataset_definition_covid.py
-      --output output/dataset_covid_2020.csv.gz
-      --
-      --start_date 2020-03-01
-    outputs:
-      highly_sensitive:
-        population: output/dataset_covid_2020.csv.gz
-
   generate_dataset_2019:
     run: >
       ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
-      --test-data-file analysis/test_dataset_definition_covid.py
       --output output/dataset_covid_2019.csv.gz
       --
       --start_date 2019-03-01
     outputs:
       highly_sensitive:
         population: output/dataset_covid_2019.csv.gz
+
+#  generate_dataset_2020:
+#    run: >
+#      ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
+#      --test-data-file analysis/test_dataset_definition_covid.py
+#      --output output/dataset_covid_2020.csv.gz
+#      --
+#      --start_date 2020-03-01
+#    outputs:
+#      highly_sensitive:
+#        population: output/dataset_covid_2020.csv.gz
+
+  
+  generate_dataset_2021:
+      run: >
+        ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
+        --output output/dataset_covid_2021.csv.gz
+        --
+        --start_date 2021-03-01
+      outputs:
+        highly_sensitive:
+          population: output/dataset_covid_2021.csv.gz
+
+  generate_dataset_2022:
+      run: >
+        ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
+        --output output/dataset_covid_2022.csv.gz
+        --test-data-file analysis/test_dataset_definition_covid.py
+        --
+        --start_date 2022-03-01
+      outputs:
+        highly_sensitive:
+          population: output/dataset_covid_2022.csv.gz
+
+  generate_dataset_2023:
+      run: >
+        ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
+        --output output/dataset_covid_2023.csv.gz
+        --
+        --start_date 2023-03-01
+      outputs:
+        highly_sensitive:
+          population: output/dataset_covid_2023.csv.gz
+
+  generate_dataset_2024:
+      run: >
+        ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
+        --output output/dataset_covid_2024.csv.gz
+        --
+        --start_date 2024-03-01
+      outputs:
+        highly_sensitive:
+          population: output/dataset_covid_2024.csv.gz

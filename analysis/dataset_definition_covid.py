@@ -33,7 +33,7 @@ from clinical_risk_grps import *
 from vaccine_history import *
 
 dataset = create_dataset()
-
+dataset.configure_dummy_data(population_size=100)
 start_date = date.fromisoformat(get_parameter("start_date"))
 
 #  ---------------------- Inclusion criteria --------------------------------
@@ -123,21 +123,24 @@ dataset.imd_quintile = case(
 dataset.covid_atrisk_grp = covid_atrisk(start_date) # in clinical risk group
 dataset.flu_atrisk_grp = flu_atrisk(start_date) 
 # define eligibility based on age as well
+if start_date.year==2021 :
+   dataset.vacc_elig_covid = False,
+
 if start_date.year==2022 :
-    dataset.vacc_elig_covid = case(
-        when((dataset.age>= 16) | (dataset.age>12 & dataset.age< 16 & dataset.covid_atrisk_grp==True)).then(True),
-    )
+   dataset.vacc_elig_covid = case(
+       when((dataset.age>= 16) | ((dataset.age>12) & (dataset.age< 16) & (dataset.covid_atrisk_grp==True))).then(True),
+       otherwise=False,
+   )
 if start_date.year==2023 :
-    dataset.vacc_elig_covid = case(
-        when((dataset.age>=50) | (dataset.age >=5 & dataset.age <50 & dataset.covid_atrisk_grp==True)).then(True),
-    )
+   dataset.vacc_elig_covid = case(
+       when((dataset.age>=50) | ((dataset.age >=5) & (dataset.age <50) & (dataset.covid_atrisk_grp==True))).then(True),
+       otherwise = False,
+   )
 if start_date.year==2024 :
-    dataset.vacc_elig_covid = case(
-        when((dataset.age>=65) | (dataset.age >=0 & dataset.age <65 & dataset.covid_atrisk_grp==True)).then(True),
-    )
-else :
-    # fix this when Eli gets back to you
-    dataset.vacc_elig_covid = dataset.age<-50
+   dataset.vacc_elig_covid = case(
+       when((dataset.age>=65) | ((dataset.age >=0) & (dataset.age <65) & (dataset.covid_atrisk_grp==True))).then(True),
+       otherwise = False,
+   )
 
 # Flu eligibility
 dataset.vacc_elig_flu = case(

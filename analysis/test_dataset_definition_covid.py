@@ -23,31 +23,31 @@ test_data = {
             },
             {
                 "snomedct_code": "233602006", # rsv
-                "date": date(2021,1,8),
+                "date": date(2023,1,8),
             },
         ],
         "apcs": [
             {
-                "admission_date": date(2020, 9, 8),
+                "admission_date": date(2022, 9, 8),
                 "primary_diagnosis": "U071", # covid
             },
         ],
         "medications": [
             {
                 "dmd_code": "21019411000001101", # asthma inhaled med
-                "date": date(2020,2,1),
+                "date": date(2022,2,1),
             },
             {
                 "dmd_code": "21019411000001101", # asthma inhaled med
-                "date": date(2020,1,6),
+                "date": date(2022,1,6),
             },
             {
                 "dmd_code": "32776311000001106", # oral steroid
-                "date": date(2020,1,6),
+                "date": date(2022,1,6),
             },
             {
                 "dmd_code": "32776311000001106", # oral steroid
-                "date": date(2020,2,6),
+                "date": date(2022,2,6),
             },
         ],
         "ethnicity_from_sus": [],
@@ -65,18 +65,18 @@ test_data = {
                 "target_disease": "INFLUENZA",
             },
             {
-                "date": date(2017,11,3),
+                "date": date(2021,11,3),
                 "target_disease": "INFLUENZA",
             },
             {
-                "date": date(2016,10,14),
+                "date": date(2022,10,14),
                 "target_disease": "INFLUENZA",
             },
         ],
         "expected_in_population": True,
         "expected_columns": {
             "sex": "female",
-            "age": 50,
+            "age": 52,
             "age_group": "adult_under_65",
             "urban_rural_5": "Urban major conurbation",
             "ethnicity16": 'Other White',
@@ -84,27 +84,27 @@ test_data = {
             "imd_quintile": 1,
             "covid_atrisk_grp": True,
             "flu_atrisk_grp": True,
-            "vacc_elig_covid": False,
+            "vacc_elig_covid": True,
             "vacc_elig_flu" : True,
             "severe_obesity": False,
             "severe_obesity_date": None,
             "migrant": False,
             "english_language": False,
             "covid_primary_date": None,
-            "covid_sc_date": date(2020, 9, 8),
+            "covid_sc_date": date(2022, 9, 8),
             "covid_emergency_date": None,
             "has_covid_admission": True,
-            "covid_admission_date": date(2020, 9, 8),
+            "covid_admission_date": date(2022, 9, 8),
             "flu_primary_date": None,
             "flu_sc_date": None,
             "flu_emergency_date": None,
             "has_flu_admission": False,
             "flu_admission_date": None,
-            "rsv_primary_date": date(2021, 1, 8),
+            "rsv_primary_date": date(2023, 1, 8),
             "rsv_secondary_date": None,
-            "vax_flu_1_date": date(2016,10,14),
-            "vax_flu_2_date": date(2017,11,3),
-            "vax_flu_3_date": date(2019,10,3),
+            "vax_flu_1_date": date(2019,10,3),
+            "vax_flu_2_date": date(2021,11,3),
+            "vax_flu_3_date": date(2022,10,14),
         },
     },
     # Not expected in population, age >110
@@ -163,11 +163,11 @@ test_data = {
             },
             {
                 "snomedct_code": "1157045004", # covid
-                "date": date(2020, 7, 1),
+                "date": date(2022, 7, 1),
             },
             {
                 "snomedct_code": "195927002", # flu
-                "date": date(2020,9,8),
+                "date": date(2022,9,8),
             },
             {
                 "snomedct_code": "111482003", # severe mental illness
@@ -176,7 +176,7 @@ test_data = {
         ],
         "apcs": [
             {
-                "admission_date": date(2020, 9, 11),
+                "admission_date": date(2022, 9, 11),
                 "primary_diagnosis": "J11", # flu
             },
         ],
@@ -190,7 +190,7 @@ test_data = {
         "emergency_care_attendances": [
             {
                 "diagnosis_01": "1240751000000100", # covid
-                "arrival_date": date(2020, 5, 2),
+                "arrival_date": date(2022, 5, 2),
             },
             ],
         "practice_registrations": [
@@ -209,7 +209,7 @@ test_data = {
         "expected_in_population": True,
         "expected_columns": {
             "sex": "male",
-            "age": 70,
+            "age": 72,
             "age_group": "adult_under_75",
             "urban_rural_5": "Rural village and dispersed",
             "ethnicity16": 'Indian',
@@ -217,22 +217,22 @@ test_data = {
             "imd_quintile": 5,
             "covid_atrisk_grp": True,
             "flu_atrisk_grp": False,
-            "vacc_elig_covid": False,
+            "vacc_elig_covid": True,
             "vacc_elig_flu" : True,
             "severe_obesity": False,
             "severe_obesity_date": None,
             "migrant": False,
-            "covid_primary_date": date(2020, 7, 1),
+            "covid_primary_date": date(2022, 7, 1),
             "covid_sc_date": None,
-            "covid_emergency_date": date(2020, 5, 2),
+            "covid_emergency_date": date(2022, 5, 2),
             "has_covid_admission": True,
-            "covid_admission_date": date(2020, 5, 2),
-            "flu_primary_date": date(2020, 9, 8),
-            "flu_sc_date": date(2020, 9, 11),
+            "covid_admission_date": date(2022, 5, 2),
+            "flu_primary_date": date(2022, 9, 8),
+            "flu_sc_date": date(2022, 9, 11),
             "flu_emergency_date": None,
             "has_flu_admission": True,
-            "flu_admission_date": date(2020, 9, 11),
-            "vax_covid_1_date": None,
+            "flu_admission_date": date(2022, 9, 11),
+            "vax_covid_1_date": date(2020,10,3),
         },
     },
     # Not expected in population - registration ends prior to index date
@@ -356,7 +356,7 @@ test_data = {
             },
             {
                 "snomedct_code": "1157045004", # covid
-                "date": date(2020, 7, 1),
+                "date": date(2022, 7, 1),
             },
             #{
             #    "snomedct_code": "108241001", # CKD - ckd_cov codelist
@@ -385,7 +385,7 @@ test_data = {
         "emergency_care_attendances": [
             {
                 "diagnosis_01": "6142004", # flu
-                "arrival_date": date(2021, 1, 2),
+                "arrival_date": date(2023, 1, 2),
             },
         ],
         "practice_registrations": [
@@ -399,7 +399,7 @@ test_data = {
         "expected_in_population": True,
         "expected_columns": {
             "sex": "male",
-            "age": 70,
+            "age": 72,
             "age_group": "adult_under_75",
             "urban_rural_5": "Rural village and dispersed",
             "ethnicity16": 'Indian',
@@ -407,21 +407,21 @@ test_data = {
             "imd_quintile": 5,
             "covid_atrisk_grp": False,
             "flu_atrisk_grp": False,
-            "vacc_elig_covid": False,
+            "vacc_elig_covid": True,
             "vacc_elig_flu" : True,
             "severe_obesity": False,
             "severe_obesity_date": None,
             "migrant": False,
-            "covid_primary_date": date(2020, 7, 1),
+            "covid_primary_date": date(2022, 7, 1),
             "covid_sc_date": None,
             "covid_emergency_date": None,
             "has_covid_admission": False,
             "covid_admission_date": None,
-            "flu_primary_date": date(2020,9,1),
+            "flu_primary_date": None,
             "flu_sc_date": None,
-            "flu_emergency_date": date(2021, 1, 2),
+            "flu_emergency_date": date(2023, 1, 2),
             "has_flu_admission": True,
-            "flu_admission_date": date(2021, 1, 2),
+            "flu_admission_date": date(2023, 1, 2),
         },
     },
     # Expected in population - testing bmi
@@ -449,7 +449,7 @@ test_data = {
             },
             {
                 "snomedct_code": "121006005", # flu 
-                "date": date(2021,2,1),
+                "date": date(2023,2,1),
             },
             #{
             #    "snomedct_code": "324181000000105", # CKD - ckd_15 codelist
@@ -471,7 +471,7 @@ test_data = {
         "expected_in_population": True,
         "expected_columns": {
             "sex": "female",
-            "age": 10,
+            "age": 12,
             "age_group": "school",
             "urban_rural_5": "Rural town and fringe",
             "ethnicity16": 'Chinese',
@@ -489,7 +489,7 @@ test_data = {
             "covid_emergency_date": None,
             "has_covid_admission": False,
             "covid_admission_date": None,
-            "flu_primary_date": date(2021,2,1),
+            "flu_primary_date": date(2023,2,1),
             "flu_sc_date": None,
             "flu_emergency_date": None,
             "has_flu_admission": False,
@@ -532,7 +532,7 @@ test_data = {
         "expected_in_population": True,
         "expected_columns": {
             "sex": "female",
-            "age": 40,
+            "age": 42,
             "age_group": "adult_under_65",
             "urban_rural_5": "Urban city and town",
             "ethnicity16": 'Other White',
@@ -540,7 +540,7 @@ test_data = {
             "imd_quintile": 5,
             "covid_atrisk_grp": False,
             "flu_atrisk_grp": False,
-            "vacc_elig_covid": False,
+            "vacc_elig_covid": True,
             "vacc_elig_flu" : False,
             "severe_obesity": False,
             "severe_obesity_date": None,
