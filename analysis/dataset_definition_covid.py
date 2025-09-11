@@ -123,8 +123,7 @@ dataset.imd_quintile = case(
 dataset.covid_atrisk_grp = covid_atrisk(start_date) # in clinical risk group
 dataset.flu_atrisk_grp = flu_atrisk(start_date) 
 # define eligibility based on age as well
-if start_date.year==2021 :
-   dataset.vacc_elig_covid = False,
+# in 2021 no column created as all FALSE
 
 if start_date.year==2022 :
    dataset.vacc_elig_covid = case(
