@@ -28,7 +28,7 @@ from variable_lib import (
   has_prior_event,
   has_prior_meds,
   is_gp_event,
-  emergency_events
+  emergency_events,
 )
 
 from clinical_risk_grps import *
@@ -175,32 +175,22 @@ add_vaccine_history(
     number_of_vaccines = 3
 )
 
-# BMI - part of risk groups so defining severe obesity
+# BMI - part of risk groups so defining severe obesity - over 18's only
 dataset.severe_obesity = has_severe_obesity(start_date) 
-# date of latest severe obesity measure
-date_bmi_stage = last_prior_event(
-        codelists.bmi_stage, 
-        start_date
-    ).date
-    # Last severe obesity event
-date_sev_obesity = last_prior_event(
-        codelists.sev_obesity, 
-        start_date
-    ).date
-event_bmi = last_prior_event(
-        codelists.bmi, 
-        start_date,
-        where=(
-            clinical_events.numeric_value.is_not_null() & 
-            # Ignore out-of-range values
-            (clinical_events.numeric_value > 4) & 
-            (clinical_events.numeric_value < 200)
-        )
-    )
-dataset.severe_obesity_date = case(
-    when(dataset.severe_obesity == True).then(maximum_of(date_bmi_stage, date_sev_obesity, event_bmi.date)),
-    otherwise = None
-)
+## Latest BMI
+bmi_record = clinical_events.where(
+        clinical_events.snomedct_code.is_in(codelists.bmi)
+    ).where(
+        clinical_events.date >= (patients.date_of_birth + years(16))
+    ).where(
+        (clinical_events.date >= (start_date - years(2))) & (clinical_events.date <= start_date)
+    ).sort_by(
+        clinical_events.date
+    ).last_for_patient()
+
+dataset.bmi = bmi_record.numeric_value
+dataset.bmi_date = bmi_record.date
+
 
 # Migrant status
 dataset.migrant = has_prior_event(codelists.migrant_codelist, start_date)

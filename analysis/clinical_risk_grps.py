@@ -185,24 +185,27 @@ def has_severe_obesity(start_date):
         )
     )
     # Severe obesity
-    severe_obesity = case(
+    severe_obesity_18 = case(
         when(aged18plus).then(False),
         when(
             (date_sev_obesity > event_bmi.date) | 
-            (date_sev_obesity.is_not_null() & event_bmi.date.is_null())
+            (date_sev_obesity.is_not_null() & event_bmi.date.is_null()) &
+            (aged18plus == True)
         ).then(True),
         when(
             (event_bmi.date >= date_bmi_stage) & 
-            (event_bmi.numeric_value >= 40.0)
+            (event_bmi.numeric_value >= 40.0) &
+            (aged18plus == True)
         ).then(True),
         when(
             (date_bmi_stage.is_null()) & 
-            (event_bmi.numeric_value >= 40.0)
+            (event_bmi.numeric_value >= 40.0) &
+            (aged18plus == True) 
         ).then(True),
         otherwise=False
     )
-    return severe_obesity
-
+    return severe_obesity_18
+    
 # Pregnant variable to identify gestational diabetes
 def has_pregnancy(start_date):
     # Pregnancy delivery code date (a delivery code between 8 and 15 months prior to index date)
