@@ -102,7 +102,7 @@ def last_prior_meds(codelist, start_date, where=True):
 # PRIMIS
 #######################################################
 
-# Asthma
+# Poorly controlled asthma
 def has_asthma(start_date):
     # Asthma diagnosis
     has_astdx = has_prior_event(codelists.ast, start_date)

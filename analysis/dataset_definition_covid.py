@@ -1,7 +1,7 @@
 from pathlib import Path 
 
 from datetime import date, datetime
-from ehrql import Dataset, create_dataset, case, when, maximum_of, minimum_of, years, days, show, get_parameter
+from ehrql import Dataset, create_dataset, case, when, maximum_of, minimum_of, years, days, months, show, get_parameter
 from ehrql.tables.tpp import (
   patients,
   medications,
@@ -26,7 +26,8 @@ from variable_lib import (
   first_gp_event,
   rural_urban_5,
   has_prior_event,
-  has_prior_meds
+  has_prior_meds,
+  is_gp_event
 )
 
 from clinical_risk_grps import *
@@ -94,7 +95,7 @@ dataset.sex = patients.sex
 dataset.age = age_at_start
 dataset.age_group = case(
     when((dataset.age >= 0) & (dataset.age < 5)).then("preschool"),
-    when((dataset.age >= 5) & (dataset.age < 17)).then("school"),
+    when((dataset.age >= 5) & (dataset.age < 18)).then("school"),
     when((dataset.age >= 18) & (dataset.age < 65)).then("adult_under_65"),
     when((dataset.age >= 65) & (dataset.age < 75)).then("adult_under_75"),
     when((dataset.age >= 75) & (dataset.age < 80)).then("adult_under_80"),
@@ -211,53 +212,41 @@ dataset.english_language = has_prior_event(codelists.english_language_codelist, 
 dataset.covid_primary_date = (
       first_gp_event(codelists.covid_primary_codelist).date
     )
+#extract date of second episode
+dataset.covid_primary_second_date = (
+    is_gp_event(codelists.covid_primary_codelist)
+    .where(gp_events.date.is_on_or_after(dataset.covid_primary_date + months(1)))
+    .sort_by(gp_events.date).first_for_patient().date
+)
+
+#extract date of third episode
+dataset.covid_primary_third_date = (
+    is_gp_event(codelists.covid_primary_codelist)
+    .where(gp_events.date.is_on_or_after(dataset.covid_primary_second_date + months(1)))
+    .sort_by(gp_events.date).first_for_patient().date
+)
+
+# extract date of first hospitalisation
 dataset.covid_sc_date = (
     hospitalisation_primary_secondary_diagnosis_matches(codelists.covid_secondary_codelist)
     .where(hospital_events.admission_date.is_on_or_between(start_date, start_date + years(1)))
     .admission_date.minimum_for_patient()
-  )
-
-dataset.covid_emergency_date = emergency_care_diagnosis_matches(codelists.covid_attendance).where(
+)
+#extract date of second episode - using the same criteria as the first episode
+dataset.covid_sc_second_date = (
+    hospitalisation_primary_secondary_diagnosis_matches(codelists.covid_secondary_codelist)
+    .where(hospital_events.admission_date.is_on_or_after(dataset.covid_sc_date + days(14)))
+    .admission_date.minimum_for_patient()
+)
+# extract first emergency care date
+dataset.covid_emerg_date = emergency_care_diagnosis_matches(codelists.covid_attendance).where(
        emergency_care_attendances.arrival_date
         .is_on_or_between(start_date, start_date + years(1))).arrival_date.minimum_for_patient()
+# extract second emergency care date
+dataset.covid_emerg_second_date = emergency_care_diagnosis_matches(codelists.covid_attendance).where(
+       emergency_care_attendances.arrival_date
+        .is_on_or_after(dataset.covid_emerg_date + months(1))).arrival_date.minimum_for_patient()
 
-dataset.has_covid_admission = dataset.covid_sc_date.is_not_null() | dataset.covid_emergency_date.is_not_null()
-dataset.covid_admission_date = minimum_of(dataset.covid_sc_date, dataset.covid_emergency_date)
+dataset.has_covid_admission = dataset.covid_sc_date.is_not_null() | dataset.covid_emerg_date.is_not_null()
+dataset.covid_admission_date = minimum_of(dataset.covid_sc_date, dataset.covid_emerg_date)
 
-# Flu outcome
-dataset.flu_primary_date = (
-      first_gp_event(codelists.flu_primary_codelist).date
-    )
-dataset.flu_sc_date = (
-    hospitalisation_primary_secondary_diagnosis_matches(codelists.flu_secondary_codelist)
-    .where(hospital_events.admission_date.is_on_or_between(start_date, start_date + years(1)))
-    .admission_date.minimum_for_patient()
-  )
-
-dataset.flu_emergency_date = emergency_care_diagnosis_matches(codelists.flu_attendance).where(
-      emergency_care_attendances.arrival_date
-      .is_on_or_between(start_date, start_date + years(1))).arrival_date.minimum_for_patient()
-
-dataset.has_flu_admission = dataset.flu_sc_date.is_not_null() | dataset.flu_emergency_date.is_not_null()
-dataset.flu_admission_date = minimum_of(dataset.flu_sc_date, dataset.flu_emergency_date)
-
-# RSV outcome - check these with Em's code
- #infant and infant subgroup cohorts
-dataset.rsv_primary_date = case(
-    when(dataset.age <= 2).then(
-        minimum_of((first_gp_event(codelists.rsv_primary_codelist).date),(emergency_care_diagnosis_matches(codelists.bronchiolitis_attendance))
-        .arrival_date.minimum_for_patient())
-    ),
-    when(dataset.age > 2).then(
-        first_gp_event(codelists.rsv_primary_codelist).date
-    )
-)
-
-#extract rsv secondary care dates for 'specific' phenotype
-  
-#extract date of first episode - looking at the first date for which there is
-#a code in the RSV secondary codelist as the primary or secondary diagnosis
-dataset.rsv_secondary_date = (
-hospitalisation_primary_secondary_diagnosis_matches(codelists.rsv_secondary_codelist)
-.admission_date.minimum_for_patient()
-)

@@ -51,6 +51,19 @@ def emergency_care_diagnosis_matches(codelist):
     ]
     return emergency_care_attendances.where(any_of(conditions))
 
+#query gp_events for existence of event-in-codelist 
+def is_gp_event(codelist, where = True):
+    return (
+        gp_events.where(where)
+        .where(gp_events.snomedct_code.is_in(codelist))
+    )
+
+#emergency attendances occuring after index date but before end of follow up
+emergency_events = (
+  emergency_care_attendances.where(emergency_care_attendances
+  .arrival_date.is_on_or_between(start_date, start_date + years(1)))
+)
+
 #hospital events occuring after index date but before end of follow up
 hospital_events = (
   apcs.where(apcs.admission_date
