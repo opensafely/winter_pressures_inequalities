@@ -259,10 +259,10 @@
       "sha": "50397d659a80020e526f8b0305a1b7f2599116d5"
     },
     "bristol-multimorbidity_hearing-loss.csv": {
-      "id": "bristol/multimorbidity_hearing-loss/5cdb9c23",
-      "url": "https://www.opencodelists.org/codelist/bristol/multimorbidity_hearing-loss/5cdb9c23/",
-      "downloaded_at": "2025-07-28 10:40:25.610468Z",
-      "sha": "1e16122697dbba3afc9a5a1bcb15106aff7326ef"
+      "id": "bristol/multimorbidity_hearing-loss/6c165b67",
+      "url": "https://www.opencodelists.org/codelist/bristol/multimorbidity_hearing-loss/6c165b67/",
+      "downloaded_at": "2025-10-28 10:37:16.526969Z",
+      "sha": "abf5149c13d36cb977d9a338e5d3da9a32275b87"
     },
     "primis-covid19-vacc-uptake-astadm.csv": {
       "id": "primis-covid19-vacc-uptake/astadm/6dee7f06",

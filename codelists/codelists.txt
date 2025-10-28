@@ -47,7 +47,7 @@ bristol/multimorbidity_anxietydepression/67c2d6f2/
 bristol/multimorbidity_coronary-heart-disease/6b200f80
 bristol/multimorbidity_stroketransient-ischemic-attack/39012916
 bristol/multimorbidity_connective-tissue-disorder/52109c4b
-bristol/multimorbidity_hearing-loss/5cdb9c23
+bristol/multimorbidity_hearing-loss/6c165b67
 
 #clinical risk group codelists
 #Asthma
