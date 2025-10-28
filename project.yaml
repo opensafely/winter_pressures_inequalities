@@ -52,3 +52,58 @@ actions:
       outputs:
         highly_sensitive:
           population: output/dataset_flu_rsv_2018.csv.gz
+
+  generate_dataset_flu_rsv_2019:
+      run: >
+        ehrql:v1 generate-dataset analysis/dataset_definition_flu_rsv.py 
+        --output output/dataset_flu_rsv_2019.csv.gz
+        --test-data-file analysis/test_dataset_definition_flu_rsv.py
+        --
+        --start_date 2019-09-01
+      outputs:
+        highly_sensitive:
+          population: output/dataset_flu_rsv_2019.csv.gz
+
+  generate_dataset_flu_rsv_2021:
+      run: >
+        ehrql:v1 generate-dataset analysis/dataset_definition_flu_rsv.py 
+        --output output/dataset_flu_rsv_2021.csv.gz
+        --test-data-file analysis/test_dataset_definition_flu_rsv.py
+        --
+        --start_date 2021-09-01
+      outputs:
+        highly_sensitive:
+          population: output/dataset_flu_rsv_2021.csv.gz
+
+  generate_dataset_flu_rsv_2022:
+      run: >
+        ehrql:v1 generate-dataset analysis/dataset_definition_flu_rsv.py 
+        --output output/dataset_flu_rsv_2022.csv.gz
+        --test-data-file analysis/test_dataset_definition_flu_rsv.py
+        --
+        --start_date 2022-09-01
+      outputs:
+        highly_sensitive:
+          population: output/dataset_flu_rsv_2022.csv.gz
+
+  generate_dataset_flu_rsv_2023:
+      run: >
+        ehrql:v1 generate-dataset analysis/dataset_definition_flu_rsv.py 
+        --output output/dataset_flu_rsv_2023.csv.gz
+        --test-data-file analysis/test_dataset_definition_flu_rsv.py
+        --
+        --start_date 2023-09-01
+      outputs:
+        highly_sensitive:
+          population: output/dataset_flu_rsv_2023.csv.gz
+
+  generate_dataset_flu_rsv_2024:
+      run: >
+        ehrql:v1 generate-dataset analysis/dataset_definition_flu_rsv.py 
+        --output output/dataset_flu_rsv_2024.csv.gz
+        --test-data-file analysis/test_dataset_definition_flu_rsv.py
+        --
+        --start_date 2024-09-01
+      outputs:
+        highly_sensitive:
+          population: output/dataset_flu_rsv_2024.csv.gz

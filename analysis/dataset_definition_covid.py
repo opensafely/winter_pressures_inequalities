@@ -222,7 +222,7 @@ dataset.covid_sc_date = (
 #extract date of second episode - using the same criteria as the first episode
 dataset.covid_sc_second_date = (
     hospitalisation_primary_secondary_diagnosis_matches(codelists.covid_secondary_codelist)
-    .where(hospital_events.admission_date.is_on_or_after(dataset.covid_sc_date + days(14)))
+    .where(hospital_events.admission_date.is_on_or_after(dataset.covid_sc_date + months(1)))
     .admission_date.minimum_for_patient()
 )
 # extract first emergency care date
