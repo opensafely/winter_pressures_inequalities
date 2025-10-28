@@ -1,13 +1,54 @@
 version: '4.0'
+# Generates cohorts for COVID outcome.
+actions:  
+  generate_dataset_covid_2021:
+      run: >
+        ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
+        --output output/dataset_covid_2021.csv.gz
+        --
+        --start_date 2021-03-01
+      outputs:
+        highly_sensitive:
+          population: output/dataset_covid_2021.csv.gz
 
-actions:
-  generate_dataset:
-    run: >
-      ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
-      --test-data-file analysis/test_dataset_definition_covid.py
-      --output output/dataset_covid.csv.gz
-      --
-      --start_date 2020-03-01
-    outputs:
-      highly_sensitive:
-        population: output/dataset_covid.csv.gz
+  generate_dataset_covid_2022:
+      run: >
+        ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
+        --output output/dataset_covid_2022.csv.gz
+        --test-data-file analysis/test_dataset_definition_covid.py
+        --
+        --start_date 2022-03-01
+      outputs:
+        highly_sensitive:
+          population: output/dataset_covid_2022.csv.gz
+
+  generate_dataset_covid_2023:
+      run: >
+        ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
+        --output output/dataset_covid_2023.csv.gz
+        --
+        --start_date 2023-03-01
+      outputs:
+        highly_sensitive:
+          population: output/dataset_covid_2023.csv.gz
+
+  generate_dataset_covid_2024:
+      run: >
+        ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
+        --output output/dataset_covid_2024.csv.gz
+        --
+        --start_date 2024-03-01
+      outputs:
+        highly_sensitive:
+          population: output/dataset_covid_2024.csv.gz
+
+  generate_dataset_flu_rsv_2018:
+      run: >
+        ehrql:v1 generate-dataset analysis/dataset_definition_flu_rsv.py 
+        --output output/dataset_flu_rsv_2018.csv.gz
+        --test-data-file analysis/test_dataset_definition_flu_rsv.py
+        --
+        --start_date 2018-09-01
+      outputs:
+        highly_sensitive:
+          population: output/dataset_flu_rsv_2018.csv.gz
