@@ -98,7 +98,6 @@ test_data = {
             "covid_admission_date": date(2022, 9, 8),
             "vax_flu_1_date": date(2019,10,3),
             "vax_flu_2_date": date(2021,11,3),
-            "vax_flu_3_date": date(2022,10,14),
         },
     },
     # Not expected in population, age >110
