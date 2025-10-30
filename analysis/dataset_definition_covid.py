@@ -159,19 +159,19 @@ dataset.vacc_elig_rsv = case(
 add_vaccine_history(
     dataset = dataset, start_date = (start_date + days(364)), 
     target_disease = "SARS-2 Coronavirus", target_disease_short ="covid", 
-    number_of_vaccines = 6
+    number_of_vaccines = 4
 )
 
 add_vaccine_history(
     dataset = dataset, start_date = (start_date + days(364)), 
     target_disease = "INFLUENZA", target_disease_short ="flu", 
-    number_of_vaccines = 5
+    number_of_vaccines = 2
 )
 
 add_vaccine_history(
     dataset = dataset, start_date = (start_date + days(364)), 
     target_disease = "HUMAN RESPIRATORY SYNCYTIAL VIRUS", target_disease_short ="rsv", 
-    number_of_vaccines = 3
+    number_of_vaccines = 1
 )
 
 # BMI - part of risk groups so defining severe obesity
@@ -232,7 +232,7 @@ dataset.covid_emerg_date = emergency_care_diagnosis_matches(codelists.covid_atte
 # extract second emergency care date
 dataset.covid_emerg_second_date = emergency_care_diagnosis_matches(codelists.covid_attendance).where(
        emergency_care_attendances.arrival_date
-        .is_on_or_after(dataset.covid_emerg_date + months(1))).arrival_date.minimum_for_patient()
+        .is_on_or_between(dataset.covid_emerg_date + months(1), start_date + years(1))).arrival_date.minimum_for_patient()
 
 dataset.has_covid_admission = dataset.covid_sc_date.is_not_null() | dataset.covid_emerg_date.is_not_null()
 dataset.covid_admission_date = minimum_of(dataset.covid_sc_date, dataset.covid_emerg_date)
