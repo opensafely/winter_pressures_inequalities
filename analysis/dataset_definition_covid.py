@@ -156,23 +156,64 @@ dataset.vacc_elig_rsv = case(
 
 # vaccination status for flu, COVID (season prior and current season) & RSV (ever)
 # Need vaccinations for year of follow-up so start at end of period then look back for vaccinations both during follow-up and year prior.
-add_vaccine_history(
-    dataset = dataset, start_date = (start_date + days(364)), 
-    target_disease = "SARS-2 Coronavirus", target_disease_short ="covid", 
-    number_of_vaccines = 4
+#add_vaccine_history(
+#    dataset = dataset, start_date = (start_date + days(364)), 
+#    target_disease = "SARS-2 Coronavirus", target_disease_short ="covid", 
+#    number_of_vaccines = 4
+#)
+
+#add_vaccine_history(
+#    dataset = dataset, start_date = (start_date + days(364)), 
+#    target_disease = "INFLUENZA", target_disease_short ="flu", 
+#    number_of_vaccines = 2
+#)
+
+#add_vaccine_history(
+#    dataset = dataset, start_date = (start_date + days(364)), 
+#    target_disease = "HUMAN RESPIRATORY SYNCYTIAL VIRUS", target_disease_short ="rsv", 
+#    number_of_vaccines = 1
+#)
+
+#extract flu vaccination in previous season
+dataset.prior_flu_vaccination = (
+vaccinations.where(vaccinations.target_disease.is_in(["INFLUENZA"]))
+.sort_by(vaccinations.date)
+.where(vaccinations.date.is_on_or_between(start_date - years(1), start_date - days(1)))
+.exists_for_patient()
 )
 
-add_vaccine_history(
-    dataset = dataset, start_date = (start_date + days(364)), 
-    target_disease = "INFLUENZA", target_disease_short ="flu", 
-    number_of_vaccines = 2
+#extract flu vaccination in current season
+dataset.flu_vaccination_date = (
+vaccinations.where(vaccinations.target_disease.is_in(["INFLUENZA"]))
+.sort_by(vaccinations.date)
+.where(vaccinations.date.is_on_or_between(start_date, start_date + years(1)))
+.first_for_patient().date
 )
 
-add_vaccine_history(
-    dataset = dataset, start_date = (start_date + days(364)), 
-    target_disease = "HUMAN RESPIRATORY SYNCYTIAL VIRUS", target_disease_short ="rsv", 
-    number_of_vaccines = 1
+#extract covid vaccination in previous season if applicable
+dataset.prior_covid_vaccination = (
+    vaccinations.where(vaccinations.target_disease.is_in(["SARS-2 Coronavirus"]))
+    .sort_by(vaccinations.date)
+    .where(vaccinations.date.is_on_or_between(start_date - years(1), start_date - days(1)))
+    .last_for_patient().date
 )
+
+#extract covid vaccination in current season if applicable
+dataset.covid_vaccination_date = (
+    vaccinations.where(vaccinations.target_disease.is_in(["SARS-2 Coronavirus"]))
+    .sort_by(vaccinations.date)
+    .where(vaccinations.date.is_on_or_between(start_date, start_date + years(1)))
+    .first_for_patient().date
+)
+
+#extract RSV vaccination in 2024
+if start_date.year==2024 :
+    dataset.rsv_vaccination = (
+        vaccinations.where(vaccinations.target_disease.is_in(["HUMAN RESPIRATORY SYNCYTIAL VIRUS"]))
+        .sort_by(vaccinations.date)
+        .where(vaccinations.date.is_on_or_between(start_date, start_date + years(1)))
+        .last_for_patient().date
+    )
 
 # BMI - part of risk groups so defining severe obesity
 dataset.severe_obesity = has_severe_obesity(start_date) 
