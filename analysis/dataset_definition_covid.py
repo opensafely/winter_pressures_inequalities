@@ -77,18 +77,18 @@ dataset.dereg_date = (
 dataset.ons_death_date = ons_deaths.date
 
 # EXPOSURE
-dataset.ethnicity16 = get_latest_ethnicity(
-    start_date,
-    ethnicity_from_sus,
-    ethnicity_codelist=codelists.ethnicity16_codes,
-    grouping=16,
-)
-dataset.ethnicity6 = get_latest_ethnicity(
-    start_date,
-    ethnicity_from_sus,
-    ethnicity_codelist=codelists.ethnicity6_codes,
-    grouping=6,
-)
+#dataset.ethnicity16 = get_latest_ethnicity(
+#    start_date,
+#    ethnicity_from_sus,
+#    ethnicity_codelist=codelists.ethnicity16_codes,
+#    grouping=16,
+#)
+#dataset.ethnicity6 = get_latest_ethnicity(
+#    start_date,
+#    ethnicity_from_sus,
+#    ethnicity_codelist=codelists.ethnicity6_codes,
+#    grouping=6,
+#)
 # COVARIATES
 # demographics
 dataset.sex = patients.sex
