@@ -21,7 +21,6 @@ from variable_lib import (
   emergency_care_diagnosis_matches,
   hospitalisation_primary_secondary_diagnosis_matches,
   hospital_events,
-  get_latest_ethnicity,
   gp_events,
   first_gp_event,
   rural_urban_5,
@@ -77,6 +76,22 @@ dataset.dereg_date = (
 dataset.ons_death_date = ons_deaths.date
 
 # EXPOSURE
+dataset.ethnicity6_gp = (
+   clinical_events.where(clinical_events.snomedct_code.is_in(codelists.ethnicity6_codes))
+    .where(clinical_events.date.is_on_or_before(start_date))
+    .sort_by(clinical_events.date)
+    .last_for_patient()
+    .snomedct_code.to_category(codelists.ethnicity6_codes)
+)
+
+dataset.ethnicity16_gp = (clinical_events.where(clinical_events.snomedct_code.is_in(codelists.ethnicity16_codes))
+    .where(clinical_events.date.is_on_or_before(start_date))
+    .sort_by(clinical_events.date)
+    .last_for_patient()
+    .snomedct_code.to_category(codelists.ethnicity16_codes)
+)
+
+dataset.ethnicity_sus = ethnicity_from_sus.code
 #dataset.ethnicity16 = get_latest_ethnicity(
 #    start_date,
 #    ethnicity_from_sus,
