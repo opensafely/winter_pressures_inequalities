@@ -78,18 +78,23 @@ dataset.dereg_date = (
 dataset.ons_death_date = ons_deaths.date
 
 # EXPOSURE
-dataset.ethnicity16 = get_latest_ethnicity(
-    start_date,
-    ethnicity_from_sus,
-    ethnicity_codelist=codelists.ethnicity16_codes,
-    grouping=16,
+dataset.ethnicity6_gp = (
+   clinical_events.where(clinical_events.snomedct_code.is_in(codelists.ethnicity6_codes))
+    .where(clinical_events.date.is_on_or_before(start_date))
+    .sort_by(clinical_events.date)
+    .last_for_patient()
+    .snomedct_code.to_category(codelists.ethnicity6_codes)
 )
-dataset.ethnicity6 = get_latest_ethnicity(
-    start_date,
-    ethnicity_from_sus,
-    ethnicity_codelist=codelists.ethnicity6_codes,
-    grouping=6,
+
+dataset.ethnicity16_gp = (clinical_events.where(clinical_events.snomedct_code.is_in(codelists.ethnicity16_codes))
+    .where(clinical_events.date.is_on_or_before(start_date))
+    .sort_by(clinical_events.date)
+    .last_for_patient()
+    .snomedct_code.to_category(codelists.ethnicity16_codes)
 )
+
+dataset.ethnicity_sus = ethnicity_from_sus.code
+
 # COVARIATES
 # demographics
 dataset.sex = patients.sex
@@ -157,23 +162,46 @@ dataset.vacc_elig_rsv = case(
 
 # vaccination status for flu, COVID (season prior and current season) & RSV (ever)
 # Need vaccinations for year of follow-up so start at end of period then look back for vaccinations both during follow-up and year prior.
-add_vaccine_history(
-    dataset = dataset, start_date = (start_date + days(364)), 
-    target_disease = "SARS-2 Coronavirus", target_disease_short ="covid", 
-    number_of_vaccines = 6
+#extract flu vaccination in previous season
+dataset.prior_flu_vaccination = (
+vaccinations.where(vaccinations.target_disease.is_in(["INFLUENZA"]))
+.sort_by(vaccinations.date)
+.where(vaccinations.date.is_on_or_between(start_date - years(1), start_date - days(1)))
+.exists_for_patient()
 )
 
-add_vaccine_history(
-    dataset = dataset, start_date = (start_date + days(364)), 
-    target_disease = "INFLUENZA", target_disease_short ="flu", 
-    number_of_vaccines = 5
+#extract flu vaccination in current season
+dataset.flu_vaccination_date = (
+vaccinations.where(vaccinations.target_disease.is_in(["INFLUENZA"]))
+.sort_by(vaccinations.date)
+.where(vaccinations.date.is_on_or_between(start_date, start_date + years(1)))
+.first_for_patient().date
 )
 
-add_vaccine_history(
-    dataset = dataset, start_date = (start_date + days(364)), 
-    target_disease = "HUMAN RESPIRATORY SYNCYTIAL VIRUS", target_disease_short ="rsv", 
-    number_of_vaccines = 3
+#extract covid vaccination in previous season if applicable
+dataset.prior_covid_vaccination = (
+    vaccinations.where(vaccinations.target_disease.is_in(["SARS-2 Coronavirus"]))
+    .sort_by(vaccinations.date)
+    .where(vaccinations.date.is_on_or_between(start_date - years(1), start_date - days(1)))
+    .last_for_patient().date
 )
+
+#extract covid vaccination in current season if applicable
+dataset.covid_vaccination_date = (
+    vaccinations.where(vaccinations.target_disease.is_in(["SARS-2 Coronavirus"]))
+    .sort_by(vaccinations.date)
+    .where(vaccinations.date.is_on_or_between(start_date, start_date + years(1)))
+    .first_for_patient().date
+)
+
+#extract RSV vaccination in 2024
+if start_date.year==2024 :
+    dataset.rsv_vaccination = (
+        vaccinations.where(vaccinations.target_disease.is_in(["HUMAN RESPIRATORY SYNCYTIAL VIRUS"]))
+        .sort_by(vaccinations.date)
+        .where(vaccinations.date.is_on_or_between(start_date, start_date + years(1)))
+        .last_for_patient().date
+    )
 
 # BMI - part of risk groups so defining severe obesity - over 18's only
 dataset.severe_obesity = has_severe_obesity(start_date) 
@@ -233,7 +261,7 @@ dataset.flu_emerg_date = emergency_care_diagnosis_matches(codelists.flu_attendan
 # extract second emergency care date
 dataset.flu_emerg_second_date = emergency_care_diagnosis_matches(codelists.flu_attendance).where(
        emergency_care_attendances.arrival_date
-        .is_on_or_after(dataset.flu_emerg_date + months(1))).arrival_date.minimum_for_patient()
+        .is_on_or_between(dataset.flu_emerg_date + months(1), start_date + years(1))).arrival_date.minimum_for_patient()
 
 dataset.has_flu_admission = dataset.flu_sc_date.is_not_null() | dataset.flu_emerg_date.is_not_null()
 dataset.flu_admission_date = minimum_of(dataset.flu_sc_date, dataset.flu_emerg_date)
