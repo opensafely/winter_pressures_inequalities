@@ -18,7 +18,7 @@ import codelists
 
 # ethnicity function
 def get_latest_ethnicity(
-        index_date, ethnicity_from_sus, ethnicity_codelist, grouping
+        index_date, ethnicity_from_sus, ethnicity_codelist, grouping=6
     ):
         latest_ethnicity_from_codes_category_num = (
             clinical_events.where(clinical_events.snomedct_code.is_in(ethnicity_codelist))
@@ -122,7 +122,7 @@ def make_dataset_covid_utilisation(index_date, end_date):
     
     dataset = Dataset()
 
-    dataset.ethnicity6 = get_latest_ethnicity(index_date, ethnicity_from_sus, codelists.ethnicity6_codes, 6)
+    dataset.ethnicity6 = get_latest_ethnicity(index_date, ethnicity_from_sus, codelists.ethnicity6_codes)
     
     dataset.covid_gp = clinical_events.where(
         clinical_events.snomedct_code.is_in(codelists.covid_primary_codelist)
@@ -151,7 +151,7 @@ def make_dataset_flu_rsv_utilisation(index_date, end_date):
     ## Define relevant variables: GP and hospital COVID, flu and RSV event, ethnicity - keep each condition separate?
 
     # ethnicity 
-    dataset.ethnicity6 = get_latest_ethnicity(index_date, ethnicity_from_sus, codelists.ethnicity6_codes, 6)
+    dataset.ethnicity6 = get_latest_ethnicity(index_date, ethnicity_from_sus, codelists.ethnicity6_codes)
     
     #flu
     dataset.flu_gp = clinical_events.where(
