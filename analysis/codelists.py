@@ -3,6 +3,10 @@ from ehrql import (
   codelist_from_csv
 )
 
+#expand codes in SUS which are 3 characters to have X at the end
+def expand_three_char_icd10_codes(codelist):
+    return codelist + [f"{code}X" for code in codelist if len(code) == 3]
+
 ## exposures 
 
 # ethnicity codes
@@ -33,6 +37,7 @@ rsv_secondary_codelist = codelist_from_csv(
   "codelists/opensafely-rsv-identification-secondary-care.csv",
   column = "code",
 )
+rsv_secondary_codelist = expand_three_char_icd10_codes(rsv_secondary_codelist)
 
 # flu primary - specific
 flu_primary_codelist = codelist_from_csv(
@@ -45,6 +50,7 @@ flu_secondary_codelist = codelist_from_csv(
   "codelists/opensafely-influenza-identification-secondary-care.csv",
   column = "code",
 )
+flu_secondary_codelist = expand_three_char_icd10_codes(flu_secondary_codelist)
 
 # flu - emergency
 flu_attendance = ["6142004"]

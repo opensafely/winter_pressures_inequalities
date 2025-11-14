@@ -92,18 +92,7 @@ dataset.ethnicity16_gp = (clinical_events.where(clinical_events.snomedct_code.is
 )
 
 dataset.ethnicity_sus = ethnicity_from_sus.code
-#dataset.ethnicity16 = get_latest_ethnicity(
-#    start_date,
-#    ethnicity_from_sus,
-#    ethnicity_codelist=codelists.ethnicity16_codes,
-#    grouping=16,
-#)
-#dataset.ethnicity6 = get_latest_ethnicity(
-#    start_date,
-#    ethnicity_from_sus,
-#    ethnicity_codelist=codelists.ethnicity6_codes,
-#    grouping=6,
-#)
+
 # COVARIATES
 # demographics
 dataset.sex = patients.sex
@@ -140,7 +129,10 @@ dataset.covid_atrisk_grp = covid_atrisk(start_date) # in clinical risk group
 dataset.flu_atrisk_grp = flu_atrisk(start_date) 
 # define eligibility based on age as well
 # in 2021 no column created as all FALSE
-
+if start_date.year==2021 :
+   dataset.vacc_elig_covid = case(
+       when(dataset.age>= 0).then(False),
+       )
 if start_date.year==2022 :
    dataset.vacc_elig_covid = case(
        when((dataset.age>= 16) | ((dataset.age>12) & (dataset.age< 16) & (dataset.covid_atrisk_grp==True))).then(True),
@@ -171,30 +163,13 @@ dataset.vacc_elig_rsv = case(
 
 # vaccination status for flu, COVID (season prior and current season) & RSV (ever)
 # Need vaccinations for year of follow-up so start at end of period then look back for vaccinations both during follow-up and year prior.
-#add_vaccine_history(
-#    dataset = dataset, start_date = (start_date + days(364)), 
-#    target_disease = "SARS-2 Coronavirus", target_disease_short ="covid", 
-#    number_of_vaccines = 4
-#)
-
-#add_vaccine_history(
-#    dataset = dataset, start_date = (start_date + days(364)), 
-#    target_disease = "INFLUENZA", target_disease_short ="flu", 
-#    number_of_vaccines = 2
-#)
-
-#add_vaccine_history(
-#    dataset = dataset, start_date = (start_date + days(364)), 
-#    target_disease = "HUMAN RESPIRATORY SYNCYTIAL VIRUS", target_disease_short ="rsv", 
-#    number_of_vaccines = 1
-#)
 
 #extract flu vaccination in previous season
 dataset.prior_flu_vaccination = (
 vaccinations.where(vaccinations.target_disease.is_in(["INFLUENZA"]))
 .sort_by(vaccinations.date)
 .where(vaccinations.date.is_on_or_between(start_date - years(1), start_date - days(1)))
-.exists_for_patient()
+.last_for_patient().date
 )
 
 #extract flu vaccination in current season
