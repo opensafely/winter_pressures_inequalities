@@ -62,12 +62,15 @@ plot_line <- function(file, disease) {
                 mapping = aes(
                 x = interval_start,
                 y = ratio,
-                group = ethnicity,
-                color = ethnicity
+                group = interaction(ethnicity, measure),
+                color = ethnicity,
+                shape = measure,
                 )
         ) +
                 geom_line() +
-                labs(title = paste("Disease rates for", disease))
+                labs(title = paste("Disease rates for", disease)) +
+
+                geom_point(size=3)
 
         ggsave(
                 filename = paste0("plot_", disease,".svg"),
