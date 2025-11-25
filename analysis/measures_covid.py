@@ -39,7 +39,7 @@ dataset = make_dataset_covid_utilisation(index_date=INTERVAL.start_date, end_dat
 measures = create_measures()
 measures.configure_disclosure_control(enabled=False)
 
-measures.define_defaults(intervals=months(intervals).starting_on("2021-03-01"))
+measures.define_defaults(intervals=months(intervals).starting_on(start_date))
 
 measures.configure_dummy_data(population_size=5000)
 
@@ -57,7 +57,7 @@ measures.define_measure(
     numerator=dataset.covid_gp,
     denominator=denominator,
     group_by={ "ethnicity": dataset.ethnicity6},
-    intervals=months(48).starting_on("2021-03-01") 
+    intervals=months(intervals).starting_on(start_date) 
 )
 
 measures.define_measure(
@@ -65,6 +65,6 @@ measures.define_measure(
     numerator=dataset.covid_sc,
     denominator=denominator,
     group_by= {"ethnicity": dataset.ethnicity6},
-    intervals=months(48).starting_on("2021-03-01") 
+    intervals=months(intervals).starting_on(start_date) 
 )
 

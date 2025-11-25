@@ -13,6 +13,7 @@ library(finalfit)
 outdir <- here("output", "tables")
 fs::dir_create(outdir)
 
+# Creating baseline tables
 baseline_covid <- read_feather(here("output/an_bl_data_covid.arrow"))
 baseline_flu_rsv <- read_feather(here("output/an_bl_data_flu_rsv.arrow"))
 
@@ -36,3 +37,56 @@ write_csv(table_strata, file.path(outdir, "baseline_table_covid_strata.csv"))
 
 table_flu_rsv_strata <- summary_factorlist(baseline_flu_rsv, explanatory = explanatory_strata, dependent = "ethnicity6_combined", cont_cut = "imd_quintile")
 write_csv(table_flu_rsv_strata, file.path(outdir, "baseline_table_flu_rsv_strata.csv"))
+
+# Making line graphs of rates 
+rates_covid <- read_csv(here("output/measures/measures_covid.csv"))
+
+rates_flu_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
+        filter(measure=="flu_gp" | measure=="flu_admission")
+
+rates_flu_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
+        filter(measure=="flu_gp" | measure=="flu_admission")
+
+rates_rsv_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
+        filter(measure=="rsv_gp" | measure=="rsv_admission")
+
+rates_rsv_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
+        filter(measure=="rsv_gp" | measure=="rsv_admission")
+
+
+
+plot_line <- function(file, disease) {
+
+        p <- ggplot(
+                data = file,
+                mapping = aes(
+                x = interval_start,
+                y = ratio,
+                group = interaction(ethnicity, measure),
+                color = ethnicity,
+                shape = measure,
+                )
+        ) +
+                geom_line() +
+                labs(title = paste("Disease rates for", disease)) +
+
+                geom_point(size=3)
+
+        ggsave(
+                filename = paste0("plot_", disease,".svg"),
+                plot = p,
+                path = outdir
+        )
+
+        return(p)
+}
+disease_list <- list(
+    covid = rates_covid,
+    flu_18 = rates_flu_18,
+    flu_21 = rates_flu_21,
+    rsv_18 = rates_rsv_18,
+    rsv_21 = rates_rsv_21
+)
+plots <- lapply(names(disease_list), function(d_name) {
+    plot_line(disease_list[[d_name]], d_name)
+})

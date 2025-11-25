@@ -116,7 +116,7 @@ actions:
         --start-date 2021-03-01
         --intervals 48
       outputs:
-        highly_sensitive:
+        moderately_sensitive:
           measures_csv: output/measures/measures_covid.csv
 
   measures_flu_rsv_2018: 
@@ -127,7 +127,7 @@ actions:
         --start-date 2018-09-01
         --intervals 24
       outputs:
-        highly_sensitive:
+        moderately_sensitive:
           measures_csv: output/measures/measures_flu_rsv_2018.csv
 
   measures_flu_rsv_2021: 
@@ -138,7 +138,7 @@ actions:
         --start-date 2021-09-01
         --intervals 48
       outputs:
-        highly_sensitive:
+        moderately_sensitive:
           measures_csv: output/measures/measures_flu_rsv_2021.csv
 
   data_process_covid:
@@ -163,12 +163,16 @@ actions:
       run: r:latest analysis/descriptive_analysis.R 
       needs: 
         - data_process_covid
+        - measures_covid
+        - measures_flu_rsv_2018
+        - measures_flu_rsv_2021
       outputs: 
         moderately_sensitive:
           table: output/tables/baseline_table_covid.csv
           table_flu_rsv: output/tables/baseline_table_flu_rsv.csv
           table_s: output/tables/baseline_table_covid_strata.csv
           table_flu_rsv_s: output/tables/baseline_table_flu_rsv_strata.csv
+          plots: output/tables/plot_*.svg
 
 
   
