@@ -31,10 +31,10 @@ from variable_lib import (
 
 from clinical_risk_grps import *
 from vaccine_history import *
+start_date = date.fromisoformat(get_parameter("start_date"))
 
 dataset = create_dataset()
-dataset.configure_dummy_data(population_size=100)
-start_date = date.fromisoformat(get_parameter("start_date"))
+dataset.configure_dummy_data(population_size=100, additional_population_constraint = (((practice_registrations.for_patient_on(start_date).end_date)>(start_date)) | (practice_registrations.for_patient_on(start_date).end_date.is_null())) & (((ons_deaths.date)>(start_date)) | (ons_deaths.date.is_null())))
 
 #  ---------------------- Inclusion criteria --------------------------------
 # assessed each year
