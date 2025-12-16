@@ -112,8 +112,8 @@ run_cox_models <- function(cox_table = NULL, disease, difference) {
         sc_var <- paste0(disease,"_sc_binary")
         
         # define formulas
-        f_gp <- as.formula(paste0("Surv(start, stop_gp, ", gp_var, ") ~ ", difference, " * strata(year_end_gp)"))
-        f_sc <- as.formula(paste0("Surv(start, stop_sc, ", sc_var, ") ~ ", difference, " * strata(year_end_sc)"))
+        f_gp <- as.formula(paste0("Surv(start, stop_gp, ", gp_var, ") ~ ", difference, " + strata(year_end_gp)"))
+        f_sc <- as.formula(paste0("Surv(start, stop_sc, ", sc_var, ") ~ ", difference, " + strata(year_end_sc)"))
         # Fit Cox models
         mod_gp <- coxph(f_gp, data = data_df
         )
