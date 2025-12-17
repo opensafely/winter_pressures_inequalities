@@ -21,6 +21,10 @@ fs::dir_create(outdir)
 baseline_covid <- read_feather(here("output/an_bl_data_covid.arrow"))
 baseline_flu_rsv <- read_feather(here("output/an_bl_data_flu_rsv.arrow"))
 
+# Checking year of entry to uk variable
+print(summary(baseline_covid$year_entry_uk))
+print(summary(baseline_flu_rsv$year_entry_uk))
+
 # Variables to go into table
 explanatory <- c("age_group", "sex", "ethnicity6_combined", "ethnicity16_combined", 
         "urban_rural_5", "imd_quintile", "migrant", "english_language", 

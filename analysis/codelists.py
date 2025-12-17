@@ -83,6 +83,9 @@ migrant_codelist = codelist_from_csv(
     column = "code",
 )
 
+# Years in UK
+entry_uk_codelist = ["860021000000109"]
+
 # English language proficiency
 english_language_codelist = codelist_from_csv(
     "codelists/user-ruthcostello-english-language-proficiency.csv",
