@@ -13,14 +13,11 @@ prepare_data <- function(file_patterns, output_file) {
 
 cr_data <- cr_data %>%
     group_by(patient_id) %>%
-    mutate(min_start_yr = min(year))
-        #uk_entry_date = as.Date(uk_entry_date),
-        #min_entry_uk = min(uk_entry_date)) %>%
+    mutate(min_start_yr = min(year)) %>%
     ungroup() %>%
     mutate(
         study_end = as.Date("2025-08-31"),
         fu_end = pmin(dereg_date, ons_death_date, study_end, na.rm = TRUE),
-        year_entry_uk = year(min_entry_uk),
         bmi_category = case_when(
             bmi == 0 ~ "unknown or outlier",
             bmi < 18.5 ~ "underweight",
@@ -99,7 +96,7 @@ cr_data %>%
    patient_id, min_start_yr, fu_end, ethnicity6_combined, ethnicity16_combined, sex,
    age_group, urban_rural_5, imd_quintile,
    ends_with("atrisk_grp"), starts_with("vacc_"),
-   starts_with("prior_"), migrant, english_language, year_entry_uk
+   starts_with("prior_"), migrant, english_language
    ) %>%
     write_feather(here("output", output_file))
 }

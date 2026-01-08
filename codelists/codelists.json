@@ -138,11 +138,11 @@
       "downloaded_at": "2025-04-28 14:34:22.129504Z",
       "sha": "1086f49c7646b98bf1c8f9fea7fbe27da125eb02"
     },
-    "opensafely-migration-status-codes.csv": {
-      "id": "opensafely/migration-status-codes/38e3d751",
-      "url": "https://www.opencodelists.org/codelist/opensafely/migration-status-codes/38e3d751/",
-      "downloaded_at": "2025-04-28 14:52:08.113424Z",
-      "sha": "aeb56b69872d4e326ea25f9a1e5e7075ebbf678b"
+    "opensafely-migration-status.csv": {
+      "id": "opensafely/migration-status/4f422cc5",
+      "url": "https://www.opencodelists.org/codelist/opensafely/migration-status/4f422cc5/",
+      "downloaded_at": "2026-01-08 16:16:59.531590Z",
+      "sha": "02213a1be8085fd021d1ac756df763be49bf4421"
     },
     "user-YaminaB-migration-status.csv": {
       "id": "user/YaminaB/migration-status/47586e6d",
