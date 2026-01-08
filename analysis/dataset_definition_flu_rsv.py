@@ -224,13 +224,13 @@ dataset.bmi_date = bmi_record.date
 dataset.migrant = has_prior_event(codelists.migrant_codelist, start_date)
 
 # Date entered UK
-dataset.uk_entry_date = clinical_events.where(
-        clinical_events.snomedct_code.is_in(codelists.entry_uk_codelist)
-    ).where(
-        clinical_events.date.is_on_or_before(start_date)
-    ).sort_by(
-        clinical_events.date
-    ).first_for_patient().date
+#dataset.uk_entry_date = clinical_events.where(
+#        clinical_events.snomedct_code.is_in(codelists.entry_uk_codelist)
+#    ).where(
+#        clinical_events.date.is_on_or_before(start_date)
+#    ).sort_by(
+#        clinical_events.date
+#    ).first_for_patient().date
 
 
 # English language proficiency
