@@ -13,9 +13,9 @@ prepare_data <- function(file_patterns, output_file) {
 
 cr_data <- cr_data %>%
     group_by(patient_id) %>%
-    mutate(min_start_yr = min(year),
-        uk_entry_date = as.Date(uk_entry_date),
-        min_entry_uk = min(uk_entry_date)) %>%
+    mutate(min_start_yr = min(year))
+        #uk_entry_date = as.Date(uk_entry_date),
+        #min_entry_uk = min(uk_entry_date)) %>%
     ungroup() %>%
     mutate(
         study_end = as.Date("2025-08-31"),
