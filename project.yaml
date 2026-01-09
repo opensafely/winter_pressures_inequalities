@@ -158,9 +158,9 @@ actions:
         highly_sensitive:
           data: output/an_bl_data_covid.arrow
           data_flu_rsv: output/an_bl_data_flu_rsv.arrow
-          #data_o_covid: output/an_outcome_data_covid.rds
-          #data_o_flu: output/an_outcome_data_flu.rds
-          #data_o_rsv: output/an_outcome_data_rsv.rds
+          data_o_covid: output/an_outcome_data_covid.rds
+          data_o_flu: output/an_outcome_data_flu.rds
+          data_o_rsv: output/an_outcome_data_rsv.rds
           #data_f_covid: output/an_outcome_first_covid.arrow
           #data_f_flu: output/an_outcome_first_flu.arrow
           #data_f_rsv: output/an_outcome_first_rsv.arrow
