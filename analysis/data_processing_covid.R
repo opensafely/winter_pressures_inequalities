@@ -174,7 +174,7 @@ cr_data <- cr_data %>%
         year_end = year(date_stop)
         ) %>%
     filter(min_start_yr == year) %>%
-    select(patient_id, starts_with("first_"), ends_with("binary"), starts_with("sto"), starts_with("year_end"), start, fu_start) 
+    select(patient_id, starts_with("first_"), ends_with("binary"), starts_with("sto"), starts_with("year_end"), start, fu_start) %>%
 
     write_rds(cr_data, here("output", output_file))
 }
