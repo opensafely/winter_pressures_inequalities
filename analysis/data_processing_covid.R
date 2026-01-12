@@ -171,12 +171,13 @@ cr_data <- cr_data %>%
         # generating year of stop for stratification
         year_end_gp = year(date_stop_gp),
         year_end_sc = year(date_stop_sc),
-        year_end = year(date_stop)
-        ) %>%
+        year_end = year(date_stop),
+        )
+    
+cr_data %>%
     filter(min_start_yr == year) %>%
     select(patient_id, starts_with("first_"), ends_with("binary"), starts_with("sto"), starts_with("year_end"), start, fu_start) %>%
-
-    write_rds(cr_data, here("output", output_file))
+    write_rds(here("output", output_file))
 }
 
 prepare_outcomes_data(list.files("output", pattern = "dataset_covid_.*\\.arrow", full.names = TRUE),
