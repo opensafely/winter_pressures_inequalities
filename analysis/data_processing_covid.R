@@ -124,33 +124,25 @@ prepare_outcomes_data <- function(file_patterns, output_file, disease) {
     mutate(year = as.numeric(gsub("\\D", "", basename(file_patterns[i]))))
     }))
 
-if (is.na(cr_data$year)) {
+print(dim(cr_data))
+
+if (any(is.na(cr_data$year))) {
     stop("Year is missing")
 }
 # find first event (GP and secondary care utilisation individually and together) then create dataset with only these variables
 cr_data <- cr_data %>%
     mutate(
         !!primary_col := as.Date(.data[[primary_col]]), 
-        !!sc_col      := as.Date(.data[[sc_col]])
+        !!sc_col      := as.Date(.data[[sc_col]]),
     ) %>%
     group_by(patient_id) %>%
     mutate(min_start_yr = min(year),
      # dynamic column name on left, evaluated column on right
-            !!first_gp_col := if_else(
-                all(is.na(.data[[primary_col]])),
-                as.Date(NA),
-                min(.data[[primary_col]], na.rm = TRUE)),
-            !!first_sc_col := if_else(
-                all(is.na(.data[[sc_col]])),
-                as.Date(NA),
-                min(.data[[sc_col]], na.rm = TRUE)),
-             # overall first date
-            !!first_col := pmin(
-                .data[[first_gp_col]],
-                .data[[first_sc_col]],
-                na.rm = TRUE
-            ),
-        ) %>%
+            !!first_gp_col := na_if(pmin(.data[[primary_col]], na.rm = TRUE),Inf),
+            !!first_sc_col := na_if(pmin(.data[[sc_col]], na.rm = TRUE),Inf),
+      # overall first date
+            !!first_col := na_if(pmin(.data[[first_gp_col]], .data[[first_sc_col]], na.rm = TRUE), Inf) 
+    ) %>%
     ungroup() %>%
     mutate(
         !!first_gp_col := as.Date(.data[[first_gp_col]]),
