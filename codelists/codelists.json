@@ -139,10 +139,10 @@
       "sha": "1086f49c7646b98bf1c8f9fea7fbe27da125eb02"
     },
     "opensafely-migration-status.csv": {
-      "id": "opensafely/migration-status/4f422cc5",
-      "url": "https://www.opencodelists.org/codelist/opensafely/migration-status/4f422cc5/",
-      "downloaded_at": "2026-01-08 16:16:59.531590Z",
-      "sha": "02213a1be8085fd021d1ac756df763be49bf4421"
+      "id": "opensafely/migration-status/4095ab22",
+      "url": "https://www.opencodelists.org/codelist/opensafely/migration-status/4095ab22/",
+      "downloaded_at": "2026-01-22 17:12:26.892198Z",
+      "sha": "93be296d33160a9d041c9cce118ea00659c0fd34"
     },
     "user-YaminaB-migration-status.csv": {
       "id": "user/YaminaB/migration-status/47586e6d",

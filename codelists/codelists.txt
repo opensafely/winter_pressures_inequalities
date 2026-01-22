@@ -26,7 +26,7 @@ opensafely/influenza-exclusion-primary-care-maximal-sensitivity/7ed2e05f/
 opensafely/acute-respiratory-illness-secondary-care/680e1eda/
 opensafely/influenza-exclusion-secondary-care-maximal-sensitivity/011d9210/
 
-opensafely/migration-status/4f422cc5
+opensafely/migration-status/4095ab22
 user/YaminaB/migration-status/47586e6d
 user/ruthcostello/english-language-proficiency/5c8fc8d4 
 
