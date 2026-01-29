@@ -46,7 +46,6 @@ actions:
       run: >
         ehrql:v1 generate-dataset analysis/dataset_definition_flu_rsv.py 
         --output output/dataset_flu_rsv_2018.arrow
-        --test-data-file analysis/test_dataset_definition_flu_rsv.py
         --
         --start_date 2018-09-01
       outputs:
@@ -57,7 +56,6 @@ actions:
       run: >
         ehrql:v1 generate-dataset analysis/dataset_definition_flu_rsv.py 
         --output output/dataset_flu_rsv_2019.arrow
-        --test-data-file analysis/test_dataset_definition_flu_rsv.py
         --
         --start_date 2019-09-01
       outputs:
@@ -79,7 +77,6 @@ actions:
       run: >
         ehrql:v1 generate-dataset analysis/dataset_definition_flu_rsv.py 
         --output output/dataset_flu_rsv_2022.arrow
-        --test-data-file analysis/test_dataset_definition_flu_rsv.py
         --
         --start_date 2022-09-01
       outputs:
@@ -90,7 +87,6 @@ actions:
       run: >
         ehrql:v1 generate-dataset analysis/dataset_definition_flu_rsv.py 
         --output output/dataset_flu_rsv_2023.arrow
-        --test-data-file analysis/test_dataset_definition_flu_rsv.py
         --
         --start_date 2023-09-01
       outputs:
@@ -101,7 +97,6 @@ actions:
       run: >
         ehrql:v1 generate-dataset analysis/dataset_definition_flu_rsv.py 
         --output output/dataset_flu_rsv_2024.arrow
-        --test-data-file analysis/test_dataset_definition_flu_rsv.py
         --
         --start_date 2024-09-01
       outputs:
@@ -141,8 +136,8 @@ actions:
         moderately_sensitive:
           measures_csv: output/measures/measures_flu_rsv_2021.csv
 
-  data_process_covid:
-      run: r:latest analysis/data_processing_covid.R 
+  data_process_bl:
+      run: r:latest analysis/data_processing_baseline.R 
       needs: 
       - generate_dataset_covid_2021
       - generate_dataset_covid_2022
@@ -156,19 +151,59 @@ actions:
       - generate_dataset_flu_rsv_2024
       outputs: 
         highly_sensitive:
-          #data: output/an_bl_data_covid.arrow
-          #data_flu_rsv: output/an_bl_data_flu_rsv.arrow
+          data: output/an_bl_data_covid.arrow
+          data_flu_rsv: output/an_bl_data_flu_rsv.arrow
+
+  data_process_outcome_covid:
+      run: r:latest analysis/data_processing_outcomes.R covid covid
+      needs: 
+      - generate_dataset_covid_2021
+      - generate_dataset_covid_2022
+      - generate_dataset_covid_2023
+      - generate_dataset_covid_2024
+      - data_process_bl
+      outputs: 
+        highly_sensitive:
           data_o_covid: output/an_outcome_data_covid.rds
-          data_o_flu: output/an_outcome_data_flu.rds
-          data_o_rsv: output/an_outcome_data_rsv.rds
-          #data_f_covid: output/an_outcome_first_covid.arrow
-          #data_f_flu: output/an_outcome_first_flu.arrow
-          #data_f_rsv: output/an_outcome_first_rsv.arrow
+          data_f_covid: output/an_outcome_first_covid.arrow
+
+  data_process_outcome_flu:
+      run: r:latest analysis/data_processing_outcomes.R flu flu_rsv 
+      needs: 
+      - generate_dataset_flu_rsv_2018
+      - generate_dataset_flu_rsv_2019
+      - generate_dataset_flu_rsv_2021
+      - generate_dataset_flu_rsv_2022
+      - generate_dataset_flu_rsv_2023
+      - generate_dataset_flu_rsv_2024
+      - data_process_bl
+      outputs: 
+        highly_sensitive:
+          data_o_covid: output/an_outcome_data_flu.rds
+          data_f_covid: output/an_outcome_first_flu.arrow
+
+  data_process_outcome_rsv:
+      run: r:latest analysis/data_processing_outcomes.R rsv flu_rsv 
+      needs: 
+      - generate_dataset_flu_rsv_2018
+      - generate_dataset_flu_rsv_2019
+      - generate_dataset_flu_rsv_2021
+      - generate_dataset_flu_rsv_2022
+      - generate_dataset_flu_rsv_2023
+      - generate_dataset_flu_rsv_2024
+      - data_process_bl
+      outputs: 
+        highly_sensitive:
+          data_o_covid: output/an_outcome_data_rsv.rds
+          data_f_covid: output/an_outcome_first_rsv.arrow
 
   tables:
       run: r:latest analysis/descriptive_analysis.R 
       needs: 
-        - data_process_covid
+        - data_process_bl
+        - data_process_outcome_covid
+        - data_process_outcome_flu
+        - data_process_outcome_rsv
         - measures_covid
         - measures_flu_rsv_2018
         - measures_flu_rsv_2021
