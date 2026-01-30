@@ -59,9 +59,9 @@ cr_data <- cr_data %>%
         !!primary_col := as.Date(.data[[primary_col]]), 
         !!sc_col      := as.Date(.data[[sc_col]]),
     ) %>%
-    # Find minimum year for each person
+    # Find minimum year for each person as eligibility assessed yearly, and follow-up could start at any of these
     group_by(patient_id) %>%
-    mutate(min_start_yr = min(year),
+    mutate(min_start_yr_out = min(year),
     # dynamic column name on left, evaluated column on right
             !!first_gp_col := na_if(min(.data[[primary_col]], na.rm = TRUE),Inf),
             !!first_sc_col := na_if(min(.data[[sc_col]], na.rm = TRUE),Inf),
@@ -70,6 +70,7 @@ cr_data <- cr_data %>%
     ) %>%
     ungroup() %>%
     mutate(
+        # format variables as dates
         !!first_gp_col := as.Date(.data[[first_gp_col]]),
         !!first_sc_col := as.Date(.data[[first_sc_col]]),
         !!first_col    := as.Date(.data[[first_col]]),
@@ -80,7 +81,7 @@ cr_data <- cr_data %>%
             disease=="covid" ~ 3, 
             disease %in% c("rsv", "flu") ~ 9
             ),
-        fu_start = make_date(year = min_start_yr, month = fu_start_mth, day = 1),
+        fu_start = make_date(year = min_start_yr_out, month = fu_start_mth, day = 1),
         fu_end = pmin(dereg_date, ons_death_date, study_end, na.rm = TRUE),
         fu_end = as.Date(fu_end),
         # Creating binary flags for outcomes
@@ -110,8 +111,8 @@ cr_data <- cr_data %>%
 output_file <- paste0("an_outcome_data_", disease,".rds")
 # File with outcome data only
 cr_data %>%
-    filter(min_start_yr == year) %>%
-    select(patient_id, starts_with("first_"), ends_with("binary"), starts_with("sto"), starts_with("year_end"), start, fu_start) %>%
+    filter(min_start_yr_out == year) %>%
+    select(patient_id, starts_with("first_"), ends_with("binary"), starts_with("sto"), starts_with("fu_"),  starts_with("date_"), starts_with("year_end"), start,) %>%
     write_rds(here("output", output_file))
 
 
