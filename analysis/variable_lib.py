@@ -4,7 +4,7 @@ from functools import reduce
 from ehrql.codes import SNOMEDCTCode, CTV3Code, ICD10Code
 from ehrql import case, years, when, get_parameter
 from ehrql.tables.tpp import (emergency_care_attendances, 
-apcs, clinical_events, ethnicity_from_sus, addresses, medications, appointments)
+apcs, clinical_events, ethnicity_from_sus, addresses, medications)
 
 start_date = get_parameter("start_date")
 

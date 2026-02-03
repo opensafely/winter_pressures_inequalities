@@ -302,7 +302,7 @@ dataset.rsv_primary_second_date = case(
                 .where(gp_events.date.is_on_or_after(dataset.rsv_primary_date + months(1)))
                 .sort_by(gp_events.date).first_for_patient().date),
             (emergency_care_diagnosis_matches(codelists.bronchiolitis_attendance)
-                .where(emergency_care_attendances.arrival_date.is_on_or_between(dataset.rsv_primary_date + months(1), start_date + years(1)))
+                .where(emergency_events.arrival_date.is_on_or_after(dataset.rsv_primary_date + months(1)))
                 .arrival_date.minimum_for_patient())
         )
     ),

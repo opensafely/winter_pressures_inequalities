@@ -257,24 +257,14 @@ dataset.covid_primary_third_date = (
 )
 # identifying covid in primary care  where there is an appointment in the appointments table on the same date
 dataset.covid_primary_appt = (
-   is_gp_event(codelists.covid_primary_codelist)
-   .where(gp_events.date.is_on_or_after(start_date))
-   .where(gp_events.date.is_in(appointments.seen_date))
-   .sort_by(gp_events.date)
-   .first_for_patient().date
+   appointments.where(appointments.seen_date == dataset.covid_primary_date).exists_for_patient()
    )
 
 dataset.covid_primary_second_appt = (
-    is_gp_event(codelists.covid_primary_codelist)
-    .where(gp_events.date.is_on_or_after(dataset.covid_primary_date + months(1)))
-    .where(gp_events.date.is_in(appointments.seen_date))
-    .sort_by(gp_events.date).first_for_patient().date
+    appointments.where(appointments.seen_date == dataset.covid_primary_second_date).exists_for_patient()
 )
 dataset.covid_primary_third_appt = (
-    is_gp_event(codelists.covid_primary_codelist)
-    .where(gp_events.date.is_on_or_after(dataset.covid_primary_second_date + months(1)))
-    .where(gp_events.date.is_in(appointments.seen_date))
-    .sort_by(gp_events.date).first_for_patient().date
+    appointments.where(appointments.seen_date == dataset.covid_primary_third_date).exists_for_patient()
 )
 # extract date of first hospitalisation
 dataset.covid_sc_date = (
