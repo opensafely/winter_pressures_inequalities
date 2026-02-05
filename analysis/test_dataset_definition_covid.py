@@ -73,6 +73,11 @@ test_data = {
                 "target_disease": "INFLUENZA",
             },
         ],
+        "appointments": [
+            {
+                "seen_date": date(2023,1,8)
+            }
+        ],
         "expected_in_population": True,
         "expected_columns": {
             "sex": "female",
@@ -97,7 +102,7 @@ test_data = {
             "covid_emerg_date": None,
             "has_covid_admission": True,
             "covid_admission_date": date(2022, 9, 8),
-            "prior_flu_vaccination": True,
+            "prior_flu_vaccination": date(2021,11,3),
         },
     },
     # Not expected in population, age >110
@@ -138,6 +143,7 @@ test_data = {
             },
         ],
         "vaccinations": [],
+        "appointments": [],
         "expected_in_population": False,
     },
     # Expected in population with emergency attendance for covid after index date, has smi so in covid but not flu clinical risk groups
@@ -199,6 +205,7 @@ test_data = {
                 "target_disease": "SARS-2 Coronavirus",
             },
         ],
+        "appointments": [],
         "expected_in_population": True,
         "expected_columns": {
             "sex": "male",
@@ -218,6 +225,7 @@ test_data = {
             "bmi_date": None,
             "migrant": False,
             "covid_primary_date": date(2022, 7, 1),
+            "covid_primary_appt": False,
             "covid_sc_date": None,
             "covid_emerg_date": date(2022, 5, 2),
             "has_covid_admission": True,
@@ -259,6 +267,7 @@ test_data = {
             },
         ],
         "vaccinations": [],
+        "appointments": [],
         "expected_in_population": False,
     },
     # Not expected in population - died before study start
@@ -294,6 +303,7 @@ test_data = {
             },
         ],
         "vaccinations": [],
+        "appointments": [],
         "expected_in_population": False,
     },
     # Not expected in population - no recorded sex
@@ -327,6 +337,7 @@ test_data = {
             },
         ],
         "vaccinations": [],
+        "appointments": [],
         "expected_in_population": False,
     },
     # Expected in population - testing ckd
@@ -385,6 +396,11 @@ test_data = {
             },
             ],
         "vaccinations": [],
+        "appointments": [
+            {
+                "seen_date": date(2022, 7, 1),
+            }
+        ],
         "expected_in_population": True,
         "expected_columns": {
             "sex": "male",
@@ -404,6 +420,7 @@ test_data = {
             "bmi_date": None,
             "migrant": False,
             "covid_primary_date": date(2022, 7, 1),
+            "covid_primary_appt": True,
             "covid_sc_date": None,
             "covid_emerg_date": None,
             "has_covid_admission": False,
@@ -454,6 +471,7 @@ test_data = {
             },
             ],
         "vaccinations": [],
+        "appointments": [],
         "expected_in_population": True,
         "expected_columns": {
             "sex": "female",
@@ -510,6 +528,7 @@ test_data = {
             },
             ],
         "vaccinations": [],
+        "appointments": [],
         "expected_in_population": True,
         "expected_columns": {
             "sex": "female",

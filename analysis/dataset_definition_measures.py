@@ -7,14 +7,17 @@
 #####################################################################
 
 
-from ehrql import Dataset, years, case, when
+from ehrql import Dataset, case, when, claim_permissions
 from ehrql.tables.tpp import (
     apcs,
     clinical_events,
     emergency_care_attendances,
-    ethnicity_from_sus)
+    ethnicity_from_sus,
+    appointments)
 
 import codelists
+
+claim_permissions("appointments")
 
 # ethnicity function
 def get_latest_ethnicity(
@@ -129,6 +132,16 @@ def make_dataset_covid_utilisation(index_date, end_date):
         ).where(
         clinical_events.date.is_on_or_between(index_date,end_date)
         ).exists_for_patient()
+    
+    covid_gp_date = (clinical_events.where(
+        clinical_events.snomedct_code.is_in(codelists.covid_primary_codelist))
+        .where(clinical_events.date.is_on_or_between(index_date,end_date))
+        .sort_by(clinical_events.date)
+        .first_for_patient()
+        .date
+    )
+    
+    dataset.covid_gp_appt = appointments.where(appointments.seen_date == covid_gp_date).exists_for_patient()
 
     dataset.covid_sc = (apcs.where(
         apcs.primary_diagnosis.is_in(codelists.covid_secondary_codelist)

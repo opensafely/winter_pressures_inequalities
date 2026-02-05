@@ -61,6 +61,14 @@ measures.define_measure(
 )
 
 measures.define_measure(
+    name="covid_gp_appt",
+    numerator=dataset.covid_gp_appt,
+    denominator=denominator,
+    group_by={ "ethnicity": dataset.ethnicity6},
+    intervals=months(intervals).starting_on(start_date) 
+)
+
+measures.define_measure(
     name="covid_admission",
     numerator=dataset.covid_sc,
     denominator=denominator,

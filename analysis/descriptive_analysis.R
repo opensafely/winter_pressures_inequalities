@@ -21,10 +21,6 @@ fs::dir_create(outdir)
 baseline_covid <- read_feather(here("output/an_bl_data_covid.arrow"))
 baseline_flu_rsv <- read_feather(here("output/an_bl_data_flu_rsv.arrow"))
 
-# Checking year of entry to uk variable
-print(summary(baseline_covid$year_entry_uk))
-print(summary(baseline_flu_rsv$year_entry_uk))
-
 # Variables to go into table
 explanatory <- c("age_group", "sex", "ethnicity6_combined", "ethnicity16_combined", 
         "urban_rural_5", "imd_quintile", "migrant", "english_language", 
@@ -46,7 +42,7 @@ write_csv(table_strata, file.path(outdir, "baseline_table_covid_strata.csv"))
 table_flu_rsv_strata <- summary_factorlist(baseline_flu_rsv, explanatory = explanatory_strata, dependent = "ethnicity6_combined", cont_cut = "imd_quintile")
 write_csv(table_flu_rsv_strata, file.path(outdir, "baseline_table_flu_rsv_strata.csv"))
 
-# Making line graphs of rates 
+# Making not very good line graphs of rates 
 rates_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
         mutate(ratio_100 = ratio*100)
 
@@ -108,8 +104,8 @@ plots <- lapply(names(disease_list), function(d_name) {
 # Cox PH models to measure differences in utilisation by ethnicity and IMD
 run_cox_models <- function(cox_table = NULL, disease, difference) {
         # Build filename and read dataset
-        file_path <- paste0("output/an_outcome_first_",disease,".arrow")
-        data_df <- read_feather(here(file_path))
+        file_path <- paste0("an_outcome_first_",disease,".arrow")
+        data_df <- read_feather(here("output", file_path), as_data_frame = TRUE)
 
         # Build variable names
         gp_var <- paste0(disease,"_gp_binary")

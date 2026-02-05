@@ -5,10 +5,10 @@ from dataset_definition_flu_rsv import dataset
 test_data = {
     # Expected in population - age under 2 - has 2 RSV infections during follow-up check finds correctly
     1: {
-        "patients": {"date_of_birth": date(2017, 1, 1), "sex": "female"},
+        "patients": {"date_of_birth": date(2019, 10, 1), "sex": "female"},
         "addresses": {
             "rural_urban_classification": 1,
-            "start_date": date(2017, 1, 1),
+            "start_date": date(2020, 1, 1),
             "imd_rounded": 100,
             },
         "ons_deaths": [],
@@ -19,11 +19,11 @@ test_data = {
             },
             {
                 "snomedct_code": "155513009", # rsv 1
-                "date": date(2018,10,10),
+                "date": date(2021,10,10),
             },
             {
                 "snomedct_code": "155513009", # rsv 2
-                "date": date(2019,1,10),
+                "date": date(2022,1,10),
             },
             
         ],
@@ -45,6 +45,12 @@ test_data = {
             },
         ],
         "vaccinations": [],
+        "appointments": [
+            {
+                "seen_date": date(2021,10,10),
+                "seen_date": date(2022,1,10),
+            } 
+        ],
         "expected_in_population": True,
         "expected_columns": {
             "sex": "female",
@@ -68,8 +74,8 @@ test_data = {
             "flu_emerg_date": None,
             "has_flu_admission": False,
             "flu_admission_date": None,
-            "rsv_primary_date": date(2018, 10, 2),
-            "rsv_primary_second_date": date(2019, 1, 10),
+            "rsv_primary_date": date(2021, 10, 10),
+            "rsv_primary_second_date": date(2022, 1, 10),
             "rsv_sc_date": None,
         },
     },
@@ -90,7 +96,7 @@ test_data = {
         ],
         "apcs": [
              {
-                "admission_date": date(2018, 11, 11),
+                "admission_date": date(2021, 11, 11),
                 "primary_diagnosis": "J121", # rsv
             },
         ],
@@ -111,10 +117,11 @@ test_data = {
             },
         ],
         "vaccinations": [],
+        "appointments": [],
         "expected_in_population": True,
         "expected_columns": {
             "sex": "male",
-            "age": 81,
+            "age": 84,
             "age_group": "adult_80+",
             "urban_rural_5": "Urban major conurbation",
             "ethnicity6_gp": "1",
@@ -136,7 +143,7 @@ test_data = {
             "flu_admission_date": None,
             "rsv_primary_date": None,
             "rsv_primary_second_date": None,
-            "rsv_sc_date":  date(2018,11,11),
+            "rsv_sc_date":  date(2021,11,11),
         },
     },
 }

@@ -1,7 +1,7 @@
 from pathlib import Path 
 
 from datetime import date, datetime
-from ehrql import Dataset, create_dataset, case, when, maximum_of, minimum_of, years, days, months, show, get_parameter
+from ehrql import Dataset, create_dataset, case, when, minimum_of, years, days, months, get_parameter, claim_permissions
 from ehrql.tables.tpp import (
   patients,
   medications,
@@ -12,7 +12,8 @@ from ehrql.tables.tpp import (
   vaccinations,
   apcs,
   emergency_care_attendances,
-  ethnicity_from_sus
+  ethnicity_from_sus, 
+  appointments
 )
 
 import codelists
@@ -31,6 +32,7 @@ from variable_lib import (
 
 from clinical_risk_grps import *
 from vaccine_history import *
+claim_permissions("appointments")
 start_date = date.fromisoformat(get_parameter("start_date"))
 
 dataset = create_dataset()
@@ -247,14 +249,23 @@ dataset.covid_primary_second_date = (
     .where(gp_events.date.is_on_or_after(dataset.covid_primary_date + months(1)))
     .sort_by(gp_events.date).first_for_patient().date
 )
-
 #extract date of third episode
 dataset.covid_primary_third_date = (
     is_gp_event(codelists.covid_primary_codelist)
     .where(gp_events.date.is_on_or_after(dataset.covid_primary_second_date + months(1)))
     .sort_by(gp_events.date).first_for_patient().date
 )
+# identifying covid in primary care  where there is an appointment in the appointments table on the same date
+dataset.covid_primary_appt = (
+   appointments.where(appointments.seen_date == dataset.covid_primary_date).exists_for_patient()
+   )
 
+dataset.covid_primary_second_appt = (
+    appointments.where(appointments.seen_date == dataset.covid_primary_second_date).exists_for_patient()
+)
+dataset.covid_primary_third_appt = (
+    appointments.where(appointments.seen_date == dataset.covid_primary_third_date).exists_for_patient()
+)
 # extract date of first hospitalisation
 dataset.covid_sc_date = (
     hospitalisation_primary_secondary_diagnosis_matches(codelists.covid_secondary_codelist)

@@ -1,7 +1,7 @@
 from pathlib import Path 
 
 from datetime import date, datetime
-from ehrql import Dataset, create_dataset, case, when, maximum_of, minimum_of, years, days, months, show, get_parameter
+from ehrql import Dataset, create_dataset, case, when, minimum_of, years, days, months, get_parameter, claim_permissions
 from ehrql.tables.tpp import (
   patients,
   medications,
@@ -10,7 +10,7 @@ from ehrql.tables.tpp import (
   clinical_events,
   practice_registrations,
   vaccinations,
-  apcs,
+  appointments,
   emergency_care_attendances,
   ethnicity_from_sus
 )
@@ -33,6 +33,7 @@ from variable_lib import (
 
 from clinical_risk_grps import *
 from vaccine_history import *
+claim_permissions("appointments")
 
 start_date = date.fromisoformat(get_parameter("start_date"))
 dataset = create_dataset()
@@ -221,6 +222,7 @@ dataset.bmi_date = bmi_record.date
 
 
 # Migrant status
+# has_prior_event function takes event any time before the start date
 dataset.migrant = has_prior_event(codelists.migrant_codelist, start_date)
 
 # Date entered UK
@@ -238,10 +240,12 @@ dataset.english_language = has_prior_event(codelists.english_language_codelist, 
 
 # Define outcomes 
 # Flu outcome
+# first_gp_event function takes first event in the year after start date
 dataset.flu_primary_date = (
       first_gp_event(codelists.flu_primary_codelist).date
     )
 #extract date of second episode
+# is_gp_event function identifies any clinical events in year after start date
 dataset.flu_primary_second_date = (
     is_gp_event(codelists.flu_primary_codelist)
     .where(gp_events.date.is_on_or_after(dataset.flu_primary_date + months(1)))
@@ -254,9 +258,10 @@ dataset.flu_primary_third_date = (
     .where(gp_events.date.is_on_or_after(dataset.flu_primary_second_date + months(1)))
     .sort_by(gp_events.date).first_for_patient().date
 )
+# hospital events function takes hospital admissions in the year after start date
+# hospitalisation_primary_secondary_diagnosis_matches function takes events which are primary or secondarty diagnoses
 dataset.flu_sc_date = (
     hospitalisation_primary_secondary_diagnosis_matches(codelists.flu_secondary_codelist)
-    .where(hospital_events.admission_date.is_on_or_between(start_date, start_date + years(1)))
     .admission_date.minimum_for_patient()
   )
 #extract date of second episode - using the same criteria as the first episode
@@ -265,12 +270,12 @@ dataset.flu_sc_second_date = (
     .where(hospital_events.admission_date.is_on_or_after(dataset.flu_sc_date + months(1)))
     .admission_date.minimum_for_patient()
 )
-dataset.flu_emerg_date = emergency_care_diagnosis_matches(codelists.flu_attendance).where(
-      emergency_care_attendances.arrival_date
-      .is_on_or_between(start_date, start_date + years(1))).arrival_date.minimum_for_patient()
+# emergency_events function takes A & E attendances in year after start date
+# emergency_care_diagnosis_matches function identifies A & E attendance diagnoses in the first 3 positions
+dataset.flu_emerg_date = emergency_care_diagnosis_matches(codelists.flu_attendance).arrival_date.minimum_for_patient()
 # extract second emergency care date
 dataset.flu_emerg_second_date = emergency_care_diagnosis_matches(codelists.flu_attendance).where(
-       emergency_care_attendances.arrival_date
+       emergency_events.arrival_date
         .is_on_or_between(dataset.flu_emerg_date + months(1), start_date + years(1))).arrival_date.minimum_for_patient()
 
 dataset.has_flu_admission = dataset.flu_sc_date.is_not_null() | dataset.flu_emerg_date.is_not_null()
@@ -297,7 +302,7 @@ dataset.rsv_primary_second_date = case(
                 .where(gp_events.date.is_on_or_after(dataset.rsv_primary_date + months(1)))
                 .sort_by(gp_events.date).first_for_patient().date),
             (emergency_care_diagnosis_matches(codelists.bronchiolitis_attendance)
-                .where(emergency_care_attendances.arrival_date.is_on_or_after(dataset.rsv_primary_date + months(1)))
+                .where(emergency_events.arrival_date.is_on_or_after(dataset.rsv_primary_date + months(1)))
                 .arrival_date.minimum_for_patient())
         )
     ),

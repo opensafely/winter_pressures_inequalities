@@ -44,12 +44,20 @@ def has_prior_meds(codelist, start_date, where=True):
         .exists_for_patient()
     )
 
+#emergency attendances occuring after index date but before end of follow up
+emergency_events = (
+  emergency_care_attendances.where(emergency_care_attendances
+  .arrival_date.is_on_or_between(start_date, start_date + years(1)))
+)
+def any_of(conditions):
+    return reduce(operator.or_, conditions)
+
 def emergency_care_diagnosis_matches(codelist):
     conditions = [
-        getattr(emergency_care_attendances, column_name).is_in(codelist)
-        for column_name in [f"diagnosis_{i:02d}" for i in range(1, 25)]
+        getattr(emergency_events, column_name).is_in(codelist)
+        for column_name in [f"diagnosis_{i:02d}" for i in range(1, 3)]
     ]
-    return emergency_care_attendances.where(any_of(conditions))
+    return emergency_events.where(any_of(conditions))
 
 #query gp_events for existence of event-in-codelist 
 def is_gp_event(codelist, where = True):
