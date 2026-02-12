@@ -24,7 +24,8 @@ prepare_data <- function(file_patterns, output_file) {
                 bmi < 25 ~ "ideal",
                 bmi < 30 ~ "overweight",
                 bmi >= 30 ~ "obese",
-                TRUE ~ NA_character_
+                is.na(bmi) ~ "Missing",
+                TRUE ~ "Missing",
             ),
             latest_ethnicity6_from_codes = case_when(
                 ethnicity6_gp == "1" ~ "White",
@@ -32,7 +33,8 @@ prepare_data <- function(file_patterns, output_file) {
                 ethnicity6_gp == "3" ~ "Asian or Asian British",
                 ethnicity6_gp == "4" ~ "Black or Black British",
                 ethnicity6_gp == "5" ~ "Chinese or Other Ethnic Groups",
-                TRUE ~ NA_character_
+                is.na(ethnicity6_gp) ~ "Missing",
+                TRUE ~ "Missing",
             ),
             ethnicity6_from_sus = case_when(
                 ethnicity_sus %in% c("A", "B", "C") ~ "White",
@@ -40,7 +42,8 @@ prepare_data <- function(file_patterns, output_file) {
                 ethnicity_sus %in% c("H", "J", "K", "L") ~ "Asian or Asian British",
                 ethnicity_sus %in% c("M", "N", "P") ~ "Black or Black British",
                 ethnicity_sus %in% c("R", "S") ~ "Chinese or Other Ethnic Groups",
-                TRUE ~ NA_character_
+                is.na(ethnicity_sus) ~ "Missing",
+                TRUE ~ "Missing",
             ),
             latest_ethnicity16_from_codes = case_when(
                 ethnicity16_gp == "1" ~ "White British",
@@ -59,7 +62,8 @@ prepare_data <- function(file_patterns, output_file) {
                 ethnicity16_gp == "14" ~ "Other Black",
                 ethnicity16_gp == "15" ~ "Chinese",
                 ethnicity16_gp == "16" ~ "All other ethnic groups",
-                TRUE ~ NA_character_
+                is.na(ethnicity16_gp) ~ "Missing",
+                TRUE ~ "Missing",
             ),
 
             ethnicity16_from_sus = case_when(
@@ -79,7 +83,8 @@ prepare_data <- function(file_patterns, output_file) {
                 ethnicity_sus == "P" ~ "Other Black",
                 ethnicity_sus == "R" ~ "Chinese",
                 ethnicity_sus == "S" ~ "All other ethnic groups",
-                TRUE ~ NA_character_
+                is.na(ethnicity_sus) ~ "Missing",
+                TRUE ~ "Missing",
             ),
 
             ethnicity6_combined = if_else(
@@ -88,6 +93,13 @@ prepare_data <- function(file_patterns, output_file) {
             ethnicity16_combined = if_else(
                 !is.na(latest_ethnicity16_from_codes), latest_ethnicity16_from_codes, ethnicity16_from_sus
             ),
+            imd_quintile = na_if(imd_quintile, 99),
+            imd_quintile = factor(imd_quintile),
+            imd_quintile = forcats::fct_explicit_na(imd_quintile, "Missing"),
+            migrant = factor(migrant),
+            migrant = forcats::fct_explicit_na(migrant, "Missing"),
+            english_language = factor(english_language),
+            english_language = forcats::fct_explicit_na(english_language, "Missing"),
         )
 
     cr_data %>%
