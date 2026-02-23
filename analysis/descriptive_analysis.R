@@ -178,8 +178,14 @@ run_cox_models <- function(cox_table = NULL, disease, difference) {
         data_df <- read_feather(here("output", file_path), as_data_frame = TRUE)
 
         # Build variable names
-        #gp_var <- paste0(disease,"_gp_binary")
-        #sc_var <- paste0(disease,"_sc_binary")
+        gp_var <- paste0(disease,"_gp_binary")
+        sc_var <- paste0(disease,"_sc_binary")
+        if ("gp_var" %in% names(data_df)) {
+                data_df <- data_df %>% 
+                rename(gp_binary = any_of("gp_var"))
+                rename(sc_binary = any_of("sc_var"))
+        }
+        
         
         # define formulas
         f_gp <- as.formula(paste0("Surv(start, stop_gp, gp_binary) ~ ", difference, " + strata(year_end_gp)"))
