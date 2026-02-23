@@ -177,7 +177,7 @@ run_cox_models <- function(cox_table = NULL, disease, difference) {
         file_path <- paste0("an_outcome_first_",disease,".arrow")
         data_df <- read_feather(here("output", file_path), as_data_frame = TRUE)
 
-        # Build variable names
+        # Temporarily update variable names
         #gp_var <- paste0(disease,"_gp_binary")
         #sc_var <- paste0(disease,"_sc_binary")
         

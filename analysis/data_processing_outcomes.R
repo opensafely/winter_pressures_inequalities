@@ -3,6 +3,7 @@ library(tidyverse)
 library(arrow)
 library(lubridate)
 library(readr)
+library(data.table)
 
 args <- commandArgs(trailingOnly = TRUE)
 
@@ -41,7 +42,7 @@ cr_data <- bind_rows(lapply(seq_along(file_patterns), function(i) {
 read_feather(file_patterns[i]) %>% 
     # Take out unneccessary columns
     select(-ethnicity6_gp, -ethnicity16_gp, -ethnicity_sus, -sex, -age, -urban_rural_5, -imd_quintile, 
-    -ends_with("atrisk_grp"), -starts_with("vacc_"), -starts_with("prior_"), -severe_obesity, -bmi, 
+    -ends_with("atrisk_grp"), -starts_with("vacc_"), -starts_with("prior_"), , -ends_with("vaccination_date"), -severe_obesity, -bmi, 
     -bmi_date, -migrant, -english_language) %>%
     mutate(year = as.numeric(gsub("\\D", "", basename(file_patterns[i]))))
 }))
@@ -74,18 +75,37 @@ if (disease == "rsv") {
 }
 
 #find first event (GP and secondary care utilisation individually and together) then create dataset with only these variables
-cr_data <- cr_data %>%
-    # Format variables as date
-    mutate(across(ends_with("_date"), as.Date)
-    ) %>%
-    # Find minimum year for each person as eligibility assessed yearly, and follow-up could start at any of these
-    group_by(patient_id) %>%
-    mutate(min_start_yr_out = min(year),
-            first_gp_col = na_if(min(primary_col, na.rm = TRUE), Inf),
-            first_sc_col = na_if(min(sc_col, na.rm = TRUE), Inf),
-    ) %>%
-    ungroup() %>%
-    mutate(
+setDT(cr_data)
+ # Format variables as date
+date_cols <- grep("_date$", names(cr_data), value = TRUE)
+cr_data[, (date_cols) := lapply(.SD, as.Date), .SDcols = date_cols]
+# Find first year in follow-up and first GP and secondary care healthcare utilisation
+cr_data[, `:=`(
+  min_start_yr_out = min(year),
+
+  first_gp_col = {
+    x <- min(primary_col, na.rm = TRUE)
+    if(is.infinite(x)) as.Date(NA) else as.Date(x)
+  },
+
+  first_sc_col = {
+    x <- min(sc_col, na.rm = TRUE)
+    if(is.infinite(x)) as.Date(NA) else as.Date(x)
+  }
+), by = patient_id]
+
+# cr_data <- cr_data %>%
+#     # Format variables as date
+#     mutate(across(ends_with("_date"), as.Date)
+#     ) %>%
+#     # Find minimum year for each person as eligibility assessed yearly, and follow-up could start at any of these
+#     group_by(patient_id) %>%
+#     mutate(min_start_yr_out = min(year),
+#             first_gp_col = na_if(min(primary_col, na.rm = TRUE), Inf),
+#             first_sc_col = na_if(min(sc_col, na.rm = TRUE), Inf),
+#     ) %>%
+#     ungroup() %>%
+    cr_data[, `:=`(
         # format variables as dates
         first_gp_col = as.Date(first_gp_col),
         first_sc_col = as.Date(first_sc_col),
@@ -95,27 +115,30 @@ cr_data <- cr_data %>%
         dereg_date = as.Date(dereg_date),
         ons_death_date = as.Date(ons_death_date),
         study_end = as.Date("2025-08-31"),
-        fu_start_mth = if_else(disease=="covid", 3, 9),
-        fu_start = make_date(year = min_start_yr_out, month = fu_start_mth, day = 1),
-        fu_end = pmin(dereg_date, ons_death_date, study_end, na.rm = TRUE),
-        fu_end = as.Date(fu_end),
+        #fu_start_mth = fifelse(disease=="covid", 3L, 9L),
+        fu_start = as.Date(sprintf("%d-%02d-01", min_start_yr_out, fifelse(disease=="covid", 3L, 9L))),
+        fu_end = as.Date(pmin(dereg_date, ons_death_date, as.Date("2025-08-31"), na.rm = TRUE))
+    )]
+    cr_data[, `:=`(
         # Creating binary flags for outcomes
-        gp_binary = if_else(!is.na(first_gp_col) & first_gp_col < fu_end, 1,0),
-        sc_binary = if_else(!is.na(first_sc_col) & first_sc_col < fu_end, 1,0),
-        binary_all = if_else(!is.na(first_col) & first_col < fu_end, 1,0),
+        gp_binary = fifelse(!is.na(first_gp_col) & first_gp_col < fu_end, 1L, 0L),
+        sc_binary = fifelse(!is.na(first_sc_col) & first_sc_col < fu_end, 1L, 0L),
+        binary_all = fifelse(!is.na(first_col) & first_col < fu_end, 1L, 0L),
         # Generating stop dates for outcomes as earliest of either event or end of follow-up
         date_stop_gp = pmin(first_gp_col, fu_end, na.rm = TRUE),
         date_stop_sc = pmin(first_sc_col, fu_end, na.rm = TRUE),
-        date_stop = pmin(first_col, fu_end, na.rm = TRUE),
+        date_stop = pmin(first_col, fu_end, na.rm = TRUE)
+    )]
+    cr_data[, `:=`(
         stop_gp = as.numeric(date_stop_gp - fu_start),
         stop_sc = as.numeric(date_stop_sc - fu_start),
         stop = as.numeric(date_stop - fu_start),
-        start = 0,
+        start = 0L,
         # generating year of stop for stratification
         year_end_gp = year(date_stop_gp),
         year_end_sc = year(date_stop_sc),
-        year_end = year(date_stop),
-        )
+        year_end = year(date_stop)
+        )]
 
 # making disease specific variable names
 # decided against this so that I can have consistent variable names across files, making it easier in analysis files
