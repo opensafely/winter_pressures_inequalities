@@ -33,7 +33,7 @@ count_covid <- baseline_covid %>%
          urban_rural_5, imd_quintile, migrant, english_language, 
          flu_atrisk_grp, covid_atrisk_grp) %>% 
   tbl_summary(
-        missing = "no",
+        missing = "always",
         by = ethnicity6_combined,
         label = list(
                 min_start_yr ~ "Baseline year",
@@ -58,7 +58,7 @@ count_flu_rsv <- baseline_flu_rsv %>%
          urban_rural_5, imd_quintile, migrant, english_language, 
          flu_atrisk_grp, covid_atrisk_grp) %>% 
   tbl_summary(
-        missing = "no",
+        missing = "always",
         by = ethnicity6_combined,
         label = list(
                 min_start_yr ~ "Baseline year",
@@ -192,8 +192,8 @@ run_cox_models <- function(cox_table = NULL, disease, difference) {
         )
         
         new_rows <- bind_rows(
-                tidy(mod_gp, exponentiate = TRUE) %>% mutate(outcome = "gp_binary", by_var = difference, disease = disease),
-                tidy(mod_sc, exponentiate = TRUE) %>% mutate(outcome = "sc_binary", by_var = difference)
+                tidy(mod_gp, exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>% mutate(outcome = "gp_binary", by_var = difference, disease = disease),
+                tidy(mod_sc, exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>% mutate(outcome = "sc_binary", by_var = difference, disease = disease)
         )
 
         return(new_rows)
