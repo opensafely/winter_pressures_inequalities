@@ -33,7 +33,7 @@ count_covid <- baseline_covid %>%
          urban_rural_5, imd_quintile, migrant, english_language, 
          flu_atrisk_grp, covid_atrisk_grp) %>% 
   tbl_summary(
-        missing = "always",
+        missing = "no",
         by = ethnicity6_combined,
         label = list(
                 min_start_yr ~ "Baseline year",
@@ -58,7 +58,7 @@ count_flu_rsv <- baseline_flu_rsv %>%
          urban_rural_5, imd_quintile, migrant, english_language, 
          flu_atrisk_grp, covid_atrisk_grp) %>% 
   tbl_summary(
-        missing = "always",
+        missing = "no",
         by = ethnicity6_combined,
         label = list(
                 min_start_yr ~ "Baseline year",
@@ -177,9 +177,16 @@ run_cox_models <- function(cox_table = NULL, disease, difference) {
         file_path <- paste0("an_outcome_first_",disease,".arrow")
         data_df <- read_feather(here("output", file_path), as_data_frame = TRUE)
 
-        # Temporarily update variable names
-        #gp_var <- paste0(disease,"_gp_binary")
-        #sc_var <- paste0(disease,"_sc_binary")
+        # Ensure factor + set reference
+        if (difference == "ethnicity6_combined") {
+        data_df[[difference]] <- factor(data_df[[difference]])
+        data_df[[difference]] <- relevel(data_df[[difference]], ref = "White")
+        }
+
+        if (difference == "imd_quintile") {
+        data_df[[difference]] <- factor(data_df[[difference]])
+        data_df[[difference]] <- relevel(data_df[[difference]], ref = "1")  # or whichever you want
+        }
         
         # define formulas
         f_gp <- as.formula(paste0("Surv(start, stop_gp, gp_binary) ~ ", difference, " + strata(year_end_gp)"))
