@@ -19,6 +19,19 @@ library(gtsummary)
 outdir <- here("output", "tables")
 fs::dir_create(outdir)
 
+#define function for midpoint 6 rounding
+roundmid_any <- function(x, to = 6) {
+  
+  # like round_any, but centers on (integer) midpoint of the rounding points
+  ceiling(x/to)*to - (floor(to/2)*(x != 0))
+  
+}
+
+## Redaction
+redact <- function(vars) {
+  case_when(vars > 7 ~ vars)
+}
+
 # Creating baseline tables - first import data
 baseline_covid <- read_feather(here("output/an_bl_data_covid.arrow")) %>% 
         mutate(imd_quintile <- as.factor(imd_quintile),
@@ -27,110 +40,152 @@ baseline_flu_rsv <- read_feather(here("output/an_bl_data_flu_rsv.arrow"))%>%
         mutate(imd_quintile <- as.factor(imd_quintile),
         min_yr_start <- as.factor(min_start_yr))
 
+#baseline_covid$ethnicity6_combined <- forcats::fct_explicit_na(baseline_covid$ethnicity6_combined, na_level = "Missing")
+#baseline_flu_rsv$ethnicity6_combined <- forcats::fct_explicit_na(baseline_flu_rsv$ethnicity6_combined, na_level = "Missing")
+
 # COVID cohort baseline table by ethnicity
-count_covid <- baseline_covid %>% 
-  select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
-         urban_rural_5, imd_quintile, migrant, english_language, 
-         flu_atrisk_grp, covid_atrisk_grp) %>% 
-  tbl_summary(
-        missing = "no",
-        by = ethnicity6_combined,
-        label = list(
-                min_start_yr ~ "Baseline year",
-                age_group ~ "Age group",
-                imd_quintile ~ "IMD quintile",
-                ethnicity16_combined ~ "Ethnicity (16 groups)",
-                sex ~ "Sex",
-                urban_rural_5 ~ "Urban-rural classification",
-                migrant ~ "Migrant",
-                english_language ~ "English not main language spoken",
-                flu_atrisk_grp ~ "Flu clinical risk group",
-                covid_atrisk_grp ~ "COVID-19 clinical risk group"
+desc_covid <- baseline_covid %>% 
+        select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
+        urban_rural_5, imd_quintile, migrant, english_language, 
+        flu_atrisk_grp, covid_atrisk_grp) %>% 
+        mutate(ethnicity6_combined = fct_explicit_na(
+                ethnicity6_combined, 
+                na_level = "Missing")) %>%
+        tbl_summary(
+                missing = "no",
+                by = ethnicity6_combined,
+                label = list(
+                        min_start_yr ~ "Baseline year",
+                        age_group ~ "Age group",
+                        imd_quintile ~ "IMD quintile",
+                        ethnicity16_combined ~ "Ethnicity (16 groups)",
+                        sex ~ "Sex",
+                        urban_rural_5 ~ "Urban-rural classification",
+                        migrant ~ "Migrant",
+                        english_language ~ "English not main language spoken",
+                        flu_atrisk_grp ~ "Flu clinical risk group",
+                        covid_atrisk_grp ~ "COVID-19 clinical risk group"
                 )
         ) %>% 
         add_overall(last = FALSE)
-count_covid$inputs$data <- NULL
-gt::gtsave(as_gt(count_covid), file.path(outdir, "baseline_table_covid.html"))
+desc_covid$inputs$data <- NULL
+gt::gtsave(as_gt(desc_covid), file.path(outdir, "baseline_table_covid.html"))
 
 # Flu/RSV cohort baseline table by ethnicity
-count_flu_rsv <- baseline_flu_rsv %>% 
-  select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
-         urban_rural_5, imd_quintile, migrant, english_language, 
-         flu_atrisk_grp, covid_atrisk_grp) %>% 
-  tbl_summary(
-        missing = "no",
-        by = ethnicity6_combined,
-        label = list(
-                min_start_yr ~ "Baseline year",
-                age_group ~ "Age group",
-                imd_quintile ~ "IMD quintile",
-                ethnicity16_combined ~ "Ethnicity (16 groups)",
-                sex ~ "Sex",
-                urban_rural_5 ~ "Urban-rural classification",
-                migrant ~ "Migrant",
-                english_language ~ "English not main language spoken",
-                flu_atrisk_grp ~ "Flu clinical risk group",
-                covid_atrisk_grp ~ "COVID-19 clinical risk group"
+desc_flu_rsv <- baseline_flu_rsv %>% 
+        select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
+                urban_rural_5, imd_quintile, migrant, english_language, 
+                flu_atrisk_grp, covid_atrisk_grp) %>% 
+        mutate(ethnicity6_combined = fct_explicit_na(
+                ethnicity6_combined, 
+                na_level = "Missing")) %>%
+        tbl_summary(
+                missing = "no",
+                by = ethnicity6_combined,
+                label = list(
+                        min_start_yr ~ "Baseline year",
+                        age_group ~ "Age group",
+                        imd_quintile ~ "IMD quintile",
+                        ethnicity16_combined ~ "Ethnicity (16 groups)",
+                        sex ~ "Sex",
+                        urban_rural_5 ~ "Urban-rural classification",
+                        migrant ~ "Migrant",
+                        english_language ~ "English not main language spoken",
+                        flu_atrisk_grp ~ "Flu clinical risk group",
+                        covid_atrisk_grp ~ "COVID-19 clinical risk group"
                 )
         ) %>% 
         add_overall(last = FALSE)
-count_flu_rsv$inputs$data <- NULL
-gt::gtsave(as_gt(count_flu_rsv), file.path(outdir, "baseline_table_flu_rsv.html"))
-# Variables to go into table
-# explanatory <- c("min_start_yr", "age_group", "sex", "ethnicity6_combined", "ethnicity16_combined", 
-#         "urban_rural_5", "imd_quintile", "migrant", "english_language", 
-#         "flu_atrisk_grp", "covid_atrisk_grp")
+desc_flu_rsv$inputs$data <- NULL
+gt::gtsave(as_gt(desc_flu_rsv), file.path(outdir, "baseline_table_flu_rsv.html"))
 
-# print(baseline_covid %>% 
-#         ff_glimpse(explanatory))
+# Table of outcomes - first event
+outcomes_covid <- read_feather(here("output/an_outcome_first_covid.arrow")) 
+outcomes_flu <- read_feather(here("output/an_outcome_first_flu.arrow")) 
+outcomes_rsv <- read_feather(here("output/an_outcome_first_rsv.arrow")) 
 
-# table_covid <- summary_factorlist(baseline_covid, explanatory = explanatory, na_include = TRUE)
-# write_csv(table_covid, file.path(outdir, "baseline_table_covid.csv"))
+# Function to create table with number of outcomes, person-time, rate and flag for outcome type
+create_event_table <- function(data, time, status, outcome, group = NULL, rate_multiplier = 1000) {
+  
+  if (is.null(group)) {
+    
+    data %>%
+      summarise(
+        N = n(),
+        Events = sum(.data[[status]], na.rm = TRUE),
+        Person_time = sum(.data[[time]], na.rm = TRUE),
+        Rate = (Events / Person_time) * rate_multiplier,
+        Outcome = outcome
+      )
+    
+  } else {
+    
+    data %>%
+      group_by(.data[[group]]) %>%
+      summarise(
+        N = n(),
+        Events = sum(.data[[status]], na.rm = TRUE),
+        Person_time = sum(.data[[time]], na.rm = TRUE),
+        Rate = (Events / Person_time) * rate_multiplier,
+        Outcome = outcome,
+        .groups = "drop"
+      )
+  }
+}
 
-# table_flu_rsv <- summary_factorlist(baseline_flu_rsv, explanatory = explanatory, na_include = TRUE)
-# write_csv(table_flu_rsv, file.path(outdir, "baseline_table_flu_rsv.csv"))
+# Run function for each outcome with GP, hospitalisations and both and create table
+count_covid_gp <- create_event_table(outcomes_covid, time = "stop_gp", status = "gp_binary", outcome = "COVID - GP", group = "ethnicity6_combined")
+count_covid_sc <- create_event_table(outcomes_covid, time = "stop_sc", status = "sc_binary", outcome = "COVID - SC", group = "ethnicity6_combined")
+count_covid_all <- create_event_table(outcomes_covid, time = "stop", status = "binary_all", outcome = "COVID - all", group = "ethnicity6_combined")
+count_covid <- bind_rows(count_covid_gp, count_covid_sc, count_covid_all)
+write_csv(count_covid, file.path(outdir, "count_covid.csv"))
 
-# # Tables stratified by year identified to check if characteristics change
-# explanatory_yr <- c("age_group", "sex", "ethnicity6_combined", "ethnicity16_combined", 
-#         "urban_rural_5", "imd_quintile", "migrant", "english_language", 
-#         "flu_atrisk_grp", "covid_atrisk_grp")
+count_flu_gp <- create_event_table(outcomes_flu, time = "stop_gp", status = "gp_binary", outcome = "flu - GP", group = "ethnicity6_combined")
+count_flu_sc <- create_event_table(outcomes_flu, time = "stop_sc", status = "sc_binary", outcome = "flu - SC", group = "ethnicity6_combined")
+count_flu_all <- create_event_table(outcomes_flu, time = "stop", status = "binary_all", outcome = "flu - all", group = "ethnicity6_combined")
+count_flu <- bind_rows(count_flu_gp, count_flu_sc, count_flu_all)
+write_csv(count_flu, file.path(outdir, "count_flu.csv"))
 
-# table_covid_yr <- summary_factorlist(baseline_covid, explanatory = explanatory_yr, dependent = "min_start_yr", na_include = TRUE)
-# write_csv(table_covid_yr, file.path(outdir, "baseline_table_covid_yr.csv"))
+count_rsv_gp <- create_event_table(outcomes_rsv, time = "stop_gp", status = "gp_binary", outcome = "rsv - GP", group = "ethnicity6_combined")
+count_rsv_sc <- create_event_table(outcomes_rsv, time = "stop_sc", status = "sc_binary", outcome = "rsv - SC", group = "ethnicity6_combined")
+count_rsv_all <- create_event_table(outcomes_rsv, time = "stop", status = "binary_all", outcome = "rsv - all", group = "ethnicity6_combined")
+count_rsv <- bind_rows(count_rsv_gp, count_rsv_sc, count_rsv_all)
+write_csv(count_rsv, file.path(outdir, "count_rsv.csv"))
 
-# table_flu_rsv_yr <- summary_factorlist(baseline_flu_rsv, explanatory = explanatory_yr, dependent = "min_start_yr", na_include = TRUE)
-# write_csv(table_flu_rsv_yr, file.path(outdir, "baseline_table_flu_rsv_yr.csv"))
-
-# # Tables stratified by ethnicity
-# explanatory_strata <- c("min_start_yr", "age_group", "sex", "ethnicity16_combined", 
-#         "urban_rural_5", "imd_quintile", "migrant", "english_language", 
-#         "flu_atrisk_grp", "covid_atrisk_grp")
-
-# table_strata <- summary_factorlist(baseline_covid, explanatory = explanatory_strata, dependent = "ethnicity6_combined", na_include = TRUE)
-# write_csv(table_strata, file.path(outdir, "baseline_table_covid_strata.csv"))
-
-# table_flu_rsv_strata <- summary_factorlist(baseline_flu_rsv, explanatory = explanatory_strata, dependent = "ethnicity6_combined", na_include = TRUE)
-# write_csv(table_flu_rsv_strata, file.path(outdir, "baseline_table_flu_rsv_strata.csv"))
-
-# Making not very good line graphs of rates 
+# Making (not very good) line graphs of rates 
 rates_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
-        mutate(ratio_100 = ratio*100)
+        mutate(ratio_100 = ratio*100,
+        outcome_mid6 = roundmid_any(numerator),
+        n_mid6 = roundmid_any(denominator))
+write_csv(rates_covid, file.path(outdir, "rounded_rates_covid.csv"))
 
 rates_flu_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
         filter(measure=="flu_gp" | measure=="flu_admission") %>% 
-        mutate(ratio_100 = ratio*100)
+        mutate(ratio_100 = ratio*100,
+        outcome_mid6 = roundmid_any(numerator),
+        n_mid6 = roundmid_any(denominator))
+write_csv(rates_flu_18, file.path(outdir, "rounded_rates_flu_18.csv"))
 
 rates_flu_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
         filter(measure=="flu_gp" | measure=="flu_admission") %>% 
-        mutate(ratio_100 = ratio*100)
+        mutate(ratio_100 = ratio*100,
+        outcome_mid6 = roundmid_any(numerator),
+        n_mid6 = roundmid_any(denominator))
+write_csv(rates_flu_21, file.path(outdir, "rounded_rates_flu_21.csv"))
 
 rates_rsv_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
         filter(measure=="rsv_gp" | measure=="rsv_admission") %>% 
-        mutate(ratio_100 = ratio*100)
+        mutate(ratio_100 = ratio*100,
+        outcome_mid6 = roundmid_any(numerator),
+        n_mid6 = roundmid_any(denominator))
+write_csv(rates_rsv_18, file.path(outdir, "rounded_rates_rsv_18.csv"))
 
 rates_rsv_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
         filter(measure=="rsv_gp" | measure=="rsv_admission") %>% 
-        mutate(ratio_100 = ratio*100)
+        mutate(ratio_100 = ratio*100,
+        outcome_mid6 = roundmid_any(numerator),
+        n_mid6 = roundmid_any(denominator))
+write_csv(rates_rsv_21, file.path(outdir, "rounded_rates_flu_21.csv"))
 
 
 

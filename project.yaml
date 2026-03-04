@@ -211,12 +211,10 @@ actions:
         moderately_sensitive:
           table: output/tables/baseline_table_covid.html
           table_flu_rsv: output/tables/baseline_table_flu_rsv.html
-          # table_s: output/tables/baseline_table_covid_strata.csv
-          # table_flu_rsv_s: output/tables/baseline_table_flu_rsv_strata.csv
-          # table_y: output/tables/baseline_table_covid_yr.csv
-          # table_flu_rsv_y: output/tables/baseline_table_flu_rsv_yr.csv
+          table_out_c: output/tables/count_*.csv
           plots: output/tables/plot_*.svg
           table_cox: output/tables/cox_models.csv
+          rates_covid: output/tables/rounded_rates_*.csv
 
 
   
