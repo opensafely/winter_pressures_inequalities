@@ -15,6 +15,7 @@ library(rlang)
 library(purrr)
 library(finalfit)
 library(gtsummary)
+library(survminer)
 
 outdir <- here("output", "tables")
 fs::dir_create(outdir)
@@ -99,7 +100,86 @@ desc_flu_rsv <- baseline_flu_rsv %>%
 desc_flu_rsv$inputs$data <- NULL
 gt::gtsave(as_gt(desc_flu_rsv), file.path(outdir, "baseline_table_flu_rsv.html"))
 
-# Table of outcomes - first event
+# generating tables with rounded weekly events, denominators and rates from measures
+rates_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_covid, file.path(outdir, "rounded_rates_covid.csv"))
+
+rates_flu_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
+        filter(measure=="flu_gp" | measure=="flu_admission") %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_flu_18, file.path(outdir, "rounded_rates_flu_18.csv"))
+
+rates_flu_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
+        filter(measure=="flu_gp" | measure=="flu_admission") %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_flu_21, file.path(outdir, "rounded_rates_flu_21.csv"))
+
+rates_rsv_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
+        filter(measure=="rsv_gp" | measure=="rsv_admission") %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_rsv_18, file.path(outdir, "rounded_rates_rsv_18.csv"))
+
+rates_rsv_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
+        filter(measure=="rsv_gp" | measure=="rsv_admission") %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_rsv_21, file.path(outdir, "rounded_rates_rsv_21.csv"))
+
+
+# Making (not very good) line graphs of rates 
+plot_line <- function(file, disease) {
+
+        p <- ggplot(
+                data = file,
+                mapping = aes(
+                x = interval_start,
+                y = rate_mid6,
+                group = interaction(ethnicity, measure),
+                color = ethnicity,
+                )
+        ) +
+                geom_line() +
+                geom_point(size = 1) +
+                facet_wrap(~measure, scale = "free_y") +
+                labs(title = paste("Disease rates for", disease))
+
+        ggsave(
+                filename = paste0("plot_", disease,".svg"),
+                plot = p,
+                path = outdir
+        )
+
+        return(p)
+}
+
+disease_list <- list(
+    covid = rates_covid,
+    flu_18 = rates_flu_18,
+    flu_21 = rates_flu_21,
+    rsv_18 = rates_rsv_18,
+    rsv_21 = rates_rsv_21
+)
+
+plots <- lapply(names(disease_list), function(d_name) {
+    plot_line(disease_list[[d_name]], d_name)
+})
+
+# Table of outcomes - first event for Cox models
 outcomes_covid <- read_feather(here("output/an_outcome_first_covid.arrow")) 
 outcomes_flu <- read_feather(here("output/an_outcome_first_flu.arrow")) 
 outcomes_rsv <- read_feather(here("output/an_outcome_first_rsv.arrow")) 
@@ -152,79 +232,7 @@ count_rsv_all <- create_event_table(outcomes_rsv, time = "stop", status = "binar
 count_rsv <- bind_rows(count_rsv_gp, count_rsv_sc, count_rsv_all)
 write_csv(count_rsv, file.path(outdir, "count_rsv.csv"))
 
-# Making (not very good) line graphs of rates 
-rates_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
-        mutate(ratio_100 = ratio*100,
-        outcome_mid6 = roundmid_any(numerator),
-        n_mid6 = roundmid_any(denominator))
-write_csv(rates_covid, file.path(outdir, "rounded_rates_covid.csv"))
 
-rates_flu_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
-        filter(measure=="flu_gp" | measure=="flu_admission") %>% 
-        mutate(ratio_100 = ratio*100,
-        outcome_mid6 = roundmid_any(numerator),
-        n_mid6 = roundmid_any(denominator))
-write_csv(rates_flu_18, file.path(outdir, "rounded_rates_flu_18.csv"))
-
-rates_flu_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
-        filter(measure=="flu_gp" | measure=="flu_admission") %>% 
-        mutate(ratio_100 = ratio*100,
-        outcome_mid6 = roundmid_any(numerator),
-        n_mid6 = roundmid_any(denominator))
-write_csv(rates_flu_21, file.path(outdir, "rounded_rates_flu_21.csv"))
-
-rates_rsv_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
-        filter(measure=="rsv_gp" | measure=="rsv_admission") %>% 
-        mutate(ratio_100 = ratio*100,
-        outcome_mid6 = roundmid_any(numerator),
-        n_mid6 = roundmid_any(denominator))
-write_csv(rates_rsv_18, file.path(outdir, "rounded_rates_rsv_18.csv"))
-
-rates_rsv_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
-        filter(measure=="rsv_gp" | measure=="rsv_admission") %>% 
-        mutate(ratio_100 = ratio*100,
-        outcome_mid6 = roundmid_any(numerator),
-        n_mid6 = roundmid_any(denominator))
-write_csv(rates_rsv_21, file.path(outdir, "rounded_rates_flu_21.csv"))
-
-
-
-plot_line <- function(file, disease) {
-
-        p <- ggplot(
-                data = file,
-                mapping = aes(
-                x = interval_start,
-                y = ratio_100,
-                group = interaction(ethnicity, measure),
-                color = ethnicity,
-                )
-        ) +
-                geom_line() +
-                geom_point(size = 1) +
-                facet_wrap(~measure, scale = "free_y") +
-                labs(title = paste("Disease rates for", disease))
-
-        ggsave(
-                filename = paste0("plot_", disease,".svg"),
-                plot = p,
-                path = outdir
-        )
-
-        return(p)
-}
-
-disease_list <- list(
-    covid = rates_covid,
-    flu_18 = rates_flu_18,
-    flu_21 = rates_flu_21,
-    rsv_18 = rates_rsv_18,
-    rsv_21 = rates_rsv_21
-)
-
-plots <- lapply(names(disease_list), function(d_name) {
-    plot_line(disease_list[[d_name]], d_name)
-})
 
 # Cox PH models to measure differences in utilisation by ethnicity and IMD
 run_cox_models <- function(cox_table = NULL, disease, difference) {
@@ -234,25 +242,22 @@ run_cox_models <- function(cox_table = NULL, disease, difference) {
 
         # Ensure factor + set reference
         if (difference == "ethnicity6_combined") {
-        data_df[[difference]] <- factor(data_df[[difference]])
-        data_df[[difference]] <- relevel(data_df[[difference]], ref = "White")
+                data_df[[difference]] <- factor(data_df[[difference]])
+                data_df[[difference]] <- relevel(data_df[[difference]], ref = "White")
         }
 
         if (difference == "imd_quintile") {
-        data_df[[difference]] <- factor(data_df[[difference]])
-        data_df[[difference]] <- relevel(data_df[[difference]], ref = "1")  # or whichever you want
+                data_df[[difference]] <- factor(data_df[[difference]])
+                data_df[[difference]] <- relevel(data_df[[difference]], ref = "1") 
         }
         
-        # define formulas
+        # define Cox model formulas
         f_gp <- as.formula(paste0("Surv(start, stop_gp, gp_binary) ~ ", difference, " + strata(year_end_gp)"))
         f_sc <- as.formula(paste0("Surv(start, stop_sc, sc_binary) ~ ", difference, " + strata(year_end_sc)"))
         # Fit Cox models
-        mod_gp <- coxph(f_gp, data = data_df
-        )
+        mod_gp <- coxph(f_gp, data = data_df)
+        mod_sc <- coxph(f_sc, data = data_df)
 
-        mod_sc <- coxph(f_sc, data = data_df
-        )
-        
         new_rows <- bind_rows(
                 tidy(mod_gp, exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>% mutate(outcome = "gp_binary", by_var = difference, disease = disease),
                 tidy(mod_sc, exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>% mutate(outcome = "sc_binary", by_var = difference, disease = disease)
@@ -266,9 +271,66 @@ by_vars <- c("ethnicity6_combined", "imd_quintile")
 
 param_grid <- expand.grid(disease = diseases, difference = by_vars, stringsAsFactors = FALSE)
 
-cox_table <- pmap_dfr(
-  param_grid,
-  function(disease, difference) run_cox_models(NULL, disease, difference)
+# Use pmap to get full list of results
+all_results <- pmap(
+        param_grid,
+        function(disease, difference) run_cox_models(NULL, disease, difference)
 )
 
+# Extract cox table by row-binding just the cox_results element
+cox_table <- map_dfr(all_results, "cox_results")
+
+# cox_table <- pmap_dfr(
+#   param_grid,
+#   function(disease, difference) run_cox_models(NULL, disease, difference)
+# )
+
 write_csv(cox_table, file.path(outdir, "cox_models.csv"))
+
+# Kaplan Meier plots
+run_km <- function(disease, difference) {
+        # Build filename and read dataset
+        file_path <- paste0("an_outcome_first_",disease,".arrow")
+        data_df <- read_feather(here("output", file_path), as_data_frame = TRUE)
+
+        # Ensure factor + set reference
+        if (difference == "ethnicity6_combined") {
+                data_df[[difference]] <- factor(data_df[[difference]])
+                data_df[[difference]] <- relevel(data_df[[difference]], ref = "White")
+        }
+
+        if (difference == "imd_quintile") {
+                data_df[[difference]] <- factor(data_df[[difference]])
+                data_df[[difference]] <- relevel(data_df[[difference]], ref = "1") 
+        }
+        
+        # KM formulas (simple — no start/stop, no strata())
+        f_km_gp <- as.formula(paste0("Surv(stop_gp, gp_binary) ~ ", difference))
+        f_km_sc <- as.formula(paste0("Surv(stop_sc, sc_binary) ~ ", difference))
+        
+        # Fit KM models
+        km_gp <- survfit(f_km_gp, data = data_df)
+        km_sc <- survfit(f_km_sc, data = data_df)
+
+        # Save GP plot  ── open device FIRST, then plot, then close
+        pdf(here("output", paste0("km_", disease, "_", difference, "_gp.pdf")), width = 10, height = 8)
+        print(survminer::ggsurvplot(km_gp, data = data_df, risk.table = TRUE,
+                conf.int = TRUE, title = paste("Kaplan-Meier:", disease, "(GP)"),
+                ggtheme = theme_bw()))
+        dev.off()
+
+        # Save SC plot
+        pdf(here("output", paste0("km_", disease, "_", difference, "_sc.pdf")), width = 10, height = 8)
+        print(survminer::ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
+                conf.int = TRUE, title = paste("Kaplan-Meier:", disease, "(SC)"),
+                ggtheme = theme_bw()))
+        dev.off()
+                
+}
+
+param_grid <- expand.grid(disease = diseases, difference = by_vars, stringsAsFactors = FALSE)
+
+pwalk(param_grid, function(disease, difference) run_km(disease, difference))
+
+
+
