@@ -312,25 +312,36 @@ run_km <- function(disease, difference) {
         km_gp <- survfit(f_km_gp, data = data_df)
         km_sc <- survfit(f_km_sc, data = data_df)
 
-        # Save GP plot  ── open device FIRST, then plot, then close
-        pdf(here("output", paste0("km_", disease, "_", difference, "_gp.pdf")), width = 10, height = 8)
-        print(survminer::ggsurvplot(km_gp, data = data_df, risk.table = TRUE,
+        # Generate GP plot 
+        gp_plot <- ggsurvplot(km_gp, data = data_df, risk.table = TRUE,
                 conf.int = TRUE, title = paste("Kaplan-Meier:", disease, "(GP)"),
-                ggtheme = theme_bw()))
-        dev.off()
+                ggtheme = theme_bw())
 
-        # Save SC plot
-        pdf(here("output", paste0("km_", disease, "_", difference, "_sc.pdf")), width = 10, height = 8)
-        print(survminer::ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
+        # Generate SC plot 
+        sc_plot <- ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
                 conf.int = TRUE, title = paste("Kaplan-Meier:", disease, "(SC)"),
-                ggtheme = theme_bw()))
-        dev.off()
-                
+                ggtheme = theme_bw())
+
+        return(list(
+                gp_plot = gp_plot,
+                sc_plot = sc_plot,
+                disease = disease,
+                difference = difference
+        )) 
 }
 
 param_grid <- expand.grid(disease = diseases, difference = by_vars, stringsAsFactors = FALSE)
 
-pwalk(param_grid, function(disease, difference) run_km(disease, difference))
+all_plots <- pmap(param_grid, function(disease, difference) run_km(disease, difference))
 
+# Save all plots
+walk(all_plots, function(x) {
+        pdf(here("output", paste0("plot_km_", x$disease, "_", x$difference, "_gp.pdf")), width = 10, height = 8)
+        print(x$gp_plot)
+        dev.off()
 
+        pdf(here("output", paste0("plot_km_", x$disease, "_", x$difference, "_sc.pdf")), width = 10, height = 8)
+        print(x$sc_plot)
+        dev.off()
+})
 
