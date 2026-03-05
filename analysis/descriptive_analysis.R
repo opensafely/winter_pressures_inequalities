@@ -309,9 +309,8 @@ run_km <- function(disease, difference) {
         f_km_sc <- as.formula(paste0("Surv(stop_sc, sc_binary) ~ ", difference))
         
         # Fit KM models
-        km_gp <- survfit(f_km_gp, data = data_df)
-        km_sc <- survfit(f_km_sc, data = data_df)
-
+        km_gp <- eval(bquote(survfit(.(f_km_gp), data = data_df)))
+        km_sc <- eval(bquote(survfit(.(f_km_sc), data = data_df)))
         # Generate GP plot 
         gp_plot <- ggsurvplot(km_gp, data = data_df, risk.table = TRUE,
                 conf.int = TRUE, title = paste("Kaplan-Meier:", disease, "(GP)"),
@@ -336,11 +335,11 @@ all_plots <- pmap(param_grid, function(disease, difference) run_km(disease, diff
 
 # Save all plots
 walk(all_plots, function(x) {
-        pdf(here("output", paste0("plot_km_", x$disease, "_", x$difference, "_gp.pdf")), width = 10, height = 8)
+        svg(here("output", paste0("plot_km_", x$disease, "_", x$difference, "_gp.svg")), width = 10, height = 8)
         print(x$gp_plot)
         dev.off()
 
-        pdf(here("output", paste0("plot_km_", x$disease, "_", x$difference, "_sc.pdf")), width = 10, height = 8)
+        svg(here("output", paste0("plot_km_", x$disease, "_", x$difference, "_sc.svg")), width = 10, height = 8)
         print(x$sc_plot)
         dev.off()
 })
