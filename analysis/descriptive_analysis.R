@@ -16,6 +16,10 @@ library(purrr)
 library(finalfit)
 library(gtsummary)
 library(survminer)
+library(glue)
+
+## Import custom user functions
+source(here::here("analysis", "redaction.R"))
 
 outdir <- here("output", "tables")
 fs::dir_create(outdir)
@@ -28,11 +32,6 @@ roundmid_any <- function(x, to = 6) {
   
 }
 
-## Redaction
-redact <- function(vars) {
-  case_when(vars > 7 ~ vars)
-}
-
 # Creating baseline tables - first import data
 baseline_covid <- read_feather(here("output/an_bl_data_covid.arrow")) %>% 
         mutate(imd_quintile <- as.factor(imd_quintile),
@@ -41,64 +40,203 @@ baseline_flu_rsv <- read_feather(here("output/an_bl_data_flu_rsv.arrow"))%>%
         mutate(imd_quintile <- as.factor(imd_quintile),
         min_yr_start <- as.factor(min_start_yr))
 
-#baseline_covid$ethnicity6_combined <- forcats::fct_explicit_na(baseline_covid$ethnicity6_combined, na_level = "Missing")
-#baseline_flu_rsv$ethnicity6_combined <- forcats::fct_explicit_na(baseline_flu_rsv$ethnicity6_combined, na_level = "Missing")
+var_labels_list <- list(
+                min_start_yr ~ "Baseline year",
+                age_group ~ "Age group",
+                imd_quintile ~ "IMD quintile",
+                ethnicity16_combined ~ "Ethnicity (16 groups)",
+                sex ~ "Sex",
+                urban_rural_5 ~ "Urban-rural classification",
+                migrant ~ "Migrant",
+                english_language ~ "English not main language spoken",
+                flu_atrisk_grp ~ "Flu clinical risk group",
+                covid_atrisk_grp ~ "COVID-19 clinical risk group"
+                )
+
 
 # COVID cohort baseline table by ethnicity
-desc_covid <- baseline_covid %>% 
+# desc_covid <- baseline_covid %>% 
+#         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
+#         urban_rural_5, imd_quintile, migrant, english_language, 
+#         flu_atrisk_grp, covid_atrisk_grp) %>% 
+#         mutate(ethnicity6_combined = fct_explicit_na(
+#                 ethnicity6_combined, 
+#                 na_level = "Missing")) %>%
+#         tbl_summary(
+#                 missing = "no",
+#                 by = ethnicity6_combined,
+#                 label = var_labels_list,
+#         ) %>% 
+#         add_overall(last = FALSE)
+# desc_covid$inputs$data <- NULL
+
+# # Apply redactions to baseline table
+# desc_covid_redact <- redact_tblsummary(desc_covid, 7) 
+
+# #Apply midpoint 6 rounding
+# raw_stats <- desc_covid_redact$meta_data %>%
+#         select(var_label, df_stats) %>%
+#         unnest(df_stats) %>%
+#         select(-any_of("fmt_fn"))
+# print(unique(raw_stats$by))
+# raw_stats_midpoint <- raw_stats %>%
+#   mutate(
+#     n=roundmid_any(n),
+#     N=roundmid_any(N),
+#     p=round(100*n/N,1),
+#     N_miss = roundmid_any(N_miss),
+#     N_obs = roundmid_any(N_obs),
+#     p_miss = round(100*N_miss/N_obs,1),
+#     N_nonmiss = roundmid_any(N_nonmiss),
+#     p_nonmiss = round(100*N_nonmiss/N_obs,1),
+#     var_label = factor(var_label),
+#     variable_levels = replace_na(as.character(variable_levels), "")
+#   ) 
+
+# desc_covid_redact_round <- raw_stats_midpoint %>%
+#   rowwise() %>%
+#   transmute(
+#     var_label,
+#     # gt creates a column called `label` when run locally, `variable_labels` 
+#     # when run in opensafely (probs different versions)
+#     # label,
+#     variable_levels,
+#     by,
+#     value = glue::glue(stat_display, .envir = cur_data())
+#   ) %>%
+#   pivot_wider(
+#     names_from = by,
+#     values_from = value
+#   )
+
+# Grouped table
+desc_covid_by <- baseline_covid %>% 
         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
-        urban_rural_5, imd_quintile, migrant, english_language, 
-        flu_atrisk_grp, covid_atrisk_grp) %>% 
-        mutate(ethnicity6_combined = fct_explicit_na(
-                ethnicity6_combined, 
-                na_level = "Missing")) %>%
+               urban_rural_5, imd_quintile, migrant, english_language, 
+               flu_atrisk_grp, covid_atrisk_grp) %>% 
+        mutate(ethnicity6_combined = fct_explicit_na(ethnicity6_combined, na_level = "Missing")) %>%
         tbl_summary(
                 missing = "no",
                 by = ethnicity6_combined,
-                label = list(
-                        min_start_yr ~ "Baseline year",
-                        age_group ~ "Age group",
-                        imd_quintile ~ "IMD quintile",
-                        ethnicity16_combined ~ "Ethnicity (16 groups)",
-                        sex ~ "Sex",
-                        urban_rural_5 ~ "Urban-rural classification",
-                        migrant ~ "Migrant",
-                        english_language ~ "English not main language spoken",
-                        flu_atrisk_grp ~ "Flu clinical risk group",
-                        covid_atrisk_grp ~ "COVID-19 clinical risk group"
+                label = var_labels_list
+        )
+
+# Overall table (no by)
+desc_covid_overall <- baseline_covid %>% 
+        select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
+               urban_rural_5, imd_quintile, migrant, english_language, 
+               flu_atrisk_grp, covid_atrisk_grp) %>% 
+        mutate(ethnicity6_combined = fct_explicit_na(ethnicity6_combined, na_level = "Missing")) %>%
+        tbl_summary(
+                missing = "no",
+                label = var_labels_list
+        )
+
+# Extract and round both
+extract_round_stats <- function(tbl) {
+        tbl$meta_data %>%
+                select(var_label, df_stats) %>%
+                unnest(df_stats) %>%
+                select(-any_of("fmt_fn")) %>%
+                mutate(
+                        n         = roundmid_any(n),
+                        N         = roundmid_any(N),
+                        p         = round(100*n/N, 1),
+                        N_miss    = roundmid_any(N_miss),
+                        N_obs     = roundmid_any(N_obs),
+                        p_miss    = round(100*N_miss/N_obs, 1),
+                        N_nonmiss = roundmid_any(N_nonmiss),
+                        p_nonmiss = round(100*N_nonmiss/N_obs, 1),
+                        var_label = factor(var_label),
+                        variable_levels = replace_na(as.character(variable_levels), "")
                 )
-        ) %>% 
-        add_overall(last = FALSE)
-desc_covid$inputs$data <- NULL
-gt::gtsave(as_gt(desc_covid), file.path(outdir, "baseline_table_covid.html"))
+}
+
+raw_stats_by      <- extract_round_stats(desc_covid_by)
+raw_stats_overall <- extract_round_stats(desc_covid_overall) %>%
+        mutate(by = "Overall")  # add by column so pivot_wider works
+
+# Combine and pivot
+desc_covid_redact_round <- bind_rows(raw_stats_overall, raw_stats_by) %>%
+        rowwise() %>%
+        transmute(
+                var_label,
+                variable_levels,
+                by,
+                value = glue::glue(stat_display, .envir = cur_data())
+        ) %>%
+        pivot_wider(
+                names_from = by,
+                values_from = value
+        )
+# saving both rounded/redacted and not rpound/redacted versions
+write_csv(desc_covid_redact_round, file.path(outdir, "baseline_table_covid_r.csv"))
+gt::gtsave(as_gt(desc_covid_by), file.path(outdir, "baseline_table_covid.html"))
 
 # Flu/RSV cohort baseline table by ethnicity
-desc_flu_rsv <- baseline_flu_rsv %>% 
+# Grouped table
+desc_flu_rsv_by <- baseline_flu_rsv %>% 
         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
-                urban_rural_5, imd_quintile, migrant, english_language, 
-                flu_atrisk_grp, covid_atrisk_grp) %>% 
-        mutate(ethnicity6_combined = fct_explicit_na(
-                ethnicity6_combined, 
-                na_level = "Missing")) %>%
+               urban_rural_5, imd_quintile, migrant, english_language, 
+               flu_atrisk_grp, covid_atrisk_grp) %>% 
+        mutate(ethnicity6_combined = fct_explicit_na(ethnicity6_combined, na_level = "Missing")) %>%
         tbl_summary(
                 missing = "no",
                 by = ethnicity6_combined,
-                label = list(
-                        min_start_yr ~ "Baseline year",
-                        age_group ~ "Age group",
-                        imd_quintile ~ "IMD quintile",
-                        ethnicity16_combined ~ "Ethnicity (16 groups)",
-                        sex ~ "Sex",
-                        urban_rural_5 ~ "Urban-rural classification",
-                        migrant ~ "Migrant",
-                        english_language ~ "English not main language spoken",
-                        flu_atrisk_grp ~ "Flu clinical risk group",
-                        covid_atrisk_grp ~ "COVID-19 clinical risk group"
+                label = var_labels_list
+        )
+
+# Overall table (no by)
+desc_flu_rsv_overall <- baseline_flu_rsv %>% 
+        select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
+               urban_rural_5, imd_quintile, migrant, english_language, 
+               flu_atrisk_grp, covid_atrisk_grp) %>% 
+        mutate(ethnicity6_combined = fct_explicit_na(ethnicity6_combined, na_level = "Missing")) %>%
+        tbl_summary(
+                missing = "no",
+                label = var_labels_list
+        )
+
+# Extract and round both
+extract_round_stats <- function(tbl) {
+        tbl$meta_data %>%
+                select(var_label, df_stats) %>%
+                unnest(df_stats) %>%
+                select(-any_of("fmt_fn")) %>%
+                mutate(
+                        n         = roundmid_any(n),
+                        N         = roundmid_any(N),
+                        p         = round(100*n/N, 1),
+                        N_miss    = roundmid_any(N_miss),
+                        N_obs     = roundmid_any(N_obs),
+                        p_miss    = round(100*N_miss/N_obs, 1),
+                        N_nonmiss = roundmid_any(N_nonmiss),
+                        p_nonmiss = round(100*N_nonmiss/N_obs, 1),
+                        var_label = factor(var_label),
+                        variable_levels = replace_na(as.character(variable_levels), "")
                 )
-        ) %>% 
-        add_overall(last = FALSE)
-desc_flu_rsv$inputs$data <- NULL
-gt::gtsave(as_gt(desc_flu_rsv), file.path(outdir, "baseline_table_flu_rsv.html"))
+}
+
+raw_stats_by      <- extract_round_stats(desc_flu_rsv_by)
+raw_stats_overall <- extract_round_stats(desc_flu_rsv_overall) %>%
+        mutate(by = "Overall")  # add by column so pivot_wider works
+
+# Combine and pivot
+desc_flu_rsv_redact_round <- bind_rows(raw_stats_overall, raw_stats_by) %>%
+        rowwise() %>%
+        transmute(
+                var_label,
+                variable_levels,
+                by,
+                value = glue::glue(stat_display, .envir = cur_data())
+        ) %>%
+        pivot_wider(
+                names_from = by,
+                values_from = value
+        )
+# saving both rounded/redacted and not rpound/redacted versions
+write_csv(desc_flu_rsv_redact_round, file.path(outdir, "baseline_table_flu_rsv_r.csv"))
+gt::gtsave(as_gt(desc_flu_rsv_by), file.path(outdir, "baseline_table_flu_rsv.html"))
 
 # generating tables with rounded weekly events, denominators and rates from measures
 rates_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
@@ -184,7 +322,7 @@ outcomes_covid <- read_feather(here("output/an_outcome_first_covid.arrow"))
 outcomes_flu <- read_feather(here("output/an_outcome_first_flu.arrow")) 
 outcomes_rsv <- read_feather(here("output/an_outcome_first_rsv.arrow")) 
 
-# Function to create table with number of outcomes, person-time, rate and flag for outcome type
+# Function to create table with number of outcomes, person-time, rate and flag for outcome type - no rounding yet
 create_event_table <- function(data, time, status, outcome, group = NULL, rate_multiplier = 1000) {
   
   if (is.null(group)) {
