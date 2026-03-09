@@ -34,11 +34,11 @@ roundmid_any <- function(x, to = 6) {
 
 # Creating baseline tables - first import data
 baseline_covid <- read_feather(here("output/an_bl_data_covid.arrow")) %>% 
-        mutate(imd_quintile <- as.factor(imd_quintile),
-        min_yr_start <- as.factor(min_start_yr))
+        mutate(imd_quintile = as.factor(imd_quintile),
+        min_yr_start = as.factor(min_start_yr))
 baseline_flu_rsv <- read_feather(here("output/an_bl_data_flu_rsv.arrow"))%>% 
-        mutate(imd_quintile <- as.factor(imd_quintile),
-        min_yr_start <- as.factor(min_start_yr))
+        mutate(imd_quintile = as.factor(imd_quintile),
+        min_yr_start = as.factor(min_start_yr))
 
 var_labels_list <- list(
                 min_start_yr ~ "Baseline year",
@@ -197,26 +197,6 @@ desc_flu_rsv_overall <- baseline_flu_rsv %>%
                 label = var_labels_list
         )
 
-# Extract and round both
-extract_round_stats <- function(tbl) {
-        tbl$meta_data %>%
-                select(var_label, df_stats) %>%
-                unnest(df_stats) %>%
-                select(-any_of("fmt_fn")) %>%
-                mutate(
-                        n         = roundmid_any(n),
-                        N         = roundmid_any(N),
-                        p         = round(100*n/N, 1),
-                        N_miss    = roundmid_any(N_miss),
-                        N_obs     = roundmid_any(N_obs),
-                        p_miss    = round(100*N_miss/N_obs, 1),
-                        N_nonmiss = roundmid_any(N_nonmiss),
-                        p_nonmiss = round(100*N_nonmiss/N_obs, 1),
-                        var_label = factor(var_label),
-                        variable_levels = replace_na(as.character(variable_levels), "")
-                )
-}
-
 raw_stats_by      <- extract_round_stats(desc_flu_rsv_by)
 raw_stats_overall <- extract_round_stats(desc_flu_rsv_overall) %>%
         mutate(by = "Overall")  # add by column so pivot_wider works
@@ -293,7 +273,7 @@ plot_line <- function(file, disease) {
         ) +
                 geom_line() +
                 geom_point(size = 1) +
-                facet_wrap(~measure, scale = "free_y") +
+                facet_wrap(~measure, scales = "free_y") +
                 labs(title = paste("Disease rates for", disease))
 
         ggsave(
@@ -373,7 +353,7 @@ write_csv(count_rsv, file.path(outdir, "count_rsv.csv"))
 
 
 # Cox PH models to measure differences in utilisation by ethnicity and IMD
-run_cox_models <- function(cox_table = NULL, disease, difference) {
+run_cox_models <- function(disease, difference) {
         # Build filename and read dataset
         file_path <- paste0("an_outcome_first_",disease,".arrow")
         data_df <- read_feather(here("output", file_path), as_data_frame = TRUE)
@@ -409,19 +389,12 @@ by_vars <- c("ethnicity6_combined", "imd_quintile")
 
 param_grid <- expand.grid(disease = diseases, difference = by_vars, stringsAsFactors = FALSE)
 
-# Use pmap to get full list of results
-all_results <- pmap(
-        param_grid,
-        function(disease, difference) run_cox_models(NULL, disease, difference)
+all_results <- pmap_dfr(
+  param_grid,
+  function(disease, difference) run_cox_models(disease, difference)
 )
 
-# Extract cox table by row-binding just the cox_results element
-cox_table <- map_dfr(all_results, "cox_results")
-
-# cox_table <- pmap_dfr(
-#   param_grid,
-#   function(disease, difference) run_cox_models(NULL, disease, difference)
-# )
+cox_table <- bind_rows(all_results)
 
 write_csv(cox_table, file.path(outdir, "cox_models.csv"))
 
@@ -430,6 +403,12 @@ run_km <- function(disease, difference) {
         # Build filename and read dataset
         file_path <- paste0("an_outcome_first_",disease,".arrow")
         data_df <- read_feather(here("output", file_path), as_data_frame = TRUE)
+
+        # Check the variable exists
+        if (!(difference %in% names(data_df))) {
+        stop(paste("Variable", difference, "not found in data. Available:", 
+                paste(names(data_df), collapse = ", ")))
+        }
 
         # Ensure factor + set reference
         if (difference == "ethnicity6_combined") {
@@ -443,20 +422,20 @@ run_km <- function(disease, difference) {
         }
         
         # KM formulas (simple — no start/stop, no strata())
-        f_km_gp <- as.formula(paste0("Surv(stop_gp, gp_binary) ~ ", difference))
-        f_km_sc <- as.formula(paste0("Surv(stop_sc, sc_binary) ~ ", difference))
+        f_km_gp <- as.formula(paste0("Surv(start, stop_gp, gp_binary) ~ ", difference))
+        f_km_sc <- as.formula(paste0("Surv(start, stop_sc, sc_binary) ~ ", difference))
         
         # Fit KM models
-        km_gp <- eval(bquote(survfit(.(f_km_gp), data = data_df)))
-        km_sc <- eval(bquote(survfit(.(f_km_sc), data = data_df)))
+        km_gp <- survfit(f_km_gp, data = data_df)
+        km_sc <- survfit(f_km_sc, data = data_df)
         # Generate GP plot 
         gp_plot <- ggsurvplot(km_gp, data = data_df, risk.table = TRUE,
-                conf.int = TRUE, title = paste("Kaplan-Meier:", disease, "(GP)"),
+                conf.int = TRUE, title = paste("Kaplan-Meier:", disease, "_", difference, "(GP)"),
                 ggtheme = theme_bw())
 
         # Generate SC plot 
         sc_plot <- ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
-                conf.int = TRUE, title = paste("Kaplan-Meier:", disease, "(SC)"),
+                conf.int = TRUE, title = paste("Kaplan-Meier:", disease, "_", difference,  "(SC)"),
                 ggtheme = theme_bw())
 
         return(list(
@@ -473,11 +452,11 @@ all_plots <- pmap(param_grid, function(disease, difference) run_km(disease, diff
 
 # Save all plots
 walk(all_plots, function(x) {
-        svg(here("output", paste0("plot_km_", x$disease, "_", x$difference, "_gp.svg")), width = 10, height = 8)
+        svg(here("outdir", paste0("plot_km_", x$disease, "_", x$difference, "_gp.svg")), width = 10, height = 8)
         print(x$gp_plot)
         dev.off()
 
-        svg(here("output", paste0("plot_km_", x$disease, "_", x$difference, "_sc.svg")), width = 10, height = 8)
+        svg(here("outdir", paste0("plot_km_", x$disease, "_", x$difference, "_sc.svg")), width = 10, height = 8)
         print(x$sc_plot)
         dev.off()
 })

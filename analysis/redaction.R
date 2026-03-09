@@ -36,19 +36,14 @@ redactor2 <- function(n, threshold=5, x=NULL){
   # next largest frequency is also redacted
 
 
-  stopifnot("n must be non-missing" = any(!is.na(n)))
-  stopifnot("n must non-negative" = any(n>=0))
-  stopifnot("n must non-negative" = any(n>=0))
+  stopifnot("n must be non-missing" = all(!is.na(n)))
+  stopifnot("n must non-negative" = all(n>=0))
 
   if(is.null(x)){
     x <- n
-  }
-
-  if(!is.null(x)){
+  } else {
     stopifnot("x must be same length as n" = length(n) == length(x))
   }
-
-
 
   n <- as.integer(n)
   leq_threshold <- dplyr::between(n, 1, threshold)
@@ -83,7 +78,7 @@ redact_tblsummary <- function(x, threshold, redact_chr=NA_character_){
   ##  - `x$inputs$data` which contains the input data
   ##  - `x$inputs$meta_data` which contains the raw summary table for the table
 
-  stopifnot("x must be a tbl_summary object" = all(class(x) %in% c("tbl_summary", "gtsummary")))
+  stopifnot(inherits(x, "tbl_summary"))
 
   raw_stats <- x$meta_data %>%
     select(var_label, df_stats) %>%
@@ -102,8 +97,11 @@ redact_tblsummary <- function(x, threshold, redact_chr=NA_character_){
         row_type = "missing",
         redact_n = N_miss,
         variable_levels = x$inputs$missing_text
-      ) %>%
-      filter(N_miss>0 & x$inputs$missing!="always")
+      ) 
+    
+    if(x$inputs$missing == "ifany") {
+      missing_stats <- missing_stats %>% filter(N_miss > 0)
+    }  
 
     raw_stats <- bind_rows(raw_stats, missing_stats)
   }
@@ -114,7 +112,7 @@ redact_tblsummary <- function(x, threshold, redact_chr=NA_character_){
   table_body_long <- x$table_body %>%
     pivot_longer(cols=starts_with("stat_"), names_to="by", values_to="display") %>%
     mutate(
-      by = fct_recode(by, .fun=!!!name_by_stat)
+      by = fct_recode(by, !!!name_by_stat)
     )
 
   redacted_stats <-
@@ -138,10 +136,10 @@ redact_tblsummary <- function(x, threshold, redact_chr=NA_character_){
       by=c("by", "variable", "var_label", "label"="variable_levels")
     ) %>%
     mutate(
-      by = fct_recode(by, .fun=!!!name_stat_by)
+      by = fct_recode(by, !!!name_stat_by)
     ) %>%
     pivot_wider(
-      id_cols = c(variable, var_type, var_class, var_label, row_type, label), # removed var_class
+      id_cols = c(variable, var_type, var_label, row_type, label), # removed var_class
       names_from = by,
       values_from = display
     )
