@@ -430,12 +430,12 @@ run_km <- function(disease, difference) {
         km_sc <- survfit(f_km_sc, data = data_df)
         # Generate GP plot 
         gp_plot <- ggsurvplot(km_gp, data = data_df, risk.table = TRUE,
-                conf.int = TRUE, title = paste("Kaplan-Meier:", disease, "_", difference, "(GP)"),
+                conf.int = TRUE, title = paste("Kaplan-Meier:", disease, ", ", difference, "(GP)"),
                 ggtheme = theme_bw())
 
         # Generate SC plot 
         sc_plot <- ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
-                conf.int = TRUE, title = paste("Kaplan-Meier:", disease, "_", difference,  "(SC)"),
+                conf.int = TRUE, title = paste("Kaplan-Meier:", disease, ", ", difference,  "(SC)"),
                 ggtheme = theme_bw())
 
         return(list(
