@@ -385,7 +385,7 @@ run_cox_models <- function(disease, difference) {
 }
 
 diseases <- c("covid", "flu", "rsv")
-by_vars <- c("ethnicity6_combined", "imd_quintile")
+by_vars <- c("imd_quintile", "ethnicity6_combined")
 
 param_grid <- expand.grid(disease = diseases, difference = by_vars, stringsAsFactors = FALSE)
 
@@ -398,8 +398,10 @@ cox_table <- bind_rows(all_results)
 
 write_csv(cox_table, file.path(outdir, "cox_models.csv"))
 
-# Kaplan Meier plots
+#Kaplan Meier plots
 run_km <- function(disease, difference) {
+        disease <- as.character(disease)
+        difference <- as.character(difference)
         # Build filename and read dataset
         file_path <- paste0("an_outcome_first_",disease,".arrow")
         data_df <- read_feather(here("output", file_path), as_data_frame = TRUE)
@@ -409,6 +411,55 @@ run_km <- function(disease, difference) {
         stop(paste("Variable", difference, "not found in data. Available:", 
                 paste(names(data_df), collapse = ", ")))
         }
+        
+        # Check for sparse data BEFORE setting reference levels
+        cat("\n=== Checking data for", disease, "-", difference, "===\n")
+        
+        data_check <- data_df %>%
+                group_by(.data[[difference]]) %>%
+                summarise(
+                n = n(),
+                gp_events = sum(gp_binary, na.rm = TRUE),
+                sc_events = sum(sc_binary, na.rm = TRUE),
+                gp_rate = mean(gp_binary, na.rm = TRUE),
+                sc_rate = mean(sc_binary, na.rm = TRUE),
+                .groups = "drop"
+                )
+        
+        print(data_check)
+
+        # Filter out groups with insufficient data for GP
+        valid_gp_groups <- data_check %>%
+                filter(n >= 5, gp_events > 0, gp_events < n) %>%
+                pull(!!sym(difference))
+        
+        # Filter out groups with insufficient data for SC
+        valid_sc_groups <- data_check %>%
+                filter(n >= 5, sc_events > 0, sc_events < n) %>%
+                pull(!!sym(difference))
+        
+        cat("Valid groups for GP:", paste(valid_gp_groups, collapse = ", "), "\n")
+        cat("Valid groups for SC:", paste(valid_sc_groups, collapse = ", "), "\n")
+        
+        # Check if we have enough groups
+        if (length(valid_gp_groups) < 2) {
+                warning(paste("Not enough valid groups for GP KM curve:", disease, "-", difference))
+                return(NULL)
+        }
+        
+        if (length(valid_sc_groups) < 2) {
+                warning(paste("Not enough valid groups for SC KM curve:", disease, "-", difference))
+                return(NULL)
+        }
+        
+        # Create filtered datasets
+        data_gp <- data_df %>%
+                filter(.data[[difference]] %in% valid_gp_groups) %>%
+                mutate(!!difference := droplevels(.data[[difference]]))
+        
+        data_sc <- data_df %>%
+                filter(.data[[difference]] %in% valid_sc_groups) %>%
+                mutate(!!difference := droplevels(.data[[difference]]))
 
         # Ensure factor + set reference
         if (difference == "ethnicity6_combined") {
@@ -420,7 +471,7 @@ run_km <- function(disease, difference) {
                 data_df[[difference]] <- factor(data_df[[difference]])
                 data_df[[difference]] <- relevel(data_df[[difference]], ref = "1") 
         }
-        
+
         # KM formulas (simple — no start/stop, no strata())
         f_km_gp <- as.formula(paste0("Surv(start, stop_gp, gp_binary) ~ ", difference))
         f_km_sc <- as.formula(paste0("Surv(start, stop_sc, sc_binary) ~ ", difference))
@@ -446,18 +497,43 @@ run_km <- function(disease, difference) {
         )) 
 }
 
-param_grid <- expand.grid(disease = diseases, difference = by_vars, stringsAsFactors = FALSE)
+ param_grid <- expand.grid(disease = diseases, difference = by_vars, stringsAsFactors = FALSE)
 
-all_plots <- pmap(param_grid, function(disease, difference) run_km(disease, difference))
+ print(str(param_grid))
+
+all_plots <- pmap(param_grid,
+  function(disease, difference) {
+    run_km(
+      disease = as.character(disease),
+      difference = as.character(difference)
+    )
+  })
+
 
 # Save all plots
-walk(all_plots, function(x) {
-        svg(here("outdir", paste0("plot_km_", x$disease, "_", x$difference, "_gp.svg")), width = 10, height = 8)
+if (length(all_plots) > 0) {
+    cat("\nSaving plots...\n")
+    
+    walk(all_plots, function(x) {
+        # GP plot
+        gp_file <- here("output", paste0("plot_km_", x$disease, "_", x$difference, "_gp.svg"))
+        svg(gp_file, width = 12, height = 10)
         print(x$gp_plot)
         dev.off()
-
-        svg(here("outdir", paste0("plot_km_", x$disease, "_", x$difference, "_sc.svg")), width = 10, height = 8)
+        
+        # SC plot
+        sc_file <- here("output", paste0("plot_km_", x$disease, "_", x$difference, "_sc.svg"))
+        svg(sc_file, width = 12, height = 10)
         print(x$sc_plot)
         dev.off()
-})
+        
+        cat("  Saved:", basename(gp_file), "and", basename(sc_file), "\n")
+    })
+    
+    cat("\n✓ All plots saved successfully!\n")
+} else {
+    warning("No plots to save - all analyses failed!")
+}
+
+
 
