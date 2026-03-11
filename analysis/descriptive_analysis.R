@@ -408,18 +408,12 @@ write_csv(cox_table, file.path(outdir, "cox_models.csv"))
 # ggsave(file.path(outdir, "plot_km_covid_gp.svg"), gp_plot$plot)
 
 #Kaplan Meier plots - COVID
- run_km <- function(disease, difference) {
+ run_km <- function(disease) {
          disease <- as.character(disease)
-         difference <- as.character(difference)
          # Build filename and read dataset
-         file_path <- paste0("outcomes_",disease)
-         data_df <- get(file_path)
-         print(head(data_df))
-#         # Check the variable exists
-         if (!(difference %in% names(data_df))) {
-         stop(paste("Variable", difference, "not found in data. Available:", 
-                 paste(names(data_df), collapse = ", ")))
-         }
+        outcomes_list <- list(covid = outcomes_covid, flu = outcomes_flu, rsv = outcomes_rsv)
+        data_df <- outcomes_list[[disease]]
+        print(head(data_df))
 
         # CHECK FOR TIMING ISSUES
         cat("\n=== Timing Check for", disease, "===\n")
@@ -478,15 +472,14 @@ write_csv(cox_table, file.path(outdir, "cox_models.csv"))
 
  }
 
-param_grid <- expand.grid(disease = diseases, difference = by_vars, stringsAsFactors = FALSE)
+param_grid <- expand.grid(disease = diseases, stringsAsFactors = FALSE)
 
 print(str(param_grid))
 
 all_plots <- pmap(param_grid,
-  function(disease, difference) {
+  function(disease) {
     run_km(
-      disease = as.character(disease),
-      difference = as.character(difference)
+      disease = as.character(disease)
     )
   })
 #
