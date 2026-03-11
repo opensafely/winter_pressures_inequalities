@@ -32,7 +32,7 @@ roundmid_any <- function(x, to = 6) {
   
 }
 
-# Creating baseline tables - first import data
+#Creating baseline tables - first import data
 baseline_covid <- read_feather(here("output/an_bl_data_covid.arrow")) %>% 
         mutate(imd_quintile = as.factor(imd_quintile),
         min_yr_start = as.factor(min_start_yr))
@@ -302,7 +302,7 @@ outcomes_covid <- read_feather(here("output/an_outcome_first_covid.arrow"))
 outcomes_flu <- read_feather(here("output/an_outcome_first_flu.arrow")) 
 outcomes_rsv <- read_feather(here("output/an_outcome_first_rsv.arrow")) 
 
-# Function to create table with number of outcomes, person-time, rate and flag for outcome type - no rounding yet
+#Function to create table with number of outcomes, person-time, rate and flag for outcome type - no rounding yet
 create_event_table <- function(data, time, status, outcome, group = NULL, rate_multiplier = 1000) {
   
   if (is.null(group)) {
@@ -384,122 +384,103 @@ run_cox_models <- function(disease, difference) {
         return(new_rows)
 }
 
-diseases <- c("covid", "flu", "rsv")
-by_vars <- c("imd_quintile", "ethnicity6_combined")
+ diseases <- c("covid", "flu", "rsv")
+ by_vars <- c("imd_quintile", "ethnicity6_combined")
 
 param_grid <- expand.grid(disease = diseases, difference = by_vars, stringsAsFactors = FALSE)
 
-all_results <- pmap_dfr(
+cox_table <- pmap_dfr(
   param_grid,
   function(disease, difference) run_cox_models(disease, difference)
 )
 
-cox_table <- bind_rows(all_results)
-
 write_csv(cox_table, file.path(outdir, "cox_models.csv"))
 
-#Kaplan Meier plots
-run_km <- function(disease, difference) {
-        disease <- as.character(disease)
-        difference <- as.character(difference)
-        # Build filename and read dataset
-        file_path <- paste0("an_outcome_first_",disease,".arrow")
-        data_df <- read_feather(here("output", file_path), as_data_frame = TRUE)
+#test KM plot
 
-        # Check the variable exists
-        if (!(difference %in% names(data_df))) {
-        stop(paste("Variable", difference, "not found in data. Available:", 
-                paste(names(data_df), collapse = ", ")))
-        }
-        
-        # Check for sparse data BEFORE setting reference levels
-        cat("\n=== Checking data for", disease, "-", difference, "===\n")
-        
-        data_check <- data_df %>%
-                group_by(.data[[difference]]) %>%
+# km_gp <- survfit(Surv(stop_gp, gp_binary) ~ ethnicity6_combined, data = outcomes_covid)
+# # Generate GP plot 
+# names(km_gp$strata) <- gsub("ethnicity6_combined=", "", names(km_gp$strata))
+# gp_plot <- ggsurvplot(km_gp, data = outcomes_covid, risk.table = TRUE,
+#         conf.int = TRUE, pval = FALSE, legend = "right", title = ("Kaplan-Meier: COVID-19 (GP)"),
+#         ggtheme = theme_bw())
+
+# ggsave(file.path(outdir, "plot_km_covid_gp.svg"), gp_plot$plot)
+
+#Kaplan Meier plots - COVID
+ run_km <- function(disease, difference) {
+         disease <- as.character(disease)
+         difference <- as.character(difference)
+         # Build filename and read dataset
+         file_path <- paste0("outcomes_",disease)
+         data_df <- get(file_path)
+         print(head(data_df))
+#         # Check the variable exists
+         if (!(difference %in% names(data_df))) {
+         stop(paste("Variable", difference, "not found in data. Available:", 
+                 paste(names(data_df), collapse = ", ")))
+         }
+
+        # CHECK FOR TIMING ISSUES
+        cat("\n=== Timing Check for", disease, "===\n")
+    
+        timing_issues <- data_df %>%
                 summarise(
-                n = n(),
-                gp_events = sum(gp_binary, na.rm = TRUE),
-                sc_events = sum(sc_binary, na.rm = TRUE),
-                gp_rate = mean(gp_binary, na.rm = TRUE),
-                sc_rate = mean(sc_binary, na.rm = TRUE),
-                .groups = "drop"
+                total = n(),
+                start_gt_stop_gp = sum(start > stop_gp, na.rm = TRUE),
+                start_gt_stop_sc = sum(start > stop_sc, na.rm = TRUE),
+                pct_gp = round(sum(start > stop_gp, na.rm = TRUE) / n() * 100, 2),
+                pct_sc = round(sum(start > stop_sc, na.rm = TRUE) / n() * 100, 2)
                 )
         
-        print(data_check)
-
-        # Filter out groups with insufficient data for GP
-        valid_gp_groups <- data_check %>%
-                filter(n >= 5, gp_events > 0, gp_events < n) %>%
-                pull(!!sym(difference))
+        print(timing_issues)
         
-        # Filter out groups with insufficient data for SC
-        valid_sc_groups <- data_check %>%
-                filter(n >= 5, sc_events > 0, sc_events < n) %>%
-                pull(!!sym(difference))
-        
-        cat("Valid groups for GP:", paste(valid_gp_groups, collapse = ", "), "\n")
-        cat("Valid groups for SC:", paste(valid_sc_groups, collapse = ", "), "\n")
-        
-        # Check if we have enough groups
-        if (length(valid_gp_groups) < 2) {
-                warning(paste("Not enough valid groups for GP KM curve:", disease, "-", difference))
-                return(NULL)
-        }
-        
-        if (length(valid_sc_groups) < 2) {
-                warning(paste("Not enough valid groups for SC KM curve:", disease, "-", difference))
-                return(NULL)
-        }
-        
-        # Create filtered datasets
-        data_gp <- data_df %>%
-                filter(.data[[difference]] %in% valid_gp_groups) %>%
-                mutate(!!difference := droplevels(.data[[difference]]))
-        
-        data_sc <- data_df %>%
-                filter(.data[[difference]] %in% valid_sc_groups) %>%
-                mutate(!!difference := droplevels(.data[[difference]]))
-
-        # Ensure factor + set reference
-        if (difference == "ethnicity6_combined") {
-                data_df[[difference]] <- factor(data_df[[difference]])
-                data_df[[difference]] <- relevel(data_df[[difference]], ref = "White")
-        }
-
-        if (difference == "imd_quintile") {
-                data_df[[difference]] <- factor(data_df[[difference]])
-                data_df[[difference]] <- relevel(data_df[[difference]], ref = "1") 
-        }
-
-        # KM formulas (simple — no start/stop, no strata())
-        f_km_gp <- as.formula(paste0("Surv(start, stop_gp, gp_binary) ~ ", difference))
-        f_km_sc <- as.formula(paste0("Surv(start, stop_sc, sc_binary) ~ ", difference))
-        
-        # Fit KM models
-        km_gp <- survfit(f_km_gp, data = data_df)
-        km_sc <- survfit(f_km_sc, data = data_df)
-        # Generate GP plot 
+    
+         # Fit KM models
+        # Ethnicity
+        km_gp <- survfit(Surv(start, stop_gp, gp_binary) ~ ethnicity6_combined, data = data_df)
+#         # Generate GP plot 
         gp_plot <- ggsurvplot(km_gp, data = data_df, risk.table = TRUE,
-                conf.int = TRUE, title = paste("Kaplan-Meier:", disease, ", ", difference, "(GP)"),
+                conf.int = TRUE, pval = FALSE, legend = "right", 
+                title = paste("Kaplan-Meier:", disease, ", ethnicity (GP)"),
                 ggtheme = theme_bw())
+        graph_file <- paste0("plot_km_", disease, "_ethnicity_gp.svg")
+        ggsave(file.path(outdir, graph_file), gp_plot$plot)
 
-        # Generate SC plot 
+        km_sc <- survfit(Surv(start, stop_sc, sc_binary) ~ ethnicity6_combined, data = data_df)
+#         # Generate SC plot 
         sc_plot <- ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
-                conf.int = TRUE, title = paste("Kaplan-Meier:", disease, ", ", difference,  "(SC)"),
+                conf.int = TRUE, pval = FALSE, legend = "right", 
+                title = paste("Kaplan-Meier:", disease, ", ethnicity (sc)"),
                 ggtheme = theme_bw())
+        graph_file <- paste0("plot_km_", disease, "_ethnicity_sc.svg")
+        ggsave(file.path(outdir, graph_file), sc_plot$plot)
 
-        return(list(
-                gp_plot = gp_plot,
-                sc_plot = sc_plot,
-                disease = disease,
-                difference = difference
-        )) 
-}
+        # IMD
+        km_gp <- survfit(Surv(start, stop_gp, gp_binary) ~ imd_quintile, data = data_df)
+#         # Generate GP plot 
+        gp_plot <- ggsurvplot(km_gp, data = data_df, risk.table = TRUE,
+                conf.int = TRUE, pval = FALSE, legend = "right", 
+                title = paste("Kaplan-Meier:", disease, ", IMD (GP)"),
+                ggtheme = theme_bw())
+        graph_file <- paste0("plot_km_", disease, "_imd_gp.svg")
+        ggsave(file.path(outdir, graph_file), gp_plot$plot)
 
- param_grid <- expand.grid(disease = diseases, difference = by_vars, stringsAsFactors = FALSE)
+        km_sc <- survfit(Surv(start, stop_sc, sc_binary) ~ imd_quintile, data = data_df)
+#         # Generate SC plot 
+        sc_plot <- ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
+                conf.int = TRUE, pval = FALSE, legend = "right", 
+                title = paste("Kaplan-Meier:", disease, ", IMD (SC)"),
+                ggtheme = theme_bw())
+        graph_file <- paste0("plot_km_", disease, "_imd_sc.svg")
+        ggsave(file.path(outdir, graph_file), sc_plot$plot)
 
- print(str(param_grid))
+
+ }
+
+param_grid <- expand.grid(disease = diseases, difference = by_vars, stringsAsFactors = FALSE)
+
+print(str(param_grid))
 
 all_plots <- pmap(param_grid,
   function(disease, difference) {
@@ -508,32 +489,5 @@ all_plots <- pmap(param_grid,
       difference = as.character(difference)
     )
   })
-
-
-# Save all plots
-if (length(all_plots) > 0) {
-    cat("\nSaving plots...\n")
-    
-    walk(all_plots, function(x) {
-        # GP plot
-        gp_file <- here("output", paste0("plot_km_", x$disease, "_", x$difference, "_gp.svg"))
-        svg(gp_file, width = 12, height = 10)
-        print(x$gp_plot)
-        dev.off()
-        
-        # SC plot
-        sc_file <- here("output", paste0("plot_km_", x$disease, "_", x$difference, "_sc.svg"))
-        svg(sc_file, width = 12, height = 10)
-        print(x$sc_plot)
-        dev.off()
-        
-        cat("  Saved:", basename(gp_file), "and", basename(sc_file), "\n")
-    })
-    
-    cat("\n✓ All plots saved successfully!\n")
-} else {
-    warning("No plots to save - all analyses failed!")
-}
-
-
+#
 
