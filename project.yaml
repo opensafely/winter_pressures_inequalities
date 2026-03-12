@@ -209,12 +209,15 @@ actions:
         - measures_flu_rsv_2021
       outputs: 
         moderately_sensitive:
-          table: output/tables/baseline_table_covid.html
-          table_flu_rsv: output/tables/baseline_table_flu_rsv.html
+          table: output/tables/baseline_table_covid*.html
+          table_flu_rsv: output/tables/baseline_table_flu_rsv*.html
+          table_r: output/tables/baseline_table_covid_r.csv
+          table_flu_rsv_r: output/tables/baseline_table_flu_rsv_r.csv
           table_out_c: output/tables/count_*.csv
           plots: output/tables/plot_*.svg
           table_cox: output/tables/cox_models.csv
           rates_covid: output/tables/rounded_rates_*.csv
+        
 
 
   
