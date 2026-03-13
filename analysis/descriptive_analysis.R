@@ -393,6 +393,11 @@ cox_table <- pmap_dfr(
   param_grid,
   function(disease, difference) run_cox_models(disease, difference)
 )
+print(head(cox_table))
+cox_table <- cox_table %>% 
+                mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 2))) %>% 
+                # don't need std.error or statistic
+                select("term", "estimate", "p.value", "conf.low", "conf.high", "outcome", "by_var", "disease")
 
 write_csv(cox_table, file.path(outdir, "cox_models.csv"))
 
@@ -434,9 +439,10 @@ write_csv(cox_table, file.path(outdir, "cox_models.csv"))
         # Ethnicity
         km_gp <- survfit(Surv(start, stop_gp, gp_binary) ~ ethnicity6_combined, data = data_df)
 #         # Generate GP plot 
-        gp_plot <- ggsurvplot(km_gp, data = data_df, risk.table = TRUE,
+        gp_plot <- ggsurvplot(km_gp, data = data_df, risk.table = TRUE, 
                 conf.int = TRUE, pval = FALSE, legend = "right", 
                 title = paste("Kaplan-Meier:", disease, ", ethnicity (GP)"),
+                ylim=c(0.75, 1),
                 ggtheme = theme_bw())
         graph_file <- paste0("plot_km_", disease, "_ethnicity_gp.svg")
         ggsave(file.path(outdir, graph_file), gp_plot$plot)
@@ -446,6 +452,7 @@ write_csv(cox_table, file.path(outdir, "cox_models.csv"))
         sc_plot <- ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
                 conf.int = TRUE, pval = FALSE, legend = "right", 
                 title = paste("Kaplan-Meier:", disease, ", ethnicity (sc)"),
+                ylim=c(0.75, 1),
                 ggtheme = theme_bw())
         graph_file <- paste0("plot_km_", disease, "_ethnicity_sc.svg")
         ggsave(file.path(outdir, graph_file), sc_plot$plot)
@@ -456,6 +463,7 @@ write_csv(cox_table, file.path(outdir, "cox_models.csv"))
         gp_plot <- ggsurvplot(km_gp, data = data_df, risk.table = TRUE,
                 conf.int = TRUE, pval = FALSE, legend = "right", 
                 title = paste("Kaplan-Meier:", disease, ", IMD (GP)"),
+                ylim=c(0.75, 1),
                 ggtheme = theme_bw())
         graph_file <- paste0("plot_km_", disease, "_imd_gp.svg")
         ggsave(file.path(outdir, graph_file), gp_plot$plot)
@@ -465,6 +473,7 @@ write_csv(cox_table, file.path(outdir, "cox_models.csv"))
         sc_plot <- ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
                 conf.int = TRUE, pval = FALSE, legend = "right", 
                 title = paste("Kaplan-Meier:", disease, ", IMD (SC)"),
+                ylim=c(0.75, 1),
                 ggtheme = theme_bw())
         graph_file <- paste0("plot_km_", disease, "_imd_sc.svg")
         ggsave(file.path(outdir, graph_file), sc_plot$plot)
