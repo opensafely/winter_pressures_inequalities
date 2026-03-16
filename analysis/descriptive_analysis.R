@@ -28,13 +28,7 @@ fs::dir_create(outdir)
 roundmid_any <- function(x, to = 6) {
   
   # like round_any, but centers on (integer) midpoint of the rounding points
-  rounded <- ceiling(x/to)*to - (floor(to/2)*(x != 0))
-
-  #ifelse(
-  #      is.na(x),
-  #      NA_real_,
-  #      ifelse(x < threshold, NA_real_, rounded)
-  #)
+  ceiling(x/to)*to - (floor(to/2)*(x != 0))
   
 }
 
