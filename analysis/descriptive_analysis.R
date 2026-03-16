@@ -221,6 +221,7 @@ gt::gtsave(as_gt(desc_flu_rsv_by), file.path(outdir, "baseline_table_flu_rsv.htm
 
 # generating tables with rounded weekly events, denominators and rates from measures
 rates_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
+        filter(measure=="covid_gp" | measure=="covid_admission") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
@@ -344,7 +345,7 @@ count_covid_round <- count_covid %>%
                 N_mid6 = if_else(N <= 7, NA_real_, roundmid_any(N)),
                 events_mid6 = if_else(Events <= 7, NA_real_, roundmid_any(Events)),
                 person_time_mid6 = if_else(Person_time <= 7, NA_real_, roundmid_any(Person_time)),
-                rate_mid6 = round((events_mid6 / person_time_mid6) * 1000, 2)) %>% 
+                rate_mid6 = round((events_mid6 / person_time_mid6) * 1000, 5)) %>% 
         select(ethnicity6_combined, ends_with("_mid6"), Outcome)
         
 write_csv(count_covid, file.path(outdir, "count_covid.csv"))
@@ -360,7 +361,7 @@ count_flu_round <- count_flu %>%
                 N_mid6 = if_else(N <= 7, NA_real_, roundmid_any(N)),
                 events_mid6 = if_else(Events <= 7, NA_real_, roundmid_any(Events)),
                 person_time_mid6 = if_else(Person_time <= 7, NA_real_, roundmid_any(Person_time)),
-                rate_mid6 = round((events_mid6 / person_time_mid6) * 1000, 2)) %>% 
+                rate_mid6 = round((events_mid6 / person_time_mid6) * 1000, 5)) %>% 
         select(ethnicity6_combined, ends_with("_mid6"), Outcome)
         
 write_csv(count_flu, file.path(outdir, "count_flu.csv"))
@@ -376,7 +377,7 @@ count_rsv_round <- count_rsv %>%
                 N_mid6 = if_else(N <= 7, NA_real_, roundmid_any(N)),
                 events_mid6 = if_else(Events <= 7, NA_real_, roundmid_any(Events)),
                 person_time_mid6 = if_else(Person_time <= 7, NA_real_, roundmid_any(Person_time)),
-                rate_mid6 = round((events_mid6 / person_time_mid6) * 1000, 2)) %>% 
+                rate_mid6 = round((events_mid6 / person_time_mid6) * 1000, 5)) %>% 
         select(ethnicity6_combined, ends_with("_mid6"), Outcome)
         
 write_csv(count_rsv, file.path(outdir, "count_rsv.csv"))
