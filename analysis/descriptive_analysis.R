@@ -24,7 +24,7 @@ source(here::here("analysis", "redaction.R"))
 outdir <- here("output", "tables")
 fs::dir_create(outdir)
 
-#define function for midpoint 6 rounding
+#define function for redacting and midpoint 6 rounding
 roundmid_any <- function(x, to = 6) {
   
   # like round_any, but centers on (integer) midpoint of the rounding points
@@ -108,7 +108,8 @@ var_labels_list <- list(
 #     names_from = by,
 #     values_from = value
 #   )
-
+print(sum(is.na(baseline_covid$sex)))
+print(sum(is.na(baseline_flu_rsv$sex)))
 # Grouped table
 desc_covid_by <- baseline_covid %>% 
         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
@@ -139,8 +140,8 @@ extract_round_stats <- function(tbl) {
                 unnest(df_stats) %>%
                 select(-any_of("fmt_fn")) %>%
                 mutate(
-                        n         = roundmid_any(n),
-                        N         = roundmid_any(N),
+                        n         = ifelse(n<=7, NA_real_, roundmid_any(n)),
+                        N         = ifelse(n<=7, NA_real_, roundmid_any(N)),
                         p         = round(100*n/N, 1),
                         N_miss    = roundmid_any(N_miss),
                         N_obs     = roundmid_any(N_obs),
@@ -332,25 +333,103 @@ create_event_table <- function(data, time, status, outcome, group = NULL, rate_m
 }
 
 # Run function for each outcome with GP, hospitalisations and both and create table
+# ethnicity
 count_covid_gp <- create_event_table(outcomes_covid, time = "stop_gp", status = "gp_binary", outcome = "COVID - GP", group = "ethnicity6_combined")
 count_covid_sc <- create_event_table(outcomes_covid, time = "stop_sc", status = "sc_binary", outcome = "COVID - SC", group = "ethnicity6_combined")
 count_covid_all <- create_event_table(outcomes_covid, time = "stop", status = "binary_all", outcome = "COVID - all", group = "ethnicity6_combined")
 count_covid <- bind_rows(count_covid_gp, count_covid_sc, count_covid_all)
+# round counts to midpoint 6
+count_covid_round <- count_covid %>% 
+        mutate(
+                N_mid6 = if_else(N <= 7, NA_real_, roundmid_any(N)),
+                events_mid6 = if_else(Events <= 7, NA_real_, roundmid_any(Events)),
+                person_time_mid6 = if_else(Person_time <= 7, NA_real_, roundmid_any(Person_time)),
+                rate_mid6 = round((events_mid6 / person_time_mid6) * 1000, 2)) %>% 
+        select(ethnicity6_combined, ends_with("_mid6"), Outcome)
+        
 write_csv(count_covid, file.path(outdir, "count_covid.csv"))
+write_csv(count_covid_round, file.path(outdir, "count_covid_round.csv"))
 
 count_flu_gp <- create_event_table(outcomes_flu, time = "stop_gp", status = "gp_binary", outcome = "flu - GP", group = "ethnicity6_combined")
 count_flu_sc <- create_event_table(outcomes_flu, time = "stop_sc", status = "sc_binary", outcome = "flu - SC", group = "ethnicity6_combined")
 count_flu_all <- create_event_table(outcomes_flu, time = "stop", status = "binary_all", outcome = "flu - all", group = "ethnicity6_combined")
 count_flu <- bind_rows(count_flu_gp, count_flu_sc, count_flu_all)
+# round counts to midpoint 6
+count_flu_round <- count_flu %>% 
+        mutate(
+                N_mid6 = if_else(N <= 7, NA_real_, roundmid_any(N)),
+                events_mid6 = if_else(Events <= 7, NA_real_, roundmid_any(Events)),
+                person_time_mid6 = if_else(Person_time <= 7, NA_real_, roundmid_any(Person_time)),
+                rate_mid6 = round((events_mid6 / person_time_mid6) * 1000, 2)) %>% 
+        select(ethnicity6_combined, ends_with("_mid6"), Outcome)
+        
 write_csv(count_flu, file.path(outdir, "count_flu.csv"))
+write_csv(count_flu_round, file.path(outdir, "count_flu_round.csv"))
 
 count_rsv_gp <- create_event_table(outcomes_rsv, time = "stop_gp", status = "gp_binary", outcome = "rsv - GP", group = "ethnicity6_combined")
 count_rsv_sc <- create_event_table(outcomes_rsv, time = "stop_sc", status = "sc_binary", outcome = "rsv - SC", group = "ethnicity6_combined")
 count_rsv_all <- create_event_table(outcomes_rsv, time = "stop", status = "binary_all", outcome = "rsv - all", group = "ethnicity6_combined")
 count_rsv <- bind_rows(count_rsv_gp, count_rsv_sc, count_rsv_all)
+# round counts to midpoint 6
+count_rsv_round <- count_rsv %>% 
+        mutate(
+                N_mid6 = if_else(N <= 7, NA_real_, roundmid_any(N)),
+                events_mid6 = if_else(Events <= 7, NA_real_, roundmid_any(Events)),
+                person_time_mid6 = if_else(Person_time <= 7, NA_real_, roundmid_any(Person_time)),
+                rate_mid6 = round((events_mid6 / person_time_mid6) * 1000, 2)) %>% 
+        select(ethnicity6_combined, ends_with("_mid6"), Outcome)
+        
 write_csv(count_rsv, file.path(outdir, "count_rsv.csv"))
+write_csv(count_rsv_round, file.path(outdir, "count_rsv_round.csv"))
 
+#IMD
+count_covid_imd_gp <- create_event_table(outcomes_covid, time = "stop_gp", status = "gp_binary", outcome = "COVID - GP", group = "imd_quintile")
+count_covid_imd_sc <- create_event_table(outcomes_covid, time = "stop_sc", status = "sc_binary", outcome = "COVID - SC", group = "imd_quintile")
+count_covid_imd_all <- create_event_table(outcomes_covid, time = "stop", status = "binary_all", outcome = "COVID - all", group = "imd_quintile")
+count_covid_imd <- bind_rows(count_covid_imd_gp, count_covid_imd_sc, count_covid_imd_all)
+# round counts to midpoint 6
+count_covid_imd_round <- count_covid_imd %>% 
+        mutate(
+                N_mid6 = if_else(N <= 7, NA_real_, roundmid_any(N)),
+                events_mid6 = if_else(Events <= 7, NA_real_, roundmid_any(Events)),
+                person_time_mid6 = if_else(Person_time <= 7, NA_real_, roundmid_any(Person_time)),
+                rate_mid6 = round((events_mid6 / person_time_mid6) * 1000, 2)) %>% 
+        select(imd_quintile, ends_with("_mid6"), Outcome)
+        
+write_csv(count_covid_imd, file.path(outdir, "count_covid_imd.csv"))
+write_csv(count_covid_imd_round, file.path(outdir, "count_covid_imd_round.csv"))
 
+count_flu_imd_gp <- create_event_table(outcomes_flu, time = "stop_gp", status = "gp_binary", outcome = "flu - GP", group = "imd_quintile")
+count_flu_imd_sc <- create_event_table(outcomes_flu, time = "stop_sc", status = "sc_binary", outcome = "flu - SC", group = "imd_quintile")
+count_flu_imd_all <- create_event_table(outcomes_flu, time = "stop", status = "binary_all", outcome = "flu - all", group = "imd_quintile")
+count_flu_imd <- bind_rows(count_flu_imd_gp, count_flu_imd_sc, count_flu_imd_all)
+# round counts to midpoint 6
+count_flu_imd_round <- count_flu_imd %>% 
+        mutate(
+                N_mid6 = if_else(N <= 7, NA_real_, roundmid_any(N)),
+                events_mid6 = if_else(Events <= 7, NA_real_, roundmid_any(Events)),
+                person_time_mid6 = if_else(Person_time <= 7, NA_real_, roundmid_any(Person_time)),
+                rate_mid6 = round((events_mid6 / person_time_mid6) * 1000, 2)) %>% 
+        select(imd_quintile, ends_with("_mid6"), Outcome)
+        
+write_csv(count_flu_imd, file.path(outdir, "count_flu_imd.csv"))
+write_csv(count_flu_imd_round, file.path(outdir, "count_flu_imd_round.csv"))
+
+count_rsv_imd_gp <- create_event_table(outcomes_rsv, time = "stop_gp", status = "gp_binary", outcome = "rsv - GP", group = "imd_quintile")
+count_rsv_imd_sc <- create_event_table(outcomes_rsv, time = "stop_sc", status = "sc_binary", outcome = "rsv - SC", group = "imd_quintile")
+count_rsv_imd_all <- create_event_table(outcomes_rsv, time = "stop", status = "binary_all", outcome = "rsv - all", group = "imd_quintile")
+count_rsv_imd <- bind_rows(count_rsv_imd_gp, count_rsv_imd_sc, count_rsv_imd_all)
+# round counts to midpoint 6
+count_rsv_imd_round <- count_rsv_imd %>% 
+        mutate(
+                N_mid6 = if_else(N <= 7, NA_real_, roundmid_any(N)),
+                events_mid6 = if_else(Events <= 7, NA_real_, roundmid_any(Events)),
+                person_time_mid6 = if_else(Person_time <= 7, NA_real_, roundmid_any(Person_time)),
+                rate_mid6 = round((events_mid6 / person_time_mid6) * 1000, 2)) %>% 
+        select(imd_quintile, ends_with("_mid6"), Outcome)
+        
+write_csv(count_rsv_imd, file.path(outdir, "count_rsv_imd.csv"))
+write_csv(count_rsv_imd_round, file.path(outdir, "count_rsv_imd_round.csv"))
 
 # Cox PH models to measure differences in utilisation by ethnicity and IMD
 run_cox_models <- function(disease, difference) {
@@ -452,7 +531,7 @@ write_csv(cox_table, file.path(outdir, "cox_models.csv"))
         sc_plot <- ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
                 conf.int = TRUE, pval = FALSE, legend = "right", 
                 title = paste("Kaplan-Meier:", disease, ", ethnicity (sc)"),
-                ylim=c(0.75, 1),
+                ylim=c(0.95, 1),
                 ggtheme = theme_bw())
         graph_file <- paste0("plot_km_", disease, "_ethnicity_sc.svg")
         ggsave(file.path(outdir, graph_file), sc_plot$plot)
@@ -473,7 +552,7 @@ write_csv(cox_table, file.path(outdir, "cox_models.csv"))
         sc_plot <- ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
                 conf.int = TRUE, pval = FALSE, legend = "right", 
                 title = paste("Kaplan-Meier:", disease, ", IMD (SC)"),
-                ylim=c(0.75, 1),
+                ylim=c(0.95, 1),
                 ggtheme = theme_bw())
         graph_file <- paste0("plot_km_", disease, "_imd_sc.svg")
         ggsave(file.path(outdir, graph_file), sc_plot$plot)
