@@ -33,271 +33,271 @@ roundmid_any <- function(x, to = 6) {
 }
 
 #Creating baseline tables - first import data
-# baseline_covid <- read_feather(here("output/an_bl_data_covid.arrow")) %>% 
-#         mutate(imd_quintile = as.factor(imd_quintile),
-#         min_yr_start = as.factor(min_start_yr))
-# baseline_flu_rsv <- read_feather(here("output/an_bl_data_flu_rsv.arrow"))%>% 
-#         mutate(imd_quintile = as.factor(imd_quintile),
-#         min_yr_start = as.factor(min_start_yr))
+baseline_covid <- read_feather(here("output/an_bl_data_covid.arrow")) %>% 
+        mutate(imd_quintile = as.factor(imd_quintile),
+        min_yr_start = as.factor(min_start_yr))
+baseline_flu_rsv <- read_feather(here("output/an_bl_data_flu_rsv.arrow"))%>% 
+        mutate(imd_quintile = as.factor(imd_quintile),
+        min_yr_start = as.factor(min_start_yr))
 
-# var_labels_list <- list(
-#                 min_start_yr ~ "Baseline year",
-#                 age_group ~ "Age group",
-#                 imd_quintile ~ "IMD quintile",
-#                 ethnicity16_combined ~ "Ethnicity (16 groups)",
-#                 sex ~ "Sex",
-#                 urban_rural_5 ~ "Urban-rural classification",
-#                 migrant ~ "Migrant",
-#                 english_language ~ "English not main language spoken",
-#                 flu_atrisk_grp ~ "Flu clinical risk group",
-#                 covid_atrisk_grp ~ "COVID-19 clinical risk group"
-#                 )
+var_labels_list <- list(
+                min_start_yr ~ "Baseline year",
+                age_group ~ "Age group",
+                imd_quintile ~ "IMD quintile",
+                ethnicity16_combined ~ "Ethnicity (16 groups)",
+                sex ~ "Sex",
+                urban_rural_5 ~ "Urban-rural classification",
+                migrant ~ "Migrant",
+                english_language ~ "English not main language spoken",
+                flu_atrisk_grp ~ "Flu clinical risk group",
+                covid_atrisk_grp ~ "COVID-19 clinical risk group"
+                )
 
 
-# # COVID cohort baseline table by ethnicity
-# # desc_covid <- baseline_covid %>% 
-# #         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
-# #         urban_rural_5, imd_quintile, migrant, english_language, 
-# #         flu_atrisk_grp, covid_atrisk_grp) %>% 
-# #         mutate(ethnicity6_combined = fct_explicit_na(
-# #                 ethnicity6_combined, 
-# #                 na_level = "Missing")) %>%
-# #         tbl_summary(
-# #                 missing = "no",
-# #                 by = ethnicity6_combined,
-# #                 label = var_labels_list,
-# #         ) %>% 
-# #         add_overall(last = FALSE)
-# # desc_covid$inputs$data <- NULL
-
-# # # Apply redactions to baseline table
-# # desc_covid_redact <- redact_tblsummary(desc_covid, 7) 
-
-# # #Apply midpoint 6 rounding
-# # raw_stats <- desc_covid_redact$meta_data %>%
-# #         select(var_label, df_stats) %>%
-# #         unnest(df_stats) %>%
-# #         select(-any_of("fmt_fn"))
-# # print(unique(raw_stats$by))
-# # raw_stats_midpoint <- raw_stats %>%
-# #   mutate(
-# #     n=roundmid_any(n),
-# #     N=roundmid_any(N),
-# #     p=round(100*n/N,1),
-# #     N_miss = roundmid_any(N_miss),
-# #     N_obs = roundmid_any(N_obs),
-# #     p_miss = round(100*N_miss/N_obs,1),
-# #     N_nonmiss = roundmid_any(N_nonmiss),
-# #     p_nonmiss = round(100*N_nonmiss/N_obs,1),
-# #     var_label = factor(var_label),
-# #     variable_levels = replace_na(as.character(variable_levels), "")
-# #   ) 
-
-# # desc_covid_redact_round <- raw_stats_midpoint %>%
-# #   rowwise() %>%
-# #   transmute(
-# #     var_label,
-# #     # gt creates a column called `label` when run locally, `variable_labels` 
-# #     # when run in opensafely (probs different versions)
-# #     # label,
-# #     variable_levels,
-# #     by,
-# #     value = glue::glue(stat_display, .envir = cur_data())
-# #   ) %>%
-# #   pivot_wider(
-# #     names_from = by,
-# #     values_from = value
-# #   )
-# print(sum(is.na(baseline_covid$sex)))
-# print(sum(is.na(baseline_flu_rsv$sex)))
-# # Grouped table
-# desc_covid_by <- baseline_covid %>% 
+# COVID cohort baseline table by ethnicity
+# desc_covid <- baseline_covid %>% 
 #         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
-#                urban_rural_5, imd_quintile, migrant, english_language, 
-#                flu_atrisk_grp, covid_atrisk_grp) %>% 
-#         mutate(ethnicity6_combined = fct_explicit_na(ethnicity6_combined, na_level = "Missing")) %>%
+#         urban_rural_5, imd_quintile, migrant, english_language, 
+#         flu_atrisk_grp, covid_atrisk_grp) %>% 
+#         mutate(ethnicity6_combined = fct_explicit_na(
+#                 ethnicity6_combined, 
+#                 na_level = "Missing")) %>%
 #         tbl_summary(
 #                 missing = "no",
 #                 by = ethnicity6_combined,
-#                 label = var_labels_list
-#         )
+#                 label = var_labels_list,
+#         ) %>% 
+#         add_overall(last = FALSE)
+# desc_covid$inputs$data <- NULL
 
-# # Overall table (no by)
-# desc_covid_overall <- baseline_covid %>% 
-#         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
-#                urban_rural_5, imd_quintile, migrant, english_language, 
-#                flu_atrisk_grp, covid_atrisk_grp) %>% 
-#         mutate(ethnicity6_combined = fct_explicit_na(ethnicity6_combined, na_level = "Missing")) %>%
-#         tbl_summary(
-#                 missing = "no",
-#                 label = var_labels_list
-#         )
+# # Apply redactions to baseline table
+# desc_covid_redact <- redact_tblsummary(desc_covid, 7) 
 
-# # Extract and round both
-# extract_round_stats <- function(tbl) {
-#         tbl$meta_data %>%
-#                 select(var_label, df_stats) %>%
-#                 unnest(df_stats) %>%
-#                 select(-any_of("fmt_fn")) %>%
-#                 mutate(
-#                         n         = ifelse(n<=7, NA_real_, roundmid_any(n)),
-#                         N         = ifelse(n<=7, NA_real_, roundmid_any(N)),
-#                         p         = round(100*n/N, 1),
-#                         N_miss    = roundmid_any(N_miss),
-#                         N_obs     = roundmid_any(N_obs),
-#                         p_miss    = round(100*N_miss/N_obs, 1),
-#                         N_nonmiss = roundmid_any(N_nonmiss),
-#                         p_nonmiss = round(100*N_nonmiss/N_obs, 1),
-#                         var_label = factor(var_label),
-#                         variable_levels = replace_na(as.character(variable_levels), "")
-#                 )
-# }
+# #Apply midpoint 6 rounding
+# raw_stats <- desc_covid_redact$meta_data %>%
+#         select(var_label, df_stats) %>%
+#         unnest(df_stats) %>%
+#         select(-any_of("fmt_fn"))
+# print(unique(raw_stats$by))
+# raw_stats_midpoint <- raw_stats %>%
+#   mutate(
+#     n=roundmid_any(n),
+#     N=roundmid_any(N),
+#     p=round(100*n/N,1),
+#     N_miss = roundmid_any(N_miss),
+#     N_obs = roundmid_any(N_obs),
+#     p_miss = round(100*N_miss/N_obs,1),
+#     N_nonmiss = roundmid_any(N_nonmiss),
+#     p_nonmiss = round(100*N_nonmiss/N_obs,1),
+#     var_label = factor(var_label),
+#     variable_levels = replace_na(as.character(variable_levels), "")
+#   ) 
 
-# raw_stats_by      <- extract_round_stats(desc_covid_by)
-# raw_stats_overall <- extract_round_stats(desc_covid_overall) %>%
-#         mutate(by = "Overall")  # add by column so pivot_wider works
+# desc_covid_redact_round <- raw_stats_midpoint %>%
+#   rowwise() %>%
+#   transmute(
+#     var_label,
+#     # gt creates a column called `label` when run locally, `variable_labels` 
+#     # when run in opensafely (probs different versions)
+#     # label,
+#     variable_levels,
+#     by,
+#     value = glue::glue(stat_display, .envir = cur_data())
+#   ) %>%
+#   pivot_wider(
+#     names_from = by,
+#     values_from = value
+#   )
+print(sum(is.na(baseline_covid$sex)))
+print(sum(is.na(baseline_flu_rsv$sex)))
+# Grouped table
+desc_covid_by <- baseline_covid %>% 
+        select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
+               urban_rural_5, imd_quintile, migrant, english_language, 
+               flu_atrisk_grp, covid_atrisk_grp) %>% 
+        mutate(ethnicity6_combined = fct_explicit_na(ethnicity6_combined, na_level = "Missing")) %>%
+        tbl_summary(
+                missing = "no",
+                by = ethnicity6_combined,
+                label = var_labels_list
+        )
 
-# # Combine and pivot
-# desc_covid_redact_round <- bind_rows(raw_stats_overall, raw_stats_by) %>%
-#         rowwise() %>%
-#         transmute(
-#                 var_label,
-#                 variable_levels,
-#                 by,
-#                 value = glue::glue(stat_display, .envir = cur_data())
-#         ) %>%
-#         pivot_wider(
-#                 names_from = by,
-#                 values_from = value
-#         )
-# # saving both rounded/redacted and not rpound/redacted versions
-# write_csv(desc_covid_redact_round, file.path(outdir, "baseline_table_covid_r.csv"))
-# gt::gtsave(as_gt(desc_covid_by), file.path(outdir, "baseline_table_covid.html"))
+# Overall table (no by)
+desc_covid_overall <- baseline_covid %>% 
+        select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
+               urban_rural_5, imd_quintile, migrant, english_language, 
+               flu_atrisk_grp, covid_atrisk_grp) %>% 
+        mutate(ethnicity6_combined = fct_explicit_na(ethnicity6_combined, na_level = "Missing")) %>%
+        tbl_summary(
+                missing = "no",
+                label = var_labels_list
+        )
 
-# # Flu/RSV cohort baseline table by ethnicity
-# # Grouped table
-# desc_flu_rsv_by <- baseline_flu_rsv %>% 
-#         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
-#                urban_rural_5, imd_quintile, migrant, english_language, 
-#                flu_atrisk_grp, covid_atrisk_grp) %>% 
-#         mutate(ethnicity6_combined = fct_explicit_na(ethnicity6_combined, na_level = "Missing")) %>%
-#         tbl_summary(
-#                 missing = "no",
-#                 by = ethnicity6_combined,
-#                 label = var_labels_list
-#         )
+# Extract and round both
+extract_round_stats <- function(tbl) {
+        tbl$meta_data %>%
+                select(var_label, df_stats) %>%
+                unnest(df_stats) %>%
+                select(-any_of("fmt_fn")) %>%
+                mutate(
+                        n         = ifelse(n<=7, NA_real_, roundmid_any(n)),
+                        N         = ifelse(n<=7, NA_real_, roundmid_any(N)),
+                        p         = round(100*n/N, 1),
+                        N_miss    = roundmid_any(N_miss),
+                        N_obs     = roundmid_any(N_obs),
+                        p_miss    = round(100*N_miss/N_obs, 1),
+                        N_nonmiss = roundmid_any(N_nonmiss),
+                        p_nonmiss = round(100*N_nonmiss/N_obs, 1),
+                        var_label = factor(var_label),
+                        variable_levels = replace_na(as.character(variable_levels), "")
+                )
+}
 
-# # Overall table (no by)
-# desc_flu_rsv_overall <- baseline_flu_rsv %>% 
-#         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
-#                urban_rural_5, imd_quintile, migrant, english_language, 
-#                flu_atrisk_grp, covid_atrisk_grp) %>% 
-#         mutate(ethnicity6_combined = fct_explicit_na(ethnicity6_combined, na_level = "Missing")) %>%
-#         tbl_summary(
-#                 missing = "no",
-#                 label = var_labels_list
-#         )
+raw_stats_by      <- extract_round_stats(desc_covid_by)
+raw_stats_overall <- extract_round_stats(desc_covid_overall) %>%
+        mutate(by = "Overall")  # add by column so pivot_wider works
 
-# raw_stats_by      <- extract_round_stats(desc_flu_rsv_by)
-# raw_stats_overall <- extract_round_stats(desc_flu_rsv_overall) %>%
-#         mutate(by = "Overall")  # add by column so pivot_wider works
+# Combine and pivot
+desc_covid_redact_round <- bind_rows(raw_stats_overall, raw_stats_by) %>%
+        rowwise() %>%
+        transmute(
+                var_label,
+                variable_levels,
+                by,
+                value = glue::glue(stat_display, .envir = cur_data())
+        ) %>%
+        pivot_wider(
+                names_from = by,
+                values_from = value
+        )
+# saving both rounded/redacted and not rpound/redacted versions
+write_csv(desc_covid_redact_round, file.path(outdir, "baseline_table_covid_r.csv"))
+gt::gtsave(as_gt(desc_covid_by), file.path(outdir, "baseline_table_covid.html"))
 
-# # Combine and pivot
-# desc_flu_rsv_redact_round <- bind_rows(raw_stats_overall, raw_stats_by) %>%
-#         rowwise() %>%
-#         transmute(
-#                 var_label,
-#                 variable_levels,
-#                 by,
-#                 value = glue::glue(stat_display, .envir = cur_data())
-#         ) %>%
-#         pivot_wider(
-#                 names_from = by,
-#                 values_from = value
-#         )
-# # saving both rounded/redacted and not rpound/redacted versions
-# write_csv(desc_flu_rsv_redact_round, file.path(outdir, "baseline_table_flu_rsv_r.csv"))
-# gt::gtsave(as_gt(desc_flu_rsv_by), file.path(outdir, "baseline_table_flu_rsv.html"))
+# Flu/RSV cohort baseline table by ethnicity
+# Grouped table
+desc_flu_rsv_by <- baseline_flu_rsv %>% 
+        select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
+               urban_rural_5, imd_quintile, migrant, english_language, 
+               flu_atrisk_grp, covid_atrisk_grp) %>% 
+        mutate(ethnicity6_combined = fct_explicit_na(ethnicity6_combined, na_level = "Missing")) %>%
+        tbl_summary(
+                missing = "no",
+                by = ethnicity6_combined,
+                label = var_labels_list
+        )
 
-# # generating tables with rounded weekly events, denominators and rates from measures
-# rates_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
-#         filter(measure=="covid_gp" | measure=="covid_admission") %>% 
-#         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
-#                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
-#                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-#         select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
-# write_csv(rates_covid, file.path(outdir, "rounded_rates_covid.csv"))
+# Overall table (no by)
+desc_flu_rsv_overall <- baseline_flu_rsv %>% 
+        select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
+               urban_rural_5, imd_quintile, migrant, english_language, 
+               flu_atrisk_grp, covid_atrisk_grp) %>% 
+        mutate(ethnicity6_combined = fct_explicit_na(ethnicity6_combined, na_level = "Missing")) %>%
+        tbl_summary(
+                missing = "no",
+                label = var_labels_list
+        )
 
-# rates_flu_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
-#         filter(measure=="flu_gp" | measure=="flu_admission") %>% 
-#         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
-#                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
-#                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-#         select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
-# write_csv(rates_flu_18, file.path(outdir, "rounded_rates_flu_18.csv"))
+raw_stats_by      <- extract_round_stats(desc_flu_rsv_by)
+raw_stats_overall <- extract_round_stats(desc_flu_rsv_overall) %>%
+        mutate(by = "Overall")  # add by column so pivot_wider works
 
-# rates_flu_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
-#         filter(measure=="flu_gp" | measure=="flu_admission") %>% 
-#         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
-#                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
-#                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-#         select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
-# write_csv(rates_flu_21, file.path(outdir, "rounded_rates_flu_21.csv"))
+# Combine and pivot
+desc_flu_rsv_redact_round <- bind_rows(raw_stats_overall, raw_stats_by) %>%
+        rowwise() %>%
+        transmute(
+                var_label,
+                variable_levels,
+                by,
+                value = glue::glue(stat_display, .envir = cur_data())
+        ) %>%
+        pivot_wider(
+                names_from = by,
+                values_from = value
+        )
+# saving both rounded/redacted and not rpound/redacted versions
+write_csv(desc_flu_rsv_redact_round, file.path(outdir, "baseline_table_flu_rsv_r.csv"))
+gt::gtsave(as_gt(desc_flu_rsv_by), file.path(outdir, "baseline_table_flu_rsv.html"))
 
-# rates_rsv_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
-#         filter(measure=="rsv_gp" | measure=="rsv_admission") %>% 
-#         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
-#                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
-#                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-#         select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
-# write_csv(rates_rsv_18, file.path(outdir, "rounded_rates_rsv_18.csv"))
+# generating tables with rounded weekly events, denominators and rates from measures
+rates_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
+        filter(measure=="covid_gp" | measure=="covid_admission") %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_covid, file.path(outdir, "rounded_rates_covid.csv"))
 
-# rates_rsv_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
-#         filter(measure=="rsv_gp" | measure=="rsv_admission") %>% 
-#         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
-#                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
-#                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-#         select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
-# write_csv(rates_rsv_21, file.path(outdir, "rounded_rates_rsv_21.csv"))
+rates_flu_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
+        filter(measure=="flu_gp" | measure=="flu_admission") %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_flu_18, file.path(outdir, "rounded_rates_flu_18.csv"))
+
+rates_flu_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
+        filter(measure=="flu_gp" | measure=="flu_admission") %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_flu_21, file.path(outdir, "rounded_rates_flu_21.csv"))
+
+rates_rsv_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
+        filter(measure=="rsv_gp" | measure=="rsv_admission") %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_rsv_18, file.path(outdir, "rounded_rates_rsv_18.csv"))
+
+rates_rsv_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
+        filter(measure=="rsv_gp" | measure=="rsv_admission") %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_rsv_21, file.path(outdir, "rounded_rates_rsv_21.csv"))
 
 
-# # Making (not very good) line graphs of rates 
-# plot_line <- function(file, disease) {
+# Making (not very good) line graphs of rates 
+plot_line <- function(file, disease) {
 
-#         p <- ggplot(
-#                 data = file,
-#                 mapping = aes(
-#                 x = interval_start,
-#                 y = rate_mid6,
-#                 group = interaction(ethnicity, measure),
-#                 color = ethnicity,
-#                 )
-#         ) +
-#                 geom_line() +
-#                 geom_point(size = 1) +
-#                 facet_wrap(~measure, scales = "free_y") +
-#                 labs(title = paste("Disease rates for", disease))
+        p <- ggplot(
+                data = file,
+                mapping = aes(
+                x = interval_start,
+                y = rate_mid6,
+                group = interaction(ethnicity, measure),
+                color = ethnicity,
+                )
+        ) +
+                geom_line() +
+                geom_point(size = 1) +
+                facet_wrap(~measure, scales = "free_y") +
+                labs(title = paste("Disease rates for", disease))
 
-#         ggsave(
-#                 filename = paste0("plot_", disease,".svg"),
-#                 plot = p,
-#                 path = outdir
-#         )
+        ggsave(
+                filename = paste0("plot_", disease,".svg"),
+                plot = p,
+                path = outdir
+        )
 
-#         return(p)
-# }
+        return(p)
+}
 
-# disease_list <- list(
-#     covid = rates_covid,
-#     flu_18 = rates_flu_18,
-#     flu_21 = rates_flu_21,
-#     rsv_18 = rates_rsv_18,
-#     rsv_21 = rates_rsv_21
-# )
+disease_list <- list(
+    covid = rates_covid,
+    flu_18 = rates_flu_18,
+    flu_21 = rates_flu_21,
+    rsv_18 = rates_rsv_18,
+    rsv_21 = rates_rsv_21
+)
 
-# plots <- lapply(names(disease_list), function(d_name) {
-#     plot_line(disease_list[[d_name]], d_name)
-# })
+plots <- lapply(names(disease_list), function(d_name) {
+    plot_line(disease_list[[d_name]], d_name)
+})
 
 # Table of outcomes - first event for Cox models
 outcomes_covid <- read_feather(here("output/an_outcome_first_covid.arrow")) 
@@ -484,93 +484,93 @@ write_csv(cox_table, file.path(outdir, "cox_models.csv"))
 
 #test KM plot
 
-# km_gp <- survfit(Surv(stop_gp, gp_binary) ~ ethnicity6_combined, data = outcomes_covid)
-# # Generate GP plot 
-# names(km_gp$strata) <- gsub("ethnicity6_combined=", "", names(km_gp$strata))
-# gp_plot <- ggsurvplot(km_gp, data = outcomes_covid, risk.table = TRUE,
-#         conf.int = TRUE, pval = FALSE, legend = "right", title = ("Kaplan-Meier: COVID-19 (GP)"),
-#         ggtheme = theme_bw())
+km_gp <- survfit(Surv(stop_gp, gp_binary) ~ ethnicity6_combined, data = outcomes_covid)
+# Generate GP plot 
+names(km_gp$strata) <- gsub("ethnicity6_combined=", "", names(km_gp$strata))
+gp_plot <- ggsurvplot(km_gp, data = outcomes_covid, risk.table = TRUE,
+        conf.int = TRUE, pval = FALSE, legend = "right", title = ("Kaplan-Meier: COVID-19 (GP)"),
+        ggtheme = theme_bw())
 
-# ggsave(file.path(outdir, "plot_km_covid_gp.svg"), gp_plot$plot)
+ggsave(file.path(outdir, "plot_km_covid_gp.svg"), gp_plot$plot)
 
-#Kaplan Meier plots - COVID
-#  run_km <- function(disease) {
-#          disease <- as.character(disease)
-#          # Build filename and read dataset
-#         outcomes_list <- list(covid = outcomes_covid, flu = outcomes_flu, rsv = outcomes_rsv)
-#         data_df <- outcomes_list[[disease]]
-#         print(head(data_df))
+# Kaplan Meier plots - COVID
+ run_km <- function(disease) {
+         disease <- as.character(disease)
+         # Build filename and read dataset
+        outcomes_list <- list(covid = outcomes_covid, flu = outcomes_flu, rsv = outcomes_rsv)
+        data_df <- outcomes_list[[disease]]
+        print(head(data_df))
 
-#         # CHECK FOR TIMING ISSUES
-#         cat("\n=== Timing Check for", disease, "===\n")
+        # CHECK FOR TIMING ISSUES
+        cat("\n=== Timing Check for", disease, "===\n")
     
-#         timing_issues <- data_df %>%
-#                 summarise(
-#                 total = n(),
-#                 start_gt_stop_gp = sum(start > stop_gp, na.rm = TRUE),
-#                 start_gt_stop_sc = sum(start > stop_sc, na.rm = TRUE),
-#                 pct_gp = round(sum(start > stop_gp, na.rm = TRUE) / n() * 100, 2),
-#                 pct_sc = round(sum(start > stop_sc, na.rm = TRUE) / n() * 100, 2)
-#                 )
+        timing_issues <- data_df %>%
+                summarise(
+                total = n(),
+                start_gt_stop_gp = sum(start > stop_gp, na.rm = TRUE),
+                start_gt_stop_sc = sum(start > stop_sc, na.rm = TRUE),
+                pct_gp = round(sum(start > stop_gp, na.rm = TRUE) / n() * 100, 2),
+                pct_sc = round(sum(start > stop_sc, na.rm = TRUE) / n() * 100, 2)
+                )
         
-#         print(timing_issues)
+        print(timing_issues)
         
     
-#          # Fit KM models
-#         # Ethnicity
-#         km_gp <- survfit(Surv(start, stop_gp, gp_binary) ~ ethnicity6_combined, data = data_df)
-# #         # Generate GP plot 
-#         gp_plot <- ggsurvplot(km_gp, data = data_df, risk.table = TRUE, 
-#                 conf.int = TRUE, pval = FALSE, legend = "right", 
-#                 title = paste("Kaplan-Meier:", disease, ", ethnicity (GP)"),
-#                 ylim=c(0.75, 1),
-#                 ggtheme = theme_bw())
-#         graph_file <- paste0("plot_km_", disease, "_ethnicity_gp.svg")
-#         ggsave(file.path(outdir, graph_file), gp_plot$plot)
+         # Fit KM models
+        # Ethnicity
+        km_gp <- survfit(Surv(start, stop_gp, gp_binary) ~ ethnicity6_combined, data = data_df)
+#         # Generate GP plot 
+        gp_plot <- ggsurvplot(km_gp, data = data_df, risk.table = TRUE, 
+                conf.int = TRUE, pval = FALSE, legend = "right", 
+                title = paste("Kaplan-Meier:", disease, ", ethnicity (GP)"),
+                ylim=c(0.75, 1),
+                ggtheme = theme_bw())
+        graph_file <- paste0("plot_km_", disease, "_ethnicity_gp.svg")
+        ggsave(file.path(outdir, graph_file), gp_plot$plot)
 
-#         km_sc <- survfit(Surv(start, stop_sc, sc_binary) ~ ethnicity6_combined, data = data_df)
-# #         # Generate SC plot 
-#         sc_plot <- ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
-#                 conf.int = TRUE, pval = FALSE, legend = "right", 
-#                 title = paste("Kaplan-Meier:", disease, ", ethnicity (sc)"),
-#                 ylim=c(0.95, 1),
-#                 ggtheme = theme_bw())
-#         graph_file <- paste0("plot_km_", disease, "_ethnicity_sc.svg")
-#         ggsave(file.path(outdir, graph_file), sc_plot$plot)
+        km_sc <- survfit(Surv(start, stop_sc, sc_binary) ~ ethnicity6_combined, data = data_df)
+#         # Generate SC plot 
+        sc_plot <- ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
+                conf.int = TRUE, pval = FALSE, legend = "right", 
+                title = paste("Kaplan-Meier:", disease, ", ethnicity (sc)"),
+                ylim=c(0.95, 1),
+                ggtheme = theme_bw())
+        graph_file <- paste0("plot_km_", disease, "_ethnicity_sc.svg")
+        ggsave(file.path(outdir, graph_file), sc_plot$plot)
 
-#         # IMD
-#         km_gp <- survfit(Surv(start, stop_gp, gp_binary) ~ imd_quintile, data = data_df)
-# #         # Generate GP plot 
-#         gp_plot <- ggsurvplot(km_gp, data = data_df, risk.table = TRUE,
-#                 conf.int = TRUE, pval = FALSE, legend = "right", 
-#                 title = paste("Kaplan-Meier:", disease, ", IMD (GP)"),
-#                 ylim=c(0.75, 1),
-#                 ggtheme = theme_bw())
-#         graph_file <- paste0("plot_km_", disease, "_imd_gp.svg")
-#         ggsave(file.path(outdir, graph_file), gp_plot$plot)
+        # IMD
+        km_gp <- survfit(Surv(start, stop_gp, gp_binary) ~ imd_quintile, data = data_df)
+#         # Generate GP plot 
+        gp_plot <- ggsurvplot(km_gp, data = data_df, risk.table = TRUE,
+                conf.int = TRUE, pval = FALSE, legend = "right", 
+                title = paste("Kaplan-Meier:", disease, ", IMD (GP)"),
+                ylim=c(0.75, 1),
+                ggtheme = theme_bw())
+        graph_file <- paste0("plot_km_", disease, "_imd_gp.svg")
+        ggsave(file.path(outdir, graph_file), gp_plot$plot)
 
-#         km_sc <- survfit(Surv(start, stop_sc, sc_binary) ~ imd_quintile, data = data_df)
-# #         # Generate SC plot 
-#         sc_plot <- ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
-#                 conf.int = TRUE, pval = FALSE, legend = "right", 
-#                 title = paste("Kaplan-Meier:", disease, ", IMD (SC)"),
-#                 ylim=c(0.95, 1),
-#                 ggtheme = theme_bw())
-#         graph_file <- paste0("plot_km_", disease, "_imd_sc.svg")
-#         ggsave(file.path(outdir, graph_file), sc_plot$plot)
+        km_sc <- survfit(Surv(start, stop_sc, sc_binary) ~ imd_quintile, data = data_df)
+#         # Generate SC plot 
+        sc_plot <- ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
+                conf.int = TRUE, pval = FALSE, legend = "right", 
+                title = paste("Kaplan-Meier:", disease, ", IMD (SC)"),
+                ylim=c(0.95, 1),
+                ggtheme = theme_bw())
+        graph_file <- paste0("plot_km_", disease, "_imd_sc.svg")
+        ggsave(file.path(outdir, graph_file), sc_plot$plot)
 
 
-#  }
+ }
 
-# param_grid <- expand.grid(disease = diseases, stringsAsFactors = FALSE)
+param_grid <- expand.grid(disease = diseases, stringsAsFactors = FALSE)
 
-# print(str(param_grid))
+print(str(param_grid))
 
-# all_plots <- pmap(param_grid,
-#   function(disease) {
-#     run_km(
-#       disease = as.character(disease)
-#     )
-#   })
-#
+all_plots <- pmap(param_grid,
+  function(disease) {
+    run_km(
+      disease = as.character(disease)
+    )
+  })
+
 
