@@ -476,9 +476,8 @@ cox_table <- pmap_dfr(
 print(head(cox_table))
 cox_table <- cox_table %>% 
                 mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 2))) %>%
-                mutate(p.value = round(p.value, 4)) %>% 
                 # don't need std.error or statistic
-                select("term", "estimate", "p.value", "conf.low", "conf.high", "outcome", "by_var", "disease")
+                select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease")
 
 write_csv(cox_table, file.path(outdir, "cox_models.csv"))
 
