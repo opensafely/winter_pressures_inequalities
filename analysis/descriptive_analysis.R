@@ -229,7 +229,7 @@ rates_covid <- read_csv(here("output/measures/measures_covid.csv")) %>%
         select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_covid, file.path(outdir, "rounded_rates_covid.csv"))
 
-rates_flu_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
+rates_flu_18 <- read_csv(here("output/measures/measures_flu_2018.csv")) %>% 
         filter(measure=="flu_gp" | measure=="flu_admission" | measure=="flu_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
@@ -237,7 +237,7 @@ rates_flu_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>%
         select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_flu_18, file.path(outdir, "rounded_rates_flu_18.csv"))
 
-rates_flu_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
+rates_flu_21 <- read_csv(here("output/measures/measures_flu_2021.csv")) %>% 
         filter(measure=="flu_gp" | measure=="flu_admission" | measure=="flu_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
@@ -245,7 +245,7 @@ rates_flu_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>%
         select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_flu_21, file.path(outdir, "rounded_rates_flu_21.csv"))
 
-rates_rsv_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
+rates_rsv_18 <- read_csv(here("output/measures/measures_rsv_2018.csv")) %>% 
         filter(measure=="rsv_gp" | measure=="rsv_admission" | measure=="rsv_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
@@ -253,7 +253,7 @@ rates_rsv_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>%
         select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_rsv_18, file.path(outdir, "rounded_rates_rsv_18.csv"))
 
-rates_rsv_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
+rates_rsv_21 <- read_csv(here("output/measures/measures_rsv_2021.csv")) %>% 
         filter(measure=="rsv_gp" | measure=="rsv_admission" | measure=="rsv_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
@@ -524,6 +524,7 @@ cox_table <- pmap_dfr(
   function(disease, difference) run_cox_models(disease, difference)
 )
 print(head(cox_table))
+
 cox_table <- cox_table %>% 
                 mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 2))) %>%
                 # don't need std.error or statistic
