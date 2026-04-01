@@ -47,7 +47,7 @@ measures.configure_dummy_data(population_size=5000)
 denominator = (
         (patients.age_on(index_date) >= 0) 
         & (patients.age_on(index_date) < 110)
-        & ((patients.sex == "male") | (patients.sex == "female") | (patients.sex == "intersex"))
+        & ((patients.sex == "male") | (patients.sex == "female"))
         & (patients.date_of_death.is_after(index_date) | patients.date_of_death.is_null())
         & (practice_registrations.for_patient_on(index_date).exists_for_patient())
     )

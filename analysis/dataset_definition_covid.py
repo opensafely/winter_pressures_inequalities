@@ -62,7 +62,7 @@ was_alive = ((patients.date_of_death.is_after(start_date) | patients.date_of_dea
 )
 
 # known sex
-has_known_sex = patients.sex.is_in(["female", "male", "intersex"])
+has_known_sex = patients.sex.is_in(["female", "male"])
 
 dataset.define_population(
     was_alive
