@@ -114,27 +114,49 @@ actions:
         moderately_sensitive:
           measures_csv: output/measures/measures_covid.csv
 
-  measures_flu_rsv_2018: 
+  measures_flu_2018: 
       run: >
-        ehrql:v1 generate-measures analysis/measures_flu_rsv.py
-        --output output/measures/measures_flu_rsv_2018.csv 
+        ehrql:v1 generate-measures analysis/measures_flu.py
+        --output output/measures/measures_flu_2018.csv 
         --
         --start-date 2018-09-01
         --intervals 24
       outputs:
         moderately_sensitive:
-          measures_csv: output/measures/measures_flu_rsv_2018.csv
+          measures_csv: output/measures/measures_flu_2018.csv
 
-  measures_flu_rsv_2021: 
+  measures_flu_2021: 
       run: >
-        ehrql:v1 generate-measures analysis/measures_flu_rsv.py
-        --output output/measures/measures_flu_rsv_2021.csv 
+        ehrql:v1 generate-measures analysis/measures_flu.py
+        --output output/measures/measures_flu_2021.csv 
         --
         --start-date 2021-09-01
         --intervals 48
       outputs:
         moderately_sensitive:
-          measures_csv: output/measures/measures_flu_rsv_2021.csv
+          measures_csv: output/measures/measures_flu_2021.csv
+
+  measures_rsv_2018: 
+      run: >
+        ehrql:v1 generate-measures analysis/measures_rsv.py
+        --output output/measures/measures_rsv_2018.csv 
+        --
+        --start-date 2018-09-01
+        --intervals 24
+      outputs:
+        moderately_sensitive:
+          measures_csv: output/measures/measures_rsv_2018.csv
+
+  measures_rsv_2021: 
+      run: >
+        ehrql:v1 generate-measures analysis/measures_rsv.py
+        --output output/measures/measures_rsv_2021.csv 
+        --
+        --start-date 2021-09-01
+        --intervals 48
+      outputs:
+        moderately_sensitive:
+          measures_csv: output/measures/measures_rsv_2021.csv
 
   data_process_bl:
       run: r:latest analysis/data_processing_baseline.R 
@@ -205,8 +227,10 @@ actions:
         - data_process_outcome_flu
         - data_process_outcome_rsv
         - measures_covid
-        - measures_flu_rsv_2018
-        - measures_flu_rsv_2021
+        - measures_flu_2018
+        - measures_flu_2021
+        - measures_rsv_2018
+        - measures_rsv_2021
       outputs: 
         moderately_sensitive:
           table: output/tables/baseline_table_covid*.html

@@ -220,8 +220,9 @@ write_csv(desc_flu_rsv_redact_round, file.path(outdir, "baseline_table_flu_rsv_r
 gt::gtsave(as_gt(desc_flu_rsv_by), file.path(outdir, "baseline_table_flu_rsv.html"))
 
 # generating tables with rounded weekly events, denominators and rates from measures
+# ethnicity
 rates_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
-        filter(measure=="covid_gp" | measure=="covid_admission") %>% 
+        filter(measure=="covid_gp" | measure=="covid_admission" | measure=="covid_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
@@ -229,7 +230,7 @@ rates_covid <- read_csv(here("output/measures/measures_covid.csv")) %>%
 write_csv(rates_covid, file.path(outdir, "rounded_rates_covid.csv"))
 
 rates_flu_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
-        filter(measure=="flu_gp" | measure=="flu_admission") %>% 
+        filter(measure=="flu_gp" | measure=="flu_admission" | measure=="flu_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
@@ -237,7 +238,7 @@ rates_flu_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>%
 write_csv(rates_flu_18, file.path(outdir, "rounded_rates_flu_18.csv"))
 
 rates_flu_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
-        filter(measure=="flu_gp" | measure=="flu_admission") %>% 
+        filter(measure=="flu_gp" | measure=="flu_admission" | measure=="flu_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
@@ -245,7 +246,7 @@ rates_flu_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>%
 write_csv(rates_flu_21, file.path(outdir, "rounded_rates_flu_21.csv"))
 
 rates_rsv_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
-        filter(measure=="rsv_gp" | measure=="rsv_admission") %>% 
+        filter(measure=="rsv_gp" | measure=="rsv_admission" | measure=="rsv_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
@@ -253,13 +254,53 @@ rates_rsv_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>%
 write_csv(rates_rsv_18, file.path(outdir, "rounded_rates_rsv_18.csv"))
 
 rates_rsv_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
-        filter(measure=="rsv_gp" | measure=="rsv_admission") %>% 
+        filter(measure=="rsv_gp" | measure=="rsv_admission" | measure=="rsv_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
         select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_rsv_21, file.path(outdir, "rounded_rates_rsv_21.csv"))
 
+#IMD
+rates_imd_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
+        filter(measure=="covid_gp_imd" | measure=="covid_admission_imd" | measure=="covid_emerg_imd") %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_imd_covid, file.path(outdir, "rounded_rates_imd_covid.csv"))
+
+rates_imd_flu_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
+        filter(measure=="flu_gp_imd" | measure=="flu_admission_imd" | measure=="flu_emerg_imd") %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_imd_flu_18, file.path(outdir, "rounded_rates_imd_flu_18.csv"))
+
+rates_imd_flu_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
+        filter(measure=="flu_gp_imd" | measure=="flu_admission_imd" | measure=="flu_emerg_imd") %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_imd_flu_21, file.path(outdir, "rounded_rates_imd_flu_21.csv"))
+
+rates_imd_rsv_18 <- read_csv(here("output/measures/measures_flu_rsv_2018.csv")) %>% 
+        filter(measure=="rsv_gp_imd" | measure=="rsv_admission_imd" | measure=="rsv_emerg_imd") %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_imd_rsv_18, file.path(outdir, "rounded_rates_imd_rsv_18.csv"))
+
+rates_imd_rsv_21 <- read_csv(here("output/measures/measures_flu_rsv_2021.csv")) %>% 
+        filter(measure=="rsv_gp_imd" | measure=="rsv_admission_imd" | measure=="rsv_emerg_imd") %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_imd_rsv_21, file.path(outdir, "rounded_rates_imd_rsv_21.csv"))
 
 # Making (not very good) line graphs of rates 
 plot_line <- function(file, disease) {
@@ -337,8 +378,9 @@ create_event_table <- function(data, time, status, outcome, group = NULL, rate_m
 # ethnicity
 count_covid_gp <- create_event_table(outcomes_covid, time = "stop_gp", status = "gp_binary", outcome = "COVID - GP", group = "ethnicity6_combined")
 count_covid_sc <- create_event_table(outcomes_covid, time = "stop_sc", status = "sc_binary", outcome = "COVID - SC", group = "ethnicity6_combined")
+count_covid_emerg <- create_event_table(outcomes_covid, time = "stop_emerg", status = "emerg_binary", outcome = "COVID - A & E", group = "ethnicity6_combined")
 count_covid_all <- create_event_table(outcomes_covid, time = "stop", status = "binary_all", outcome = "COVID - all", group = "ethnicity6_combined")
-count_covid <- bind_rows(count_covid_gp, count_covid_sc, count_covid_all)
+count_covid <- bind_rows(count_covid_gp, count_covid_sc, count_covid_emerg, count_covid_all)
 # round counts to midpoint 6
 count_covid_round <- count_covid %>% 
         mutate(
@@ -353,8 +395,9 @@ write_csv(count_covid_round, file.path(outdir, "count_covid_round.csv"))
 
 count_flu_gp <- create_event_table(outcomes_flu, time = "stop_gp", status = "gp_binary", outcome = "flu - GP", group = "ethnicity6_combined")
 count_flu_sc <- create_event_table(outcomes_flu, time = "stop_sc", status = "sc_binary", outcome = "flu - SC", group = "ethnicity6_combined")
+count_flu_emerg <- create_event_table(outcomes_flu, time = "stop_emerg", status = "emerg_binary", outcome = "flu - A & E", group = "ethnicity6_combined")
 count_flu_all <- create_event_table(outcomes_flu, time = "stop", status = "binary_all", outcome = "flu - all", group = "ethnicity6_combined")
-count_flu <- bind_rows(count_flu_gp, count_flu_sc, count_flu_all)
+count_flu <- bind_rows(count_flu_gp, count_flu_sc, count_flu_emerg, count_flu_all)
 # round counts to midpoint 6
 count_flu_round <- count_flu %>% 
         mutate(
@@ -369,8 +412,9 @@ write_csv(count_flu_round, file.path(outdir, "count_flu_round.csv"))
 
 count_rsv_gp <- create_event_table(outcomes_rsv, time = "stop_gp", status = "gp_binary", outcome = "rsv - GP", group = "ethnicity6_combined")
 count_rsv_sc <- create_event_table(outcomes_rsv, time = "stop_sc", status = "sc_binary", outcome = "rsv - SC", group = "ethnicity6_combined")
+count_rsv_emerg <- create_event_table(outcomes_rsv, time = "stop_emerg", status = "emerg_binary", outcome = "rsv - A & E", group = "ethnicity6_combined")
 count_rsv_all <- create_event_table(outcomes_rsv, time = "stop", status = "binary_all", outcome = "rsv - all", group = "ethnicity6_combined")
-count_rsv <- bind_rows(count_rsv_gp, count_rsv_sc, count_rsv_all)
+count_rsv <- bind_rows(count_rsv_gp, count_rsv_sc, count_rsv_emerg, count_rsv_all)
 # round counts to midpoint 6
 count_rsv_round <- count_rsv %>% 
         mutate(
@@ -386,6 +430,7 @@ write_csv(count_rsv_round, file.path(outdir, "count_rsv_round.csv"))
 #IMD
 count_covid_imd_gp <- create_event_table(outcomes_covid, time = "stop_gp", status = "gp_binary", outcome = "COVID - GP", group = "imd_quintile")
 count_covid_imd_sc <- create_event_table(outcomes_covid, time = "stop_sc", status = "sc_binary", outcome = "COVID - SC", group = "imd_quintile")
+count_covid_imd_emerg <- create_event_table(outcomes_covid, time = "stop_emerg", status = "emerg_binary", outcome = "COVID - A & E", group = "imd_quintile")
 count_covid_imd_all <- create_event_table(outcomes_covid, time = "stop", status = "binary_all", outcome = "COVID - all", group = "imd_quintile")
 count_covid_imd <- bind_rows(count_covid_imd_gp, count_covid_imd_sc, count_covid_imd_all)
 # round counts to midpoint 6
@@ -402,6 +447,7 @@ write_csv(count_covid_imd_round, file.path(outdir, "count_covid_imd_round.csv"))
 
 count_flu_imd_gp <- create_event_table(outcomes_flu, time = "stop_gp", status = "gp_binary", outcome = "flu - GP", group = "imd_quintile")
 count_flu_imd_sc <- create_event_table(outcomes_flu, time = "stop_sc", status = "sc_binary", outcome = "flu - SC", group = "imd_quintile")
+count_flu_imd_emerg <- create_event_table(outcomes_flu, time = "stop_emerg", status = "emerg_binary", outcome = "flu - A & E", group = "imd_quintile")
 count_flu_imd_all <- create_event_table(outcomes_flu, time = "stop", status = "binary_all", outcome = "flu - all", group = "imd_quintile")
 count_flu_imd <- bind_rows(count_flu_imd_gp, count_flu_imd_sc, count_flu_imd_all)
 # round counts to midpoint 6
@@ -418,6 +464,7 @@ write_csv(count_flu_imd_round, file.path(outdir, "count_flu_imd_round.csv"))
 
 count_rsv_imd_gp <- create_event_table(outcomes_rsv, time = "stop_gp", status = "gp_binary", outcome = "rsv - GP", group = "imd_quintile")
 count_rsv_imd_sc <- create_event_table(outcomes_rsv, time = "stop_sc", status = "sc_binary", outcome = "rsv - SC", group = "imd_quintile")
+count_rsv_imd_emerg <- create_event_table(outcomes_rsv, time = "stop_emerg", status = "emerg_binary", outcome = "rsv - A & E", group = "imd_quintile")
 count_rsv_imd_all <- create_event_table(outcomes_rsv, time = "stop", status = "binary_all", outcome = "rsv - all", group = "imd_quintile")
 count_rsv_imd <- bind_rows(count_rsv_imd_gp, count_rsv_imd_sc, count_rsv_imd_all)
 # round counts to midpoint 6
@@ -452,13 +499,16 @@ run_cox_models <- function(disease, difference) {
         # define Cox model formulas
         f_gp <- as.formula(paste0("Surv(start, stop_gp, gp_binary) ~ ", difference, " + strata(year_end_gp)"))
         f_sc <- as.formula(paste0("Surv(start, stop_sc, sc_binary) ~ ", difference, " + strata(year_end_sc)"))
+        f_emerg <- as.formula(paste0("Surv(start, stop_emerg, emerg_binary) ~ ", difference, " + strata(year_end_emerg)"))
         # Fit Cox models
         mod_gp <- coxph(f_gp, data = data_df)
         mod_sc <- coxph(f_sc, data = data_df)
+        mod_emerg <- coxph(f_emerg, data = data_df)
 
         new_rows <- bind_rows(
                 tidy(mod_gp, exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>% mutate(outcome = "gp_binary", by_var = difference, disease = disease),
-                tidy(mod_sc, exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>% mutate(outcome = "sc_binary", by_var = difference, disease = disease)
+                tidy(mod_sc, exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>% mutate(outcome = "sc_binary", by_var = difference, disease = disease),
+                tidy(mod_emerg, exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>% mutate(outcome = "emerg_binary", by_var = difference, disease = disease),
         )
 
         return(new_rows)
@@ -508,8 +558,10 @@ ggsave(file.path(outdir, "plot_km_covid_gp.svg"), gp_plot$plot)
                 total = n(),
                 start_gt_stop_gp = sum(start > stop_gp, na.rm = TRUE),
                 start_gt_stop_sc = sum(start > stop_sc, na.rm = TRUE),
+                start_gt_stop_emerg = sum(start > stop_emerg, na.rm = TRUE),
                 pct_gp = round(sum(start > stop_gp, na.rm = TRUE) / n() * 100, 2),
-                pct_sc = round(sum(start > stop_sc, na.rm = TRUE) / n() * 100, 2)
+                pct_sc = round(sum(start > stop_sc, na.rm = TRUE) / n() * 100, 2),
+                pct_emerg = round(sum(start > stop_emerg, na.rm = TRUE) / n() * 100, 2)
                 )
         
         print(timing_issues)
@@ -537,6 +589,17 @@ ggsave(file.path(outdir, "plot_km_covid_gp.svg"), gp_plot$plot)
         graph_file <- paste0("plot_km_", disease, "_ethnicity_sc.svg")
         ggsave(file.path(outdir, graph_file), sc_plot$plot)
 
+        # Emergency care plot
+        km_emerg <- survfit(Surv(start, stop_emerg, emerg_binary) ~ ethnicity6_combined, data = data_df)
+#         # Generate GP plot 
+        emerg_plot <- ggsurvplot(km_emerg, data = data_df, risk.table = TRUE, 
+                conf.int = TRUE, pval = FALSE, legend = "right", 
+                title = paste("Kaplan-Meier:", disease, ", ethnicity (GP)"),
+                ylim=c(0.75, 1),
+                ggtheme = theme_bw())
+        graph_file <- paste0("plot_km_", disease, "_ethnicity_emerg.svg")
+        ggsave(file.path(outdir, graph_file), emerg_plot$plot)
+
         # IMD
         km_gp <- survfit(Surv(start, stop_gp, gp_binary) ~ imd_quintile, data = data_df)
 #         # Generate GP plot 
@@ -558,6 +621,16 @@ ggsave(file.path(outdir, "plot_km_covid_gp.svg"), gp_plot$plot)
         graph_file <- paste0("plot_km_", disease, "_imd_sc.svg")
         ggsave(file.path(outdir, graph_file), sc_plot$plot)
 
+        # Emergency care plot
+        km_emerg <- survfit(Surv(start, stop_emerg, emerg_binary) ~ imd_quintile, data = data_df)
+#         # Generate GP plot 
+        emerg_plot <- ggsurvplot(km_emerg, data = data_df, risk.table = TRUE, 
+                conf.int = TRUE, pval = FALSE, legend = "right", 
+                title = paste("Kaplan-Meier:", disease, ", ethnicity (GP)"),
+                ylim=c(0.75, 1),
+                ggtheme = theme_bw())
+        graph_file <- paste0("plot_km_", disease, "_imd_emerg.svg")
+        ggsave(file.path(outdir, graph_file), emerg_plot$plot)
 
  }
 

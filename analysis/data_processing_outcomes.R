@@ -56,22 +56,25 @@ if (any(is.na(cr_data$year))) {
 if (disease == "covid") {
     cr_data <- cr_data %>% 
         mutate(primary_col = covid_primary_date,
-        sc_col = covid_sc_date) %>% 
-        select(-covid_primary_date, -covid_sc_date)
+        sc_col = covid_sc_date, 
+        emerg_col = covid_emerg_date) %>%
+        select(-covid_primary_date, -covid_sc_date, -covid_emerg_date)
 }
 
 if (disease == "flu") {
     cr_data <- cr_data %>% 
         mutate(primary_col = flu_primary_date,
-        sc_col = flu_sc_date) %>% 
-        select(-flu_primary_date, -flu_sc_date)
+        sc_col = flu_sc_date,
+        emerg_col = flu_emerg_date) %>% 
+        select(-flu_primary_date, -flu_sc_date, -flu_emerg_date)
 }
 
 if (disease == "rsv") {
     cr_data <- cr_data %>% 
         mutate(primary_col = rsv_primary_date,
-        sc_col = rsv_sc_date) %>% 
-        select(-rsv_primary_date, -rsv_sc_date)
+        sc_col = rsv_sc_date,
+        emerg_col = rsv_emerg_date) %>% 
+        select(-rsv_primary_date, -rsv_sc_date, -rsv_emerg_date)
 }
 
 #find first event (GP and secondary care utilisation individually and together) then create dataset with only these variables
@@ -96,7 +99,8 @@ safe_min_date <- function(x) {
 cr_data[, `:=`(
   min_start_yr_out = min(year),
   first_gp_col = safe_min_date(primary_col),
-  first_sc_col = safe_min_date(sc_col)
+  first_sc_col = safe_min_date(sc_col),
+  first_emerg_col = safe_min_date(emerg_col)
 ), by = patient_id]
 # filter to only rows 
 cr_data <- cr_data[min_start_yr_out == year]
@@ -106,9 +110,9 @@ fu_start_month <- if (disease == "covid") 3L else 9L
 
 cr_data[, `:=`(
     first_col = fifelse(
-        is.na(first_gp_col) & is.na(first_sc_col),
+        is.na(first_gp_col) & is.na(first_sc_col) & is.na(first_emerg_col),
         as.Date(NA),
-        pmin(first_gp_col, first_sc_col, na.rm = TRUE)
+        pmin(first_gp_col, first_sc_col, first_emerg_col, na.rm = TRUE)
     ),
     # I'm thinking this won't vary across dataset definitions.. will check earlier and think about if is different
     dereg_date = as.Date(dereg_date),
@@ -126,19 +130,23 @@ cr_data[, fu_end := {
 cr_data[, `:=`(
   gp_binary = fifelse(!is.na(first_gp_col) & first_gp_col < fu_end, 1L, 0L),
   sc_binary = fifelse(!is.na(first_sc_col) & first_sc_col < fu_end, 1L, 0L),
+  emerg_binary = fifelse(!is.na(first_emerg_col) & first_emerg_col < fu_end, 1L, 0L),
   binary_all = fifelse(!is.na(first_col) & first_col < fu_end, 1L, 0L),
   date_stop_gp = fifelse(is.na(first_gp_col), fu_end, pmin(first_gp_col, fu_end)),
   date_stop_sc = fifelse(is.na(first_sc_col), fu_end, pmin(first_sc_col, fu_end)),
+  date_stop_emerg = fifelse(is.na(first_emerg_col), fu_end, pmin(first_emerg_col, fu_end)),
   date_stop = fifelse(is.na(first_col), fu_end, pmin(first_col, fu_end))
 )]
 cr_data[, `:=`(
     stop_gp = as.numeric(date_stop_gp - fu_start),
     stop_sc = as.numeric(date_stop_sc - fu_start),
+    stop_emerg = as.numeric(date_stop_emerg - fu_start),
     stop = as.numeric(date_stop - fu_start),
     start = 0L,
     # generating year of stop for stratification
     year_end_gp = year(date_stop_gp),
     year_end_sc = year(date_stop_sc),
+    year_end_emerg = year(date_stop_emerg),
     year_end = year(date_stop)
     )]
 

@@ -52,6 +52,8 @@ denominator = (
         & (practice_registrations.for_patient_on(index_date).exists_for_patient())
     )
 
+# By ethnicity
+# GP consultation
 measures.define_measure(
     name="covid_gp",
     numerator=dataset.covid_gp,
@@ -60,14 +62,15 @@ measures.define_measure(
     intervals=months(intervals).starting_on(start_date) 
 )
 
-measures.define_measure(
-    name="covid_gp_appt",
-    numerator=dataset.covid_gp_appt,
-    denominator=denominator,
-    group_by={ "ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
-)
-
+# This definition is too narrow - to think about identifying testing
+# measures.define_measure(
+#     name="covid_gp_appt",
+#     numerator=dataset.covid_gp_appt,
+#     denominator=denominator,
+#     group_by={ "ethnicity": dataset.ethnicity6},
+#     intervals=months(intervals).starting_on(start_date) 
+# )
+# Hospital admission
 measures.define_measure(
     name="covid_admission",
     numerator=dataset.covid_sc,
@@ -75,4 +78,37 @@ measures.define_measure(
     group_by= {"ethnicity": dataset.ethnicity6},
     intervals=months(intervals).starting_on(start_date) 
 )
+# Emergency care attendance
+measures.define_measure(
+    name="covid_emerg",
+    numerator=dataset.covid_emerg,
+    denominator=denominator,
+    group_by= {"ethnicity": dataset.ethnicity6},
+    intervals=months(intervals).starting_on(start_date) 
+)
 
+# By IMD
+# GP consultation
+measures.define_measure(
+    name="covid_gp_imd",
+    numerator=dataset.covid_gp,
+    denominator=denominator,
+    group_by={"imd": dataset.imd_quintile},
+    intervals=months(intervals).starting_on(start_date) 
+)
+# Hospital admission
+measures.define_measure(
+    name="covid_admission_imd",
+    numerator=dataset.covid_sc,
+    denominator=denominator,
+    group_by= {"imd": dataset.imd_quintile},
+    intervals=months(intervals).starting_on(start_date) 
+)
+# Emergency care attendance
+measures.define_measure(
+    name="covid_emerg_imd",
+    numerator=dataset.covid_emerg,
+    denominator=denominator,
+    group_by= {"imd": dataset.imd_quintile},
+    intervals=months(intervals).starting_on(start_date) 
+)

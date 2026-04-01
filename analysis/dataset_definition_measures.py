@@ -7,13 +7,15 @@
 #####################################################################
 
 
-from ehrql import Dataset, case, when, claim_permissions
+from ehrql import Dataset, case, when, claim_permissions, minimum_of
 from ehrql.tables.tpp import (
+    patients,
     apcs,
     clinical_events,
     emergency_care_attendances,
     ethnicity_from_sus,
-    appointments)
+    appointments, 
+    addresses)
 
 import codelists
 
@@ -124,15 +126,31 @@ def get_latest_ethnicity(
 def make_dataset_covid_utilisation(index_date, end_date):
     
     dataset = Dataset()
-
+    
+    #ethnicity
     dataset.ethnicity6 = get_latest_ethnicity(index_date, ethnicity_from_sus, codelists.ethnicity6_codes)
     
+    # IMD
+    imd_rounded = addresses.for_patient_on(index_date).imd_rounded
+    max_imd = 32844
+ 
+    dataset.imd_quintile = case(
+        when((imd_rounded >= 0) & (imd_rounded <= int(max_imd * 1 / 5))).then(1),
+        when(imd_rounded <= int(max_imd * 2 / 5)).then(2),
+        when(imd_rounded <= int(max_imd * 3 / 5)).then(3),
+        when(imd_rounded <= int(max_imd * 4 / 5)).then(4),
+        when(imd_rounded <= max_imd).then(5),
+        otherwise = 99
+    )
+    
+    # GP code for COVID
     dataset.covid_gp = clinical_events.where(
         clinical_events.snomedct_code.is_in(codelists.covid_primary_codelist)
         ).where(
         clinical_events.date.is_on_or_between(index_date,end_date)
         ).exists_for_patient()
     
+    # GP code for COVID where there is an appointment on the same day (aim to take out testing)
     covid_gp_date = (clinical_events.where(
         clinical_events.snomedct_code.is_in(codelists.covid_primary_codelist))
         .where(clinical_events.date.is_on_or_between(index_date,end_date))
@@ -143,11 +161,15 @@ def make_dataset_covid_utilisation(index_date, end_date):
     
     dataset.covid_gp_appt = appointments.where(appointments.seen_date == covid_gp_date).exists_for_patient()
 
+    # Hospital admission for COVID
     dataset.covid_sc = (apcs.where(
         apcs.primary_diagnosis.is_in(codelists.covid_secondary_codelist)
         ).where(
         apcs.admission_date.is_on_or_between(index_date,end_date)
-        ).exists_for_patient()) | (emergency_care_attendances.where(
+        ).exists_for_patient()) 
+    
+    # Emergency care attendance for COVID
+    dataset.covid_emerg = (emergency_care_attendances.where(
         emergency_care_attendances.diagnosis_01.is_in(codelists.covid_attendance))
         .where(
         emergency_care_attendances.arrival_date
@@ -166,18 +188,34 @@ def make_dataset_flu_rsv_utilisation(index_date, end_date):
     # ethnicity 
     dataset.ethnicity6 = get_latest_ethnicity(index_date, ethnicity_from_sus, codelists.ethnicity6_codes)
     
+    # IMD
+    imd_rounded = addresses.for_patient_on(index_date).imd_rounded
+    max_imd = 32844
+ 
+    dataset.imd_quintile = case(
+        when((imd_rounded >= 0) & (imd_rounded <= int(max_imd * 1 / 5))).then(1),
+        when(imd_rounded <= int(max_imd * 2 / 5)).then(2),
+        when(imd_rounded <= int(max_imd * 3 / 5)).then(3),
+        when(imd_rounded <= int(max_imd * 4 / 5)).then(4),
+        when(imd_rounded <= max_imd).then(5),
+        otherwise = 99
+    )
+
     #flu
+    # GP consultation
     dataset.flu_gp = clinical_events.where(
         clinical_events.snomedct_code.is_in(codelists.flu_primary_codelist)
         ).where(
             clinical_events.date.is_on_or_between(index_date,end_date)
         ).exists_for_patient()
-
+    #Hospital admission
     dataset.flu_sc = (apcs.where(
         apcs.primary_diagnosis.is_in(codelists.flu_secondary_codelist)
         ).where(
         apcs.admission_date.is_on_or_between(index_date,end_date)
-        ).exists_for_patient()) | (emergency_care_attendances.where(
+        ).exists_for_patient()) 
+    # Emergency care attendance
+    dataset.flu_emerg = (emergency_care_attendances.where(
             emergency_care_attendances.diagnosis_01.is_in(codelists.flu_attendance))
             .where(
             emergency_care_attendances.arrival_date
@@ -185,18 +223,57 @@ def make_dataset_flu_rsv_utilisation(index_date, end_date):
     )
     
     #RSV
-    dataset.rsv_gp = clinical_events.where(
-        clinical_events.snomedct_code.is_in(codelists.rsv_primary_codelist)
-        ).where(
-            clinical_events.date.is_on_or_between(index_date, end_date)
-        ).exists_for_patient()
+    # define age as RSV definition age dependent
+    dataset.age = patients.age_on(index_date)
 
+    dataset.age_infants = (dataset.age <= 2)
+
+    # GP consultation - definition takes age into account and for infants diagnosis also basedo n emergency care attendance
+    infant_gp_rsv = (clinical_events.where(
+              clinical_events.snomedct_code.is_in(codelists.rsv_primary_codelist)
+                 ).where(
+                      clinical_events.date.is_on_or_between(index_date,end_date)
+                      ).exists_for_patient()
+    )
+    infant_ae_rsv =(emergency_care_attendances.where(
+            emergency_care_attendances.diagnosis_01.is_in(codelists.bronchiolitis_attendance))
+            .where(
+            emergency_care_attendances.arrival_date.is_on_or_between(index_date, end_date))
+            .exists_for_patient() 
+    )
+    dataset.rsv_gp = case(when(dataset.age <= 2).then(infant_gp_rsv.is_not_null() | infant_ae_rsv.is_not_null()),
+                          when(dataset.age > 2).then(clinical_events.where(
+                               clinical_events.snomedct_code.is_in(codelists.rsv_primary_codelist)
+                                                                           ).where(
+                               clinical_events.date.is_on_or_between(index_date,end_date)
+                               ).exists_for_patient())
+    )
+    # dataset.rsv_gp = case(when(dataset.age <= 2).then(
+    #      (clinical_events.where(
+    #           clinical_events.snomedct_code.is_in(codelists.rsv_primary_codelist)
+    #              ).where(
+    #                   clinical_events.date.is_on_or_between(index_date,end_date)
+    #                   ).exists_for_patient())|(((emergency_care_attendances.where(
+    #         emergency_care_attendances.diagnosis_01.is_in(codelists.bronchiolitis_attendance)))
+    #         .where(
+    #         emergency_care_attendances.arrival_date
+    #         .is_on_or_between(index_date, end_date)).exists_for_patient()))
+    #     ), when(dataset.age > 2).then(
+    #         clinical_events.snomedct_code.is_in(codelists.rsv_primary_codelist).where(
+    #         clinical_events.date.is_on_or_between(index_date,end_date)
+    #     ).exists_for_patient()
+    #     )
+    # )
+    # Hospital admission
     dataset.rsv_sc = (apcs.where(
         apcs.primary_diagnosis.is_in(codelists.rsv_secondary_codelist)
         ).where(
         apcs.admission_date.is_on_or_between(index_date,end_date)
-        ).exists_for_patient()) | (emergency_care_attendances.where(
-            emergency_care_attendances.diagnosis_01.is_in(codelists.bronchiolitis_attendance))
+        ).exists_for_patient()) 
+    
+    # Emergency care attendance - uses extra code to pick up attendances (infants uses bronchiolitis only)
+    dataset.rsv_emerg = (emergency_care_attendances.where(
+            emergency_care_attendances.diagnosis_01.is_in(codelists.rsv_attendance))
             .where(
             emergency_care_attendances.arrival_date
             .is_on_or_between(index_date, end_date)).exists_for_patient()

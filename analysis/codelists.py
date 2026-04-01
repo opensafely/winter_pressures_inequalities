@@ -32,6 +32,9 @@ rsv_primary_codelist = codelist_from_csv(
 # rsv emergency attendances - specific
 bronchiolitis_attendance = ["4120002"]
 
+# RSV emergency attendance (RSV and bronchiolitis SNOMED codes)
+rsv_attendance = ["55735004", "4120002"]  # RSV infection, Bronchiolitis
+
 # rsv secondary - specific
 rsv_secondary_codelist = codelist_from_csv(
   "codelists/opensafely-rsv-identification-secondary-care.csv",

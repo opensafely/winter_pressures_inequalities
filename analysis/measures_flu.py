@@ -1,6 +1,6 @@
 #################################################################
 # This script creates monthly counts/rates of primary and secndary 
-# care healthcare utilisation for covid
+# care healthcare utilisation for Flu
 #
 # 
 #####################################################################
@@ -52,6 +52,8 @@ denominator = (
         & (practice_registrations.for_patient_on(index_date).exists_for_patient())
     )
 
+# Ethnicity
+# Flu
 measures.define_measure(
     name="flu_gp",
     numerator=dataset.flu_gp,
@@ -69,17 +71,35 @@ measures.define_measure(
 )
 
 measures.define_measure(
-    name="rsv_gp",
-    numerator=dataset.rsv_gp,
-    denominator=denominator,
-    group_by={ "ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
-)
-
-measures.define_measure(
-    name="rsv_admission",
-    numerator=dataset.rsv_sc,
+    name="flu_emerg",
+    numerator=dataset.flu_emerg,
     denominator=denominator,
     group_by= {"ethnicity": dataset.ethnicity6},
     intervals=months(intervals).starting_on(start_date) 
 )
+
+# IMD
+measures.define_measure(
+    name="flu_gp_imd",
+    numerator=dataset.flu_gp,
+    denominator=denominator,
+    group_by={"imd": dataset.imd_quintile},
+    intervals=months(intervals).starting_on(start_date) 
+)
+
+measures.define_measure(
+    name="flu_admission_imd",
+    numerator=dataset.flu_sc,
+    denominator=denominator,
+    group_by= {"imd": dataset.imd_quintile},
+    intervals=months(intervals).starting_on(start_date) 
+)
+
+measures.define_measure(
+    name="flu_emerg_imd",
+    numerator=dataset.flu_emerg,
+    denominator=denominator,
+    group_by= {"imd": dataset.imd_quintile},
+    intervals=months(intervals).starting_on(start_date) 
+)
+
