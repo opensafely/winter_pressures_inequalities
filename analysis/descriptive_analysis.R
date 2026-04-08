@@ -493,7 +493,7 @@ run_cox_models <- function(disease, difference) {
 
         if (difference == "imd_quintile") {
                 data_df[[difference]] <- factor(data_df[[difference]])
-                data_df[[difference]] <- relevel(data_df[[difference]], ref = "1") 
+                data_df[[difference]] <- relevel(data_df[[difference]], ref = "5") 
         }
         
         # define Cox model formulas

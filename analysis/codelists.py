@@ -76,7 +76,10 @@ covid_secondary_codelist = codelist_from_csv(
   column = "icd10_code",
 )
 
-covid_attendance = ["1240751000000100"]
+covid_attendance = codelist_from_csv(
+  "codelists/opensafely-covid-19-ae-diagnosis-codes.csv",
+  column = "code",
+)
 
 # covariates 
 
