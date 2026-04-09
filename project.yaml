@@ -1,4 +1,4 @@
-version: '4.0'
+version: '5.0'
 # Generates cohorts for COVID outcome.
 actions:  
   generate_dataset_covid_2021:
@@ -159,7 +159,7 @@ actions:
           measures_csv: output/measures/measures_rsv_2021.csv
 
   data_process_bl:
-      run: r:latest analysis/data_processing_baseline.R 
+      run: r:v2 analysis/data_processing_baseline.R 
       needs: 
       - generate_dataset_covid_2021
       - generate_dataset_covid_2022
@@ -177,7 +177,7 @@ actions:
           data_flu_rsv: output/an_bl_data_flu_rsv.arrow
 
   data_process_outcome_covid:
-      run: r:latest analysis/data_processing_outcomes.R covid covid
+      run: r:v2 analysis/data_processing_outcomes.R covid covid
       needs: 
       - generate_dataset_covid_2021
       - generate_dataset_covid_2022
@@ -190,7 +190,7 @@ actions:
           data_f_covid: output/an_outcome_first_covid.arrow
 
   data_process_outcome_flu:
-      run: r:latest analysis/data_processing_outcomes.R flu flu_rsv 
+      run: r:v2 analysis/data_processing_outcomes.R flu flu_rsv 
       needs: 
       - generate_dataset_flu_rsv_2018
       - generate_dataset_flu_rsv_2019
@@ -205,7 +205,7 @@ actions:
           data_f_covid: output/an_outcome_first_flu.arrow
 
   data_process_outcome_rsv:
-      run: r:latest analysis/data_processing_outcomes.R rsv flu_rsv 
+      run: r:v2 analysis/data_processing_outcomes.R rsv flu_rsv 
       needs: 
       - generate_dataset_flu_rsv_2018
       - generate_dataset_flu_rsv_2019
@@ -220,7 +220,7 @@ actions:
           data_f_covid: output/an_outcome_first_rsv.arrow
 
   tables:
-      run: r:latest analysis/descriptive_analysis.R 
+      run: r:v2 analysis/descriptive_analysis.R 
       needs: 
         - data_process_bl
         - data_process_outcome_covid
