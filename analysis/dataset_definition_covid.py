@@ -255,16 +255,17 @@ dataset.covid_primary_third_date = (
     .where(gp_events.date.is_on_or_after(dataset.covid_primary_second_date + months(1)))
     .sort_by(gp_events.date).first_for_patient().date
 )
-# identifying covid in primary care  where there is an appointment in the appointments table on the same date
+# identifying covid in primary care  where there is an appointment in the appointments table 10 days or less prior to covid date
+# As COVID code could indicate a test, this is to deterine if there was an appointment associated.
 dataset.covid_primary_appt = (
-   appointments.where(appointments.seen_date == dataset.covid_primary_date).exists_for_patient()
+   appointments.where(appointments.seen_date.is_on_or_between(dataset.covid_primary_date, dataset.covid_primary_date - days(10))).exists_for_patient()
    )
 
 dataset.covid_primary_second_appt = (
-    appointments.where(appointments.seen_date == dataset.covid_primary_second_date).exists_for_patient()
+    appointments.where(appointments.seen_date.is_on_or_between(dataset.covid_primary_second_date, dataset.covid_primary_second_date - days(10))).exists_for_patient()
 )
 dataset.covid_primary_third_appt = (
-    appointments.where(appointments.seen_date == dataset.covid_primary_third_date).exists_for_patient()
+    appointments.where(appointments.seen_date.is_on_or_between(dataset.covid_primary_third_date, dataset.covid_primary_third_date - days(10))).exists_for_patient()
 )
 # extract date of first hospitalisation
 dataset.covid_sc_date = (
