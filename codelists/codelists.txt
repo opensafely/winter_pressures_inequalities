@@ -15,6 +15,7 @@ opensafely/covid-19-identification-prescriptions-dmd/32e73c2e
 opensafely/covid-19-exclusion-primary-care-maximal-sensitivity/03e32400/
 opensafely/covid-19-exclusion-secondary-care-maximal-sensitivity/1fa5572b/
 opensafely/covid-19-ae-diagnosis-codes/1df1c0b2/
+user/ruthcostello/covid-19-notest-identification-primary-care/54e0ae06/
 
 opensafely/influenza-identification-primary-care/4b14d7ab/
 opensafely/influenza-identification-secondary-care/7d33be15/

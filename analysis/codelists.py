@@ -81,6 +81,10 @@ covid_attendance = codelist_from_csv(
   column = "code",
 )
 
+covid_notest_codelist = codelist_from_csv(
+    "codelists/user-ruthcostello-covid-19-notest-identification-primary-care.csv",
+    column = "code",
+)
 # covariates 
 
 # migrant

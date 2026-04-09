@@ -62,14 +62,24 @@ measures.define_measure(
     intervals=months(intervals).starting_on(start_date) 
 )
 
-# This definition is too narrow - to think about identifying testing
-# measures.define_measure(
-#     name="covid_gp_appt",
-#     numerator=dataset.covid_gp_appt,
-#     denominator=denominator,
-#     group_by={ "ethnicity": dataset.ethnicity6},
-#     intervals=months(intervals).starting_on(start_date) 
-# )
+# COVID code and GP appointment in same interval
+measures.define_measure(
+    name="covid_gp_appt",
+    numerator=dataset.covid_gp_appt,
+    denominator=denominator,
+    group_by={ "ethnicity": dataset.ethnicity6},
+    intervals=months(intervals).starting_on(start_date) 
+)
+
+# COVID code that is not a test
+measures.define_measure(
+    name="covid_gp_notest",
+    numerator=dataset.covid_gp_notest,
+    denominator=denominator,
+    group_by={ "ethnicity": dataset.ethnicity6},
+    intervals=months(intervals).starting_on(start_date) 
+)
+
 # Hospital admission
 measures.define_measure(
     name="covid_admission",
@@ -94,6 +104,23 @@ measures.define_measure(
     numerator=dataset.covid_gp,
     denominator=denominator,
     group_by={"imd": dataset.imd_quintile},
+    intervals=months(intervals).starting_on(start_date) 
+)
+# COVID code and GP appointment in same interval
+measures.define_measure(
+    name="covid_gp_appt_imd",
+    numerator=dataset.covid_gp_appt,
+    denominator=denominator,
+    group_by={ "imd": dataset.imd_quintile},
+    intervals=months(intervals).starting_on(start_date) 
+)
+
+# COVID code that is not a test
+measures.define_measure(
+    name="covid_gp_notest_imd",
+    numerator=dataset.covid_gp_notest,
+    denominator=denominator,
+    group_by={ "imd": dataset.imd_quintile},
     intervals=months(intervals).starting_on(start_date) 
 )
 # Hospital admission

@@ -222,7 +222,7 @@ gt::gtsave(as_gt(desc_flu_rsv_by), file.path(outdir, "baseline_table_flu_rsv.htm
 # generating tables with rounded weekly events, denominators and rates from measures
 # ethnicity
 rates_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
-        filter(measure=="covid_gp" | measure=="covid_admission" | measure=="covid_emerg") %>% 
+        #filter(measure=="covid_gp" | measure=="covid_admission" | measure=="covid_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
@@ -263,7 +263,7 @@ write_csv(rates_rsv_21, file.path(outdir, "rounded_rates_rsv_21.csv"))
 
 #IMD
 rates_imd_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
-        filter(measure=="covid_gp_imd" | measure=="covid_admission_imd" | measure=="covid_emerg_imd") %>% 
+        #filter(measure=="covid_gp_imd" | measure=="covid_admission_imd" | measure=="covid_emerg_imd") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 

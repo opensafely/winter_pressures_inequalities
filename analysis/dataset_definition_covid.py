@@ -267,6 +267,25 @@ dataset.covid_primary_second_appt = (
 dataset.covid_primary_third_appt = (
     appointments.where(appointments.seen_date.is_on_or_between(dataset.covid_primary_third_date - days(10), dataset.covid_primary_third_date)).exists_for_patient()
 )
+
+# Identifying covid from codes that do not include testing
+dataset.covid_notest_primary_date = (
+   first_gp_event(codelists.covid_notest_codelist).date
+)
+#extract date of second episode
+dataset.covid_notest_primary_second_date = (
+    is_gp_event(codelists.covid_notest_codelist)
+    .where(gp_events.date.is_on_or_after(dataset.covid_notest_primary_date + months(1)))
+    .sort_by(gp_events.date).first_for_patient().date
+)
+#extract date of third episode
+dataset.covid_notest_primary_third_date = (
+    is_gp_event(codelists.covid_notest_codelist)
+    .where(gp_events.date.is_on_or_after(dataset.covid_notest_primary_second_date + months(1)))
+    .sort_by(gp_events.date).first_for_patient().date
+)
+
+
 # extract date of first hospitalisation
 dataset.covid_sc_date = (
     hospitalisation_primary_secondary_diagnosis_matches(codelists.covid_secondary_codelist)

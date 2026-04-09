@@ -84,6 +84,12 @@
       "downloaded_at": "2026-04-08 11:02:03.094067Z",
       "sha": "e948d6944aa5e2c5f36d92ba009077bc28fdcc31"
     },
+    "user-ruthcostello-covid-19-notest-identification-primary-care.csv": {
+      "id": "user/ruthcostello/covid-19-notest-identification-primary-care/54e0ae06",
+      "url": "https://www.opencodelists.org/codelist/user/ruthcostello/covid-19-notest-identification-primary-care/54e0ae06/",
+      "downloaded_at": "2026-04-09 11:48:17.172138Z",
+      "sha": "65b7a70cb273418a300e3421736b1e7ed638147f"
+    },
     "opensafely-influenza-identification-primary-care.csv": {
       "id": "opensafely/influenza-identification-primary-care/4b14d7ab",
       "url": "https://www.opencodelists.org/codelist/opensafely/influenza-identification-primary-care/4b14d7ab/",

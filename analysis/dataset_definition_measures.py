@@ -159,7 +159,15 @@ def make_dataset_covid_utilisation(index_date, end_date):
         .date
     )
     
-    dataset.covid_gp_appt = appointments.where(appointments.seen_date == covid_gp_date).exists_for_patient()
+    dataset.covid_gp_appt = appointments.where(appointments.seen_date.is_on_or_between(index_date, end_date)).where(
+        covid_gp_date.is_on_or_between(index_date, end_date)).exists_for_patient()
+    
+    # Code for COVID - not including testing codes
+    dataset.covid_gp_notest = clinical_events.where(
+        clinical_events.snomedct_code.is_in(codelists.covid_notest_codelist)
+        ).where(
+        clinical_events.date.is_on_or_between(index_date,end_date)
+        ).exists_for_patient()
 
     # Hospital admission for COVID
     dataset.covid_sc = (apcs.where(
