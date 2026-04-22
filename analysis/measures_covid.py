@@ -12,9 +12,6 @@ from ehrql.tables.tpp import (
 
 import codelists
 
-from dataset_definition_measures import make_dataset_covid_utilisation
-
-
 ##########
 
 from argparse import ArgumentParser
@@ -31,6 +28,8 @@ intervals = args.intervals
 ##########
 
 index_date = INTERVAL.start_date
+
+from dataset_definition_measures import make_dataset_covid_utilisation
 
 dataset = make_dataset_covid_utilisation(index_date=INTERVAL.start_date, end_date=INTERVAL.end_date)
 

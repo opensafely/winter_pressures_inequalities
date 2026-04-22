@@ -64,6 +64,12 @@ ari_primary_codelist = codelist_from_csv(
   column = "code",
 )
 
+# Fever
+fever_codelist = codelist_from_csv(
+    "codelists/opensafely-symptoms-fever.csv",
+    column = "code",
+)
+
 # covid primary - specific
 covid_primary_codelist = codelist_from_csv(
   "codelists/opensafely-covid-19-identification-primary-care.csv",

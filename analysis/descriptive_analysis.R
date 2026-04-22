@@ -14,6 +14,7 @@ library(survival)
 library(rlang)
 library(purrr)
 library(finalfit)
+library(forcats)
 library(gtsummary)
 library(survminer)
 library(glue)
@@ -45,182 +46,101 @@ var_labels_list <- list(
                 age_group ~ "Age group",
                 imd_quintile ~ "IMD quintile",
                 ethnicity16_combined ~ "Ethnicity (16 groups)",
-                sex ~ "Sex",
+                sex ~ "N Sex",
                 urban_rural_5 ~ "Urban-rural classification",
-                migrant ~ "Migrant",
+                migrant ~ "Migrant N",
                 english_language ~ "English not main language spoken",
                 flu_atrisk_grp ~ "Flu clinical risk group",
                 covid_atrisk_grp ~ "COVID-19 clinical risk group"
                 )
 
-
 # COVID cohort baseline table by ethnicity
-# desc_covid <- baseline_covid %>% 
-#         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
-#         urban_rural_5, imd_quintile, migrant, english_language, 
-#         flu_atrisk_grp, covid_atrisk_grp) %>% 
-#         mutate(ethnicity6_combined = fct_explicit_na(
-#                 ethnicity6_combined, 
-#                 na_level = "Missing")) %>%
-#         tbl_summary(
-#                 missing = "no",
-#                 by = ethnicity6_combined,
-#                 label = var_labels_list,
-#         ) %>% 
-#         add_overall(last = FALSE)
-# desc_covid$inputs$data <- NULL
-
-# # Apply redactions to baseline table
-# desc_covid_redact <- redact_tblsummary(desc_covid, 7) 
-
-# #Apply midpoint 6 rounding
-# raw_stats <- desc_covid_redact$meta_data %>%
-#         select(var_label, df_stats) %>%
-#         unnest(df_stats) %>%
-#         select(-any_of("fmt_fn"))
-# print(unique(raw_stats$by))
-# raw_stats_midpoint <- raw_stats %>%
-#   mutate(
-#     n=roundmid_any(n),
-#     N=roundmid_any(N),
-#     p=round(100*n/N,1),
-#     N_miss = roundmid_any(N_miss),
-#     N_obs = roundmid_any(N_obs),
-#     p_miss = round(100*N_miss/N_obs,1),
-#     N_nonmiss = roundmid_any(N_nonmiss),
-#     p_nonmiss = round(100*N_nonmiss/N_obs,1),
-#     var_label = factor(var_label),
-#     variable_levels = replace_na(as.character(variable_levels), "")
-#   ) 
-
-# desc_covid_redact_round <- raw_stats_midpoint %>%
-#   rowwise() %>%
-#   transmute(
-#     var_label,
-#     # gt creates a column called `label` when run locally, `variable_labels` 
-#     # when run in opensafely (probs different versions)
-#     # label,
-#     variable_levels,
-#     by,
-#     value = glue::glue(stat_display, .envir = cur_data())
-#   ) %>%
-#   pivot_wider(
-#     names_from = by,
-#     values_from = value
-#   )
-print(sum(is.na(baseline_covid$sex)))
-print(sum(is.na(baseline_flu_rsv$sex)))
-# Grouped table
 desc_covid_by <- baseline_covid %>% 
         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
-               urban_rural_5, imd_quintile, migrant, english_language, 
-               flu_atrisk_grp, covid_atrisk_grp) %>% 
-        mutate(ethnicity6_combined = fct_explicit_na(ethnicity6_combined, na_level = "Missing")) %>%
+        urban_rural_5, imd_quintile, migrant, english_language, 
+        flu_atrisk_grp, covid_atrisk_grp) %>% 
+        mutate(ethnicity6_combined = fct_na_value_to_level(
+                ethnicity6_combined, 
+                level = "Missing")) %>%
         tbl_summary(
                 missing = "no",
                 by = ethnicity6_combined,
-                label = var_labels_list
-        )
+                label = var_labels_list,
+        ) %>% 
+        add_overall(last = FALSE) %>% 
+        modify_header(all_stat_cols() ~ "{level}") 
+        
+# # Apply redactions to baseline table
+desc_covid_redact_round <- fn_redact_tbl_summary(
+        tbl_summary = desc_covid_by, 
+        threshold = 7,
+        col_names  = c( "stat_0", "stat_1", "stat_2", "stat_3", "stat_4", "stat_5", "stat_6"),
+        rename_cols = c("Overall", "Asian", "Black", "Chinese", "Missing", "Mixed", "White")
+        ) 
 
-# Overall table (no by)
-desc_covid_overall <- baseline_covid %>% 
-        select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
-               urban_rural_5, imd_quintile, migrant, english_language, 
-               flu_atrisk_grp, covid_atrisk_grp) %>% 
-        mutate(ethnicity6_combined = fct_explicit_na(ethnicity6_combined, na_level = "Missing")) %>%
-        tbl_summary(
-                missing = "no",
-                label = var_labels_list
-        )
 
-# Extract and round both
-extract_round_stats <- function(tbl) {
-        tbl$meta_data %>%
-                select(var_label, df_stats) %>%
-                unnest(df_stats) %>%
-                select(-any_of("fmt_fn")) %>%
-                mutate(
-                        n         = ifelse(n<=7, NA_real_, roundmid_any(n)),
-                        N         = ifelse(n<=7, NA_real_, roundmid_any(N)),
-                        p         = round(100*n/N, 1),
-                        N_miss    = roundmid_any(N_miss),
-                        N_obs     = roundmid_any(N_obs),
-                        p_miss    = round(100*N_miss/N_obs, 1),
-                        N_nonmiss = roundmid_any(N_nonmiss),
-                        p_nonmiss = round(100*N_nonmiss/N_obs, 1),
-                        var_label = factor(var_label),
-                        variable_levels = replace_na(as.character(variable_levels), "")
-                )
-}
-
-raw_stats_by      <- extract_round_stats(desc_covid_by)
-raw_stats_overall <- extract_round_stats(desc_covid_overall) %>%
-        mutate(by = "Overall")  # add by column so pivot_wider works
-
-# Combine and pivot
-desc_covid_redact_round <- bind_rows(raw_stats_overall, raw_stats_by) %>%
-        rowwise() %>%
-        transmute(
-                var_label,
-                variable_levels,
-                by,
-                value = glue::glue(stat_display, .envir = cur_data())
-        ) %>%
-        pivot_wider(
-                names_from = by,
-                values_from = value
-        )
-# saving both rounded/redacted and not rpound/redacted versions
+# # saving both rounded/redacted and not rpound/redacted versions
 write_csv(desc_covid_redact_round, file.path(outdir, "baseline_table_covid_r.csv"))
-gt::gtsave(as_gt(desc_covid_by), file.path(outdir, "baseline_table_covid.html"))
+write_csv(desc_covid_by$table_body, file.path(outdir, "baseline_table_covid.csv"))
 
-# Flu/RSV cohort baseline table by ethnicity
-# Grouped table
+# # Flu/RSV cohort baseline table by ethnicity
+# # Grouped table
+
 desc_flu_rsv_by <- baseline_flu_rsv %>% 
         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
                urban_rural_5, imd_quintile, migrant, english_language, 
                flu_atrisk_grp, covid_atrisk_grp) %>% 
-        mutate(ethnicity6_combined = fct_explicit_na(ethnicity6_combined, na_level = "Missing")) %>%
+        mutate(ethnicity6_combined = fct_na_value_to_level(ethnicity6_combined, level = "Missing")) %>%
         tbl_summary(
                 missing = "no",
                 by = ethnicity6_combined,
                 label = var_labels_list
-        )
+        )%>% 
+        add_overall(last = FALSE) %>% 
+        modify_header(all_stat_cols() ~ "{level}") 
+        
+# # Apply redactions to baseline table
+desc_flu_rsv_redact_round <- fn_redact_tbl_summary(
+        tbl_summary = desc_flu_rsv_by, 
+        threshold = 7,
+        col_names  = c( "stat_0", "stat_1", "stat_2", "stat_3", "stat_4", "stat_5", "stat_6"),
+        rename_cols = c("Overall", "Asian", "Black", "Chinese", "Missing", "Mixed", "White")
+        ) 
 
-# Overall table (no by)
-desc_flu_rsv_overall <- baseline_flu_rsv %>% 
-        select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
-               urban_rural_5, imd_quintile, migrant, english_language, 
-               flu_atrisk_grp, covid_atrisk_grp) %>% 
-        mutate(ethnicity6_combined = fct_explicit_na(ethnicity6_combined, na_level = "Missing")) %>%
-        tbl_summary(
-                missing = "no",
-                label = var_labels_list
-        )
+# # Overall table (no by)
+# desc_flu_rsv_overall <- baseline_flu_rsv %>% 
+#         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
+#                urban_rural_5, imd_quintile, migrant, english_language, 
+#                flu_atrisk_grp, covid_atrisk_grp) %>% 
+#         mutate(ethnicity6_combined = fct_na_value_to_level(ethnicity6_combined, level = "Missing")) %>%
+#         tbl_summary(
+#                 missing = "no",
+#                 label = var_labels_list
+#         )
 
-raw_stats_by      <- extract_round_stats(desc_flu_rsv_by)
-raw_stats_overall <- extract_round_stats(desc_flu_rsv_overall) %>%
-        mutate(by = "Overall")  # add by column so pivot_wider works
+# raw_stats_by      <- extract_round_stats(desc_flu_rsv_by)
+# raw_stats_overall <- extract_round_stats(desc_flu_rsv_overall) %>%
+#         mutate(by = "Overall")  # add by column so pivot_wider works
 
-# Combine and pivot
-desc_flu_rsv_redact_round <- bind_rows(raw_stats_overall, raw_stats_by) %>%
-        rowwise() %>%
-        transmute(
-                var_label,
-                variable_levels,
-                by,
-                value = glue::glue(stat_display, .envir = cur_data())
-        ) %>%
-        pivot_wider(
-                names_from = by,
-                values_from = value
-        )
-# saving both rounded/redacted and not rpound/redacted versions
+# # Combine and pivot
+# desc_flu_rsv_redact_round <- bind_rows(raw_stats_overall, raw_stats_by) %>%
+#         rowwise() %>%
+#         transmute(
+#                 var_label,
+#                 variable_levels,
+#                 by,
+#                 value = glue::glue(stat_display, .envir = cur_data())
+#         ) %>%
+#         pivot_wider(
+#                 names_from = by,
+#                 values_from = value
+#         )
+# # saving both rounded/redacted and not rpound/redacted versions
 write_csv(desc_flu_rsv_redact_round, file.path(outdir, "baseline_table_flu_rsv_r.csv"))
-gt::gtsave(as_gt(desc_flu_rsv_by), file.path(outdir, "baseline_table_flu_rsv.html"))
+write_csv(desc_flu_rsv_by$table_body, file.path(outdir, "baseline_table_flu_rsv.csv"))
 
-# generating tables with rounded weekly events, denominators and rates from measures
-# ethnicity
+# # generating tables with rounded weekly events, denominators and rates from measures
+# # ethnicity
 rates_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
         #filter(measure=="covid_gp" | measure=="covid_admission" | measure=="covid_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
@@ -261,7 +181,7 @@ rates_rsv_21 <- read_csv(here("output/measures/measures_rsv_2021.csv")) %>%
         select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_rsv_21, file.path(outdir, "rounded_rates_rsv_21.csv"))
 
-#IMD
+# #IMD
 rates_imd_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
         #filter(measure=="covid_gp_imd" | measure=="covid_admission_imd" | measure=="covid_emerg_imd") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
@@ -302,50 +222,50 @@ rates_imd_rsv_21 <- read_csv(here("output/measures/measures_rsv_2021.csv")) %>%
         select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_imd_rsv_21, file.path(outdir, "rounded_rates_imd_rsv_21.csv"))
 
-# Making (not very good) line graphs of rates 
-plot_line <- function(file, disease) {
+# # Making (not very good) line graphs of rates 
+# plot_line <- function(file, disease) {
 
-        p <- ggplot(
-                data = file,
-                mapping = aes(
-                x = interval_start,
-                y = rate_mid6,
-                group = interaction(ethnicity, measure),
-                color = ethnicity,
-                )
-        ) +
-                geom_line() +
-                geom_point(size = 1) +
-                facet_wrap(~measure, scales = "free_y") +
-                labs(title = paste("Disease rates for", disease))
+#         p <- ggplot(
+#                 data = file,
+#                 mapping = aes(
+#                 x = interval_start,
+#                 y = rate_mid6,
+#                 group = interaction(ethnicity, measure),
+#                 color = ethnicity,
+#                 )
+#         ) +
+#                 geom_line() +
+#                 geom_point(size = 1) +
+#                 facet_wrap(~measure, scales = "free_y") +
+#                 labs(title = paste("Disease rates for", disease))
 
-        ggsave(
-                filename = paste0("plot_", disease,".svg"),
-                plot = p,
-                path = outdir
-        )
+#         ggsave(
+#                 filename = paste0("plot_", disease,".svg"),
+#                 plot = p,
+#                 path = outdir
+#         )
 
-        return(p)
-}
+#         return(p)
+# }
 
-disease_list <- list(
-    covid = rates_covid,
-    flu_18 = rates_flu_18,
-    flu_21 = rates_flu_21,
-    rsv_18 = rates_rsv_18,
-    rsv_21 = rates_rsv_21
-)
+# disease_list <- list(
+#     covid = rates_covid,
+#     flu_18 = rates_flu_18,
+#     flu_21 = rates_flu_21,
+#     rsv_18 = rates_rsv_18,
+#     rsv_21 = rates_rsv_21
+# )
 
-plots <- lapply(names(disease_list), function(d_name) {
-    plot_line(disease_list[[d_name]], d_name)
-})
+# plots <- lapply(names(disease_list), function(d_name) {
+#     plot_line(disease_list[[d_name]], d_name)
+# })
 
-# Table of outcomes - first event for Cox models
+# # Table of outcomes - first event for Cox models
 outcomes_covid <- read_feather(here("output/an_outcome_first_covid.arrow")) 
 outcomes_flu <- read_feather(here("output/an_outcome_first_flu.arrow")) 
 outcomes_rsv <- read_feather(here("output/an_outcome_first_rsv.arrow")) 
 
-#Function to create table with number of outcomes, person-time, rate and flag for outcome type - no rounding yet
+# #Function to create table with number of outcomes, person-time, rate and flag for outcome type - no rounding yet
 create_event_table <- function(data, time, status, outcome, group = NULL, rate_multiplier = 1000) {
   
   if (is.null(group)) {
@@ -374,8 +294,8 @@ create_event_table <- function(data, time, status, outcome, group = NULL, rate_m
   }
 }
 
-# Run function for each outcome with GP, hospitalisations and both and create table
-# ethnicity
+# # Run function for each outcome with GP, hospitalisations and both and create table
+# # ethnicity
 count_covid_gp <- create_event_table(outcomes_covid, time = "stop_gp", status = "gp_binary", outcome = "COVID - GP", group = "ethnicity6_combined")
 count_covid_sc <- create_event_table(outcomes_covid, time = "stop_sc", status = "sc_binary", outcome = "COVID - SC", group = "ethnicity6_combined")
 count_covid_emerg <- create_event_table(outcomes_covid, time = "stop_emerg", status = "emerg_binary", outcome = "COVID - A & E", group = "ethnicity6_combined")
@@ -427,7 +347,7 @@ count_rsv_round <- count_rsv %>%
 write_csv(count_rsv, file.path(outdir, "count_rsv.csv"))
 write_csv(count_rsv_round, file.path(outdir, "count_rsv_round.csv"))
 
-#IMD
+# #IMD
 count_covid_imd_gp <- create_event_table(outcomes_covid, time = "stop_gp", status = "gp_binary", outcome = "COVID - GP", group = "imd_quintile")
 count_covid_imd_sc <- create_event_table(outcomes_covid, time = "stop_sc", status = "sc_binary", outcome = "COVID - SC", group = "imd_quintile")
 count_covid_imd_emerg <- create_event_table(outcomes_covid, time = "stop_emerg", status = "emerg_binary", outcome = "COVID - A & E", group = "imd_quintile")
@@ -479,7 +399,7 @@ count_rsv_imd_round <- count_rsv_imd %>%
 write_csv(count_rsv_imd, file.path(outdir, "count_rsv_imd.csv"))
 write_csv(count_rsv_imd_round, file.path(outdir, "count_rsv_imd_round.csv"))
 
-# Cox PH models to measure differences in utilisation by ethnicity and IMD
+# # Cox PH models to measure differences in utilisation by ethnicity and IMD
 run_cox_models <- function(disease, difference) {
         # Build filename and read dataset
         file_path <- paste0("an_outcome_first_",disease,".arrow")
