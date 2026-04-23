@@ -53,9 +53,18 @@ denominator = (
     )
 
 #Ethnicity
+# GP consultation - specific
 measures.define_measure(
     name="rsv_gp",
     numerator=dataset.rsv_gp,
+    denominator=denominator,
+    group_by={ "ethnicity": dataset.ethnicity6},
+    intervals=months(intervals).starting_on(start_date) 
+)
+# GP consultation - sensitive
+measures.define_measure(
+    name="rsv_gp_sens",
+    numerator=dataset.rsv_gp_sens,
     denominator=denominator,
     group_by={ "ethnicity": dataset.ethnicity6},
     intervals=months(intervals).starting_on(start_date) 
@@ -81,6 +90,14 @@ measures.define_measure(
 measures.define_measure(
     name="rsv_gp_imd",
     numerator=dataset.rsv_gp,
+    denominator=denominator,
+    group_by={"imd": dataset.imd_quintile},
+    intervals=months(intervals).starting_on(start_date) 
+)
+
+measures.define_measure(
+    name="rsv_gp_sens_imd",
+    numerator=dataset.rsv_gp_sens,
     denominator=denominator,
     group_by={"imd": dataset.imd_quintile},
     intervals=months(intervals).starting_on(start_date) 
@@ -113,6 +130,15 @@ measures.define_measure(
 )
 
 measures.define_measure(
+    name="rsv_gp_sens_age",
+    numerator=dataset.rsv_gp_sens,
+    denominator=denominator,
+    group_by={ "ethnicity": dataset.ethnicity6,
+              "age": dataset.age_infants},
+    intervals=months(intervals).starting_on(start_date) 
+)
+
+measures.define_measure(
     name="rsv_admission_age",
     numerator=dataset.rsv_sc,
     denominator=denominator,
@@ -120,7 +146,7 @@ measures.define_measure(
               "age": dataset.age_infants},
     intervals=months(intervals).starting_on(start_date) 
 )
-#IMD also startified by age
+
 measures.define_measure(
     name="rsv_emerg_age",
     numerator=dataset.rsv_emerg,
@@ -134,6 +160,15 @@ measures.define_measure(
 measures.define_measure(
     name="rsv_gp_imd_age",
     numerator=dataset.rsv_gp,
+    denominator=denominator,
+    group_by={"imd": dataset.imd_quintile,
+              "age": dataset.age_infants},
+    intervals=months(intervals).starting_on(start_date) 
+)
+
+measures.define_measure(
+    name="rsv_gp_sens_imd_age",
+    numerator=dataset.rsv_gp_sens,
     denominator=denominator,
     group_by={"imd": dataset.imd_quintile,
               "age": dataset.age_infants},

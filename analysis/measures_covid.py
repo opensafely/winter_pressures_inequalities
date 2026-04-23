@@ -52,7 +52,7 @@ denominator = (
     )
 
 # By ethnicity
-# GP consultation
+# GP consultation - specific
 measures.define_measure(
     name="covid_gp",
     numerator=dataset.covid_gp,
@@ -74,6 +74,15 @@ measures.define_measure(
 measures.define_measure(
     name="covid_gp_notest",
     numerator=dataset.covid_gp_notest,
+    denominator=denominator,
+    group_by={ "ethnicity": dataset.ethnicity6},
+    intervals=months(intervals).starting_on(start_date) 
+)
+
+# COVID - sensitive
+measures.define_measure(
+    name="covid_gp_sens",
+    numerator=dataset.covid_gp_sens,
     denominator=denominator,
     group_by={ "ethnicity": dataset.ethnicity6},
     intervals=months(intervals).starting_on(start_date) 
@@ -122,6 +131,16 @@ measures.define_measure(
     group_by={ "imd": dataset.imd_quintile},
     intervals=months(intervals).starting_on(start_date) 
 )
+
+# COVID -sensitive
+measures.define_measure(
+    name="covid_gp_sens_imd",
+    numerator=dataset.covid_gp_sens,
+    denominator=denominator,
+    group_by={ "imd": dataset.imd_quintile},
+    intervals=months(intervals).starting_on(start_date) 
+)
+
 # Hospital admission
 measures.define_measure(
     name="covid_admission_imd",

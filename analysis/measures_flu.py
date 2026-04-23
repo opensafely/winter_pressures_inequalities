@@ -53,10 +53,19 @@ denominator = (
     )
 
 # Ethnicity
-# Flu
+# Flu - specific
 measures.define_measure(
     name="flu_gp",
     numerator=dataset.flu_gp,
+    denominator=denominator,
+    group_by={ "ethnicity": dataset.ethnicity6},
+    intervals=months(intervals).starting_on(start_date) 
+)
+
+#Flu - sensitive
+measures.define_measure(
+    name="flu_gp_sens",
+    numerator=dataset.flu_gp_sens,
     denominator=denominator,
     group_by={ "ethnicity": dataset.ethnicity6},
     intervals=months(intervals).starting_on(start_date) 
@@ -82,6 +91,14 @@ measures.define_measure(
 measures.define_measure(
     name="flu_gp_imd",
     numerator=dataset.flu_gp,
+    denominator=denominator,
+    group_by={"imd": dataset.imd_quintile},
+    intervals=months(intervals).starting_on(start_date) 
+)
+
+measures.define_measure(
+    name="flu_gp_sens_imd",
+    numerator=dataset.flu_gp_sens,
     denominator=denominator,
     group_by={"imd": dataset.imd_quintile},
     intervals=months(intervals).starting_on(start_date) 
