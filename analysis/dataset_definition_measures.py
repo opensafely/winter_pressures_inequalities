@@ -196,6 +196,7 @@ def make_dataset_covid_utilisation(index_date, end_date):
         ).exists_for_patient()
     
     dataset.covid_gp_sens = case(
+         when(dataset.covid_gp==True).then(True),
          when((gp_covid_sens==True) & (gp_covid_sens_excl==False)).then(True),
         otherwise = False,
         )
@@ -259,6 +260,7 @@ def make_dataset_flu_rsv_utilisation(index_date, end_date):
         clinical_events.date.is_on_or_between(index_date,end_date)
         ).exists_for_patient()
     dataset.flu_gp_sens = case(
+         when(dataset.flu_gp==True).then(True),
          when((gp_flu_sens==True) & (gp_flu_sens_excl==False)).then(True),
         otherwise = False,
         )
@@ -313,7 +315,7 @@ def make_dataset_flu_rsv_utilisation(index_date, end_date):
          emergency_care_attendances.arrival_date
         .is_on_or_between(index_date, end_date)).exists_for_patient())
 
-    dataset.rsv_gp_sens = case(when((dataset.age <= 2) & (((gp_rsv_sens == True) | (infant_ae_rsv == True) | (infant_ae_wheeze == True)) & (gp_rsv_sens_excl== False))).then(True),
+    dataset.rsv_gp_sens = case(when((dataset.age <= 2) & (((dataset.rsv_gp == True) | (gp_rsv_sens == True) | (infant_ae_rsv == True) | (infant_ae_wheeze == True)) & (gp_rsv_sens_excl== False))).then(True),
                           when((dataset.age > 2) & ((gp_rsv_sens==True) & (gp_rsv_sens_excl==False))).then(True),
                         otherwise=False)
     
