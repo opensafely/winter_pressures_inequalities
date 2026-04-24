@@ -59,7 +59,6 @@ measures.define_measure(
     numerator=dataset.rsv_gp,
     denominator=denominator,
     group_by={ "ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
 )
 # GP consultation - sensitive
 measures.define_measure(
@@ -67,15 +66,13 @@ measures.define_measure(
     numerator=dataset.rsv_gp_sens,
     denominator=denominator,
     group_by={ "ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
 )
 
 measures.define_measure(
     name="rsv_admission",
     numerator=dataset.rsv_sc,
     denominator=denominator,
-    group_by= {"ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by= {"ethnicity": dataset.ethnicity6}, 
 )
 
 measures.define_measure(
@@ -83,7 +80,6 @@ measures.define_measure(
     numerator=dataset.rsv_emerg,
     denominator=denominator,
     group_by= {"ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
 )
 
 #IMD
@@ -91,16 +87,14 @@ measures.define_measure(
     name="rsv_gp_imd",
     numerator=dataset.rsv_gp,
     denominator=denominator,
-    group_by={"imd": dataset.imd_quintile},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by={"imd": dataset.imd_quintile}, 
 )
 
 measures.define_measure(
     name="rsv_gp_sens_imd",
     numerator=dataset.rsv_gp_sens,
     denominator=denominator,
-    group_by={"imd": dataset.imd_quintile},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by={"imd": dataset.imd_quintile}, 
 )
 
 measures.define_measure(
@@ -108,14 +102,12 @@ measures.define_measure(
     numerator=dataset.rsv_sc,
     denominator=denominator,
     group_by= {"imd": dataset.imd_quintile},
-    intervals=months(intervals).starting_on(start_date) 
 )
 
 measures.define_measure(
     name="rsv_emerg_imd",
     numerator=dataset.rsv_emerg,
     denominator=denominator,
-    group_by= {"imd": dataset.imd_quintile},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by= {"imd": dataset.imd_quintile}, 
 )
 

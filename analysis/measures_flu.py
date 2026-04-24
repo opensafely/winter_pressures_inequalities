@@ -58,8 +58,7 @@ measures.define_measure(
     name="flu_gp",
     numerator=dataset.flu_gp,
     denominator=denominator,
-    group_by={ "ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by={ "ethnicity": dataset.ethnicity6}, 
 )
 
 #Flu - sensitive
@@ -67,16 +66,14 @@ measures.define_measure(
     name="flu_gp_sens",
     numerator=dataset.flu_gp_sens,
     denominator=denominator,
-    group_by={ "ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by={ "ethnicity": dataset.ethnicity6}, 
 )
 
 measures.define_measure(
     name="flu_admission",
     numerator=dataset.flu_sc,
     denominator=denominator,
-    group_by= {"ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by= {"ethnicity": dataset.ethnicity6}, 
 )
 
 measures.define_measure(
@@ -84,7 +81,6 @@ measures.define_measure(
     numerator=dataset.flu_emerg,
     denominator=denominator,
     group_by= {"ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
 )
 
 # IMD
@@ -93,15 +89,13 @@ measures.define_measure(
     numerator=dataset.flu_gp,
     denominator=denominator,
     group_by={"imd": dataset.imd_quintile},
-    intervals=months(intervals).starting_on(start_date) 
 )
 
 measures.define_measure(
     name="flu_gp_sens_imd",
     numerator=dataset.flu_gp_sens,
     denominator=denominator,
-    group_by={"imd": dataset.imd_quintile},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by={"imd": dataset.imd_quintile}, 
 )
 
 measures.define_measure(
@@ -109,14 +103,12 @@ measures.define_measure(
     numerator=dataset.flu_sc,
     denominator=denominator,
     group_by= {"imd": dataset.imd_quintile},
-    intervals=months(intervals).starting_on(start_date) 
 )
 
 measures.define_measure(
     name="flu_emerg_imd",
     numerator=dataset.flu_emerg,
     denominator=denominator,
-    group_by= {"imd": dataset.imd_quintile},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by= {"imd": dataset.imd_quintile}, 
 )
 

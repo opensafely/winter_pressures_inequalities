@@ -58,7 +58,6 @@ measures.define_measure(
     denominator=denominator,
     group_by={ "ethnicity": dataset.ethnicity6,
               "age": dataset.age_infants},
-    intervals=months(intervals).starting_on(start_date) 
 )
 
 measures.define_measure(
@@ -67,7 +66,6 @@ measures.define_measure(
     denominator=denominator,
     group_by={ "ethnicity": dataset.ethnicity6,
               "age": dataset.age_infants},
-    intervals=months(intervals).starting_on(start_date) 
 )
 
 measures.define_measure(
@@ -76,7 +74,6 @@ measures.define_measure(
     denominator=denominator,
     group_by= {"ethnicity": dataset.ethnicity6,
               "age": dataset.age_infants},
-    intervals=months(intervals).starting_on(start_date) 
 )
 
 measures.define_measure(
@@ -85,7 +82,6 @@ measures.define_measure(
     denominator=denominator,
     group_by= {"ethnicity": dataset.ethnicity6,
               "age": dataset.age_infants},
-    intervals=months(intervals).starting_on(start_date) 
 )
 
 # RSV - IMD also stratified by age
@@ -95,7 +91,6 @@ measures.define_measure(
     denominator=denominator,
     group_by={"imd": dataset.imd_quintile,
               "age": dataset.age_infants},
-    intervals=months(intervals).starting_on(start_date) 
 )
 
 measures.define_measure(
@@ -104,7 +99,6 @@ measures.define_measure(
     denominator=denominator,
     group_by={"imd": dataset.imd_quintile,
               "age": dataset.age_infants},
-    intervals=months(intervals).starting_on(start_date) 
 )
 
 measures.define_measure(
@@ -113,7 +107,6 @@ measures.define_measure(
     denominator=denominator,
     group_by= {"imd": dataset.imd_quintile,
               "age": dataset.age_infants},
-    intervals=months(intervals).starting_on(start_date) 
 )
 
 measures.define_measure(
@@ -122,5 +115,4 @@ measures.define_measure(
     denominator=denominator,
     group_by= {"imd": dataset.imd_quintile,
               "age": dataset.age_infants},
-    intervals=months(intervals).starting_on(start_date) 
 )

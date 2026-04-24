@@ -57,8 +57,7 @@ measures.define_measure(
     name="covid_gp",
     numerator=dataset.covid_gp,
     denominator=denominator,
-    group_by={ "ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by={"ethnicity": dataset.ethnicity6},
 )
 
 # COVID code and GP appointment in same interval
@@ -66,8 +65,7 @@ measures.define_measure(
     name="covid_gp_appt",
     numerator=dataset.covid_gp_appt,
     denominator=denominator,
-    group_by={ "ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by={"ethnicity": dataset.ethnicity6}, 
 )
 
 # COVID code that is not a test
@@ -75,8 +73,7 @@ measures.define_measure(
     name="covid_gp_notest",
     numerator=dataset.covid_gp_notest,
     denominator=denominator,
-    group_by={ "ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by={"ethnicity": dataset.ethnicity6},
 )
 
 # COVID - sensitive
@@ -84,8 +81,7 @@ measures.define_measure(
     name="covid_gp_sens",
     numerator=dataset.covid_gp_sens,
     denominator=denominator,
-    group_by={ "ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by={"ethnicity": dataset.ethnicity6},
 )
 
 # Hospital admission
@@ -94,7 +90,6 @@ measures.define_measure(
     numerator=dataset.covid_sc,
     denominator=denominator,
     group_by= {"ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
 )
 # Emergency care attendance
 measures.define_measure(
@@ -102,7 +97,6 @@ measures.define_measure(
     numerator=dataset.covid_emerg,
     denominator=denominator,
     group_by= {"ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
 )
 
 # By IMD
@@ -112,7 +106,6 @@ measures.define_measure(
     numerator=dataset.covid_gp,
     denominator=denominator,
     group_by={"imd": dataset.imd_quintile},
-    intervals=months(intervals).starting_on(start_date) 
 )
 # COVID code and GP appointment in same interval
 measures.define_measure(
@@ -120,7 +113,6 @@ measures.define_measure(
     numerator=dataset.covid_gp_appt,
     denominator=denominator,
     group_by={ "imd": dataset.imd_quintile},
-    intervals=months(intervals).starting_on(start_date) 
 )
 
 # COVID code that is not a test
@@ -128,8 +120,7 @@ measures.define_measure(
     name="covid_gp_notest_imd",
     numerator=dataset.covid_gp_notest,
     denominator=denominator,
-    group_by={ "imd": dataset.imd_quintile},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by={ "imd": dataset.imd_quintile}, 
 )
 
 # COVID -sensitive
@@ -137,8 +128,7 @@ measures.define_measure(
     name="covid_gp_sens_imd",
     numerator=dataset.covid_gp_sens,
     denominator=denominator,
-    group_by={ "imd": dataset.imd_quintile},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by={ "imd": dataset.imd_quintile}, 
 )
 
 # Hospital admission
@@ -147,13 +137,11 @@ measures.define_measure(
     numerator=dataset.covid_sc,
     denominator=denominator,
     group_by= {"imd": dataset.imd_quintile},
-    intervals=months(intervals).starting_on(start_date) 
 )
 # Emergency care attendance
 measures.define_measure(
     name="covid_emerg_imd",
     numerator=dataset.covid_emerg,
     denominator=denominator,
-    group_by= {"imd": dataset.imd_quintile},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by= {"imd": dataset.imd_quintile}, 
 )
