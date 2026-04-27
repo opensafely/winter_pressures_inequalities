@@ -157,7 +157,7 @@ redactor2 <- function(n, threshold=5, x=NULL){
 # }
 # Copied from metformin_covid repo
 ################################################################################
-# Custom made function to redact a tbl_summary object, it does the following:
+# Custom made function to round a tbl_summary object, it does the following:
 # Take a tbl_summary() object as input and a threshold for redaction
 # Redact categorical/dichotomous counts, including the total column total (second row N Total)
 # Recalculate percentages for subgroup rows, based on the redacted column total
@@ -171,14 +171,14 @@ library(purrr)
 library(tidyr)
 
 fn_redact_tbl_summary <- function(tbl_summary_obj, 
-                                  threshold = 7,
+                                  threshold = 6,
                                   col_names = c("stat_1", "stat_2"),
                                   rename_cols = c("group1", "group2")) {
   
   # Step 0: extract table body as tibble
   tbl_df <- as_tibble(tbl_summary_obj$table_body)
   
-  # Step 1: redact counts for categorical/dichotomous rows
+  # Step 1: round counts for categorical/dichotomous rows
   # takes off percentage in brackets and rounds all numbers (regardless of whether will be redacted or not)
   tbl_df <- tbl_df %>%
     mutate(
@@ -192,7 +192,7 @@ fn_redact_tbl_summary <- function(tbl_summary_obj,
             txt <- str_trim(txt)
             count <- suppressWarnings(as.numeric(str_extract(txt, "^[0-9]+")))
             if (is.na(count)) return(cell)
-            roundmid_any(count, threshold) %>% as.character()
+            ifelse(cell <=threshold, NA_real_, roundmid_any(count)) %>% as.character()
           }),
           .x
         )
@@ -218,6 +218,7 @@ fn_redact_tbl_summary <- function(tbl_summary_obj,
   # })
   
   # Step 4: recalc percentages dynamically
+  print("stat_0_count" %in% names(tbl_df))
   overall_counts <- tbl_df[["stat_0_count"]]  # extract once outside the loop
 
   for (i in seq_along(col_names)) {

@@ -1,5 +1,5 @@
 #################################################################
-# This script creates monthly counts/rates of primary and secndary 
+# This script creates monthly counts/rates of primary, secndary and emergency
 # care healthcare utilisation for Flu
 #
 # 

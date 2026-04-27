@@ -25,7 +25,7 @@ source(here::here("analysis", "redaction.R"))
 outdir <- here("output", "tables")
 fs::dir_create(outdir)
 
-#define function for redacting and midpoint 6 rounding
+#define function for midpoint 6 rounding
 roundmid_any <- function(x, to = 6) {
   
   # like round_any, but centers on (integer) midpoint of the rounding points
