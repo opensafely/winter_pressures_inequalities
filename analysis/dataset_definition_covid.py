@@ -62,7 +62,7 @@ was_alive = ((patients.date_of_death.is_after(start_date) | patients.date_of_dea
 )
 
 # known sex
-has_known_sex = patients.sex.is_in(["female", "male", "intersex"])
+has_known_sex = patients.sex.is_in(["female", "male"])
 
 dataset.define_population(
     was_alive
@@ -255,17 +255,37 @@ dataset.covid_primary_third_date = (
     .where(gp_events.date.is_on_or_after(dataset.covid_primary_second_date + months(1)))
     .sort_by(gp_events.date).first_for_patient().date
 )
-# identifying covid in primary care  where there is an appointment in the appointments table on the same date
+# identifying covid in primary care  where there is an appointment in the appointments table 10 days or less prior to covid date
+# As COVID code could indicate a test, this is to deterine if there was an appointment associated.
 dataset.covid_primary_appt = (
-   appointments.where(appointments.seen_date == dataset.covid_primary_date).exists_for_patient()
+   appointments.where(appointments.seen_date.is_on_or_between(dataset.covid_primary_date - days(10), dataset.covid_primary_date)).exists_for_patient()
    )
 
 dataset.covid_primary_second_appt = (
-    appointments.where(appointments.seen_date == dataset.covid_primary_second_date).exists_for_patient()
+    appointments.where(appointments.seen_date.is_on_or_between(dataset.covid_primary_second_date - days(10), dataset.covid_primary_second_date)).exists_for_patient()
 )
 dataset.covid_primary_third_appt = (
-    appointments.where(appointments.seen_date == dataset.covid_primary_third_date).exists_for_patient()
+    appointments.where(appointments.seen_date.is_on_or_between(dataset.covid_primary_third_date - days(10), dataset.covid_primary_third_date)).exists_for_patient()
 )
+
+# Identifying covid from codes that do not include testing
+dataset.covid_notest_primary_date = (
+   first_gp_event(codelists.covid_notest_codelist).date
+)
+#extract date of second episode
+dataset.covid_notest_primary_second_date = (
+    is_gp_event(codelists.covid_notest_codelist)
+    .where(gp_events.date.is_on_or_after(dataset.covid_notest_primary_date + months(1)))
+    .sort_by(gp_events.date).first_for_patient().date
+)
+#extract date of third episode
+dataset.covid_notest_primary_third_date = (
+    is_gp_event(codelists.covid_notest_codelist)
+    .where(gp_events.date.is_on_or_after(dataset.covid_notest_primary_second_date + months(1)))
+    .sort_by(gp_events.date).first_for_patient().date
+)
+
+
 # extract date of first hospitalisation
 dataset.covid_sc_date = (
     hospitalisation_primary_secondary_diagnosis_matches(codelists.covid_secondary_codelist)

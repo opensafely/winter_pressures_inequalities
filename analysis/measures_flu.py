@@ -1,6 +1,6 @@
 #################################################################
-# This script creates monthly counts/rates of primary and secndary 
-# care healthcare utilisation for covid
+# This script creates monthly counts/rates of primary, secndary and emergency
+# care healthcare utilisation for Flu
 #
 # 
 #####################################################################
@@ -47,39 +47,68 @@ measures.configure_dummy_data(population_size=5000)
 denominator = (
         (patients.age_on(index_date) >= 0) 
         & (patients.age_on(index_date) < 110)
-        & ((patients.sex == "male") | (patients.sex == "female") | (patients.sex == "intersex"))
+        & ((patients.sex == "male") | (patients.sex == "female"))
         & (patients.date_of_death.is_after(index_date) | patients.date_of_death.is_null())
         & (practice_registrations.for_patient_on(index_date).exists_for_patient())
     )
 
+# Ethnicity
+# Flu - specific
 measures.define_measure(
     name="flu_gp",
     numerator=dataset.flu_gp,
     denominator=denominator,
-    group_by={ "ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by={ "ethnicity": dataset.ethnicity6}, 
+)
+
+#Flu - sensitive
+measures.define_measure(
+    name="flu_gp_sens",
+    numerator=dataset.flu_gp_sens,
+    denominator=denominator,
+    group_by={ "ethnicity": dataset.ethnicity6}, 
 )
 
 measures.define_measure(
     name="flu_admission",
     numerator=dataset.flu_sc,
     denominator=denominator,
-    group_by= {"ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by= {"ethnicity": dataset.ethnicity6}, 
 )
 
 measures.define_measure(
-    name="rsv_gp",
-    numerator=dataset.rsv_gp,
+    name="flu_emerg",
+    numerator=dataset.flu_emerg,
     denominator=denominator,
-    group_by={ "ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by= {"ethnicity": dataset.ethnicity6},
+)
+
+# IMD
+measures.define_measure(
+    name="flu_gp_imd",
+    numerator=dataset.flu_gp,
+    denominator=denominator,
+    group_by={"imd": dataset.imd_quintile},
 )
 
 measures.define_measure(
-    name="rsv_admission",
-    numerator=dataset.rsv_sc,
+    name="flu_gp_sens_imd",
+    numerator=dataset.flu_gp_sens,
     denominator=denominator,
-    group_by= {"ethnicity": dataset.ethnicity6},
-    intervals=months(intervals).starting_on(start_date) 
+    group_by={"imd": dataset.imd_quintile}, 
 )
+
+measures.define_measure(
+    name="flu_admission_imd",
+    numerator=dataset.flu_sc,
+    denominator=denominator,
+    group_by= {"imd": dataset.imd_quintile},
+)
+
+measures.define_measure(
+    name="flu_emerg_imd",
+    numerator=dataset.flu_emerg,
+    denominator=denominator,
+    group_by= {"imd": dataset.imd_quintile}, 
+)
+

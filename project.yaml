@@ -1,4 +1,4 @@
-version: '4.0'
+version: '5.0'
 # Generates cohorts for COVID outcome.
 actions:  
   generate_dataset_covid_2021:
@@ -114,30 +114,74 @@ actions:
         moderately_sensitive:
           measures_csv: output/measures/measures_covid.csv
 
-  measures_flu_rsv_2018: 
+  measures_flu_2018: 
       run: >
-        ehrql:v1 generate-measures analysis/measures_flu_rsv.py
-        --output output/measures/measures_flu_rsv_2018.csv 
+        ehrql:v1 generate-measures analysis/measures_flu.py
+        --output output/measures/measures_flu_2018.csv 
         --
         --start-date 2018-09-01
         --intervals 24
       outputs:
         moderately_sensitive:
-          measures_csv: output/measures/measures_flu_rsv_2018.csv
+          measures_csv: output/measures/measures_flu_2018.csv
 
-  measures_flu_rsv_2021: 
+  measures_flu_2021: 
       run: >
-        ehrql:v1 generate-measures analysis/measures_flu_rsv.py
-        --output output/measures/measures_flu_rsv_2021.csv 
+        ehrql:v1 generate-measures analysis/measures_flu.py
+        --output output/measures/measures_flu_2021.csv 
         --
         --start-date 2021-09-01
         --intervals 48
       outputs:
         moderately_sensitive:
-          measures_csv: output/measures/measures_flu_rsv_2021.csv
+          measures_csv: output/measures/measures_flu_2021.csv
+
+  measures_rsv_2018: 
+      run: >
+        ehrql:v1 generate-measures analysis/measures_rsv.py
+        --output output/measures/measures_rsv_2018.csv 
+        --
+        --start-date 2018-09-01
+        --intervals 24
+      outputs:
+        moderately_sensitive:
+          measures_csv: output/measures/measures_rsv_2018.csv
+
+  measures_rsv_2021: 
+      run: >
+        ehrql:v1 generate-measures analysis/measures_rsv.py
+        --output output/measures/measures_rsv_2021.csv 
+        --
+        --start-date 2021-09-01
+        --intervals 48
+      outputs:
+        moderately_sensitive:
+          measures_csv: output/measures/measures_rsv_2021.csv
+
+  measures_rsv_age_2018: 
+      run: >
+        ehrql:v1 generate-measures analysis/measures_rsv_age.py
+        --output output/measures/measures_rsv_age_2018.csv 
+        --
+        --start-date 2018-09-01
+        --intervals 24
+      outputs:
+        moderately_sensitive:
+          measures_csv: output/measures/measures_rsv_age_2018.csv
+
+  measures_rsv_age_2021: 
+      run: >
+        ehrql:v1 generate-measures analysis/measures_rsv.py
+        --output output/measures/measures_rsv_age_2021.csv 
+        --
+        --start-date 2021-09-01
+        --intervals 48
+      outputs:
+        moderately_sensitive:
+          measures_csv: output/measures/measures_rsv_age_2021.csv
 
   data_process_bl:
-      run: r:latest analysis/data_processing_baseline.R 
+      run: r:v2 analysis/data_processing_baseline.R 
       needs: 
       - generate_dataset_covid_2021
       - generate_dataset_covid_2022
@@ -155,7 +199,7 @@ actions:
           data_flu_rsv: output/an_bl_data_flu_rsv.arrow
 
   data_process_outcome_covid:
-      run: r:latest analysis/data_processing_outcomes.R covid covid
+      run: r:v2 analysis/data_processing_outcomes.R covid covid
       needs: 
       - generate_dataset_covid_2021
       - generate_dataset_covid_2022
@@ -168,7 +212,7 @@ actions:
           data_f_covid: output/an_outcome_first_covid.arrow
 
   data_process_outcome_flu:
-      run: r:latest analysis/data_processing_outcomes.R flu flu_rsv 
+      run: r:v2 analysis/data_processing_outcomes.R flu flu_rsv 
       needs: 
       - generate_dataset_flu_rsv_2018
       - generate_dataset_flu_rsv_2019
@@ -183,7 +227,7 @@ actions:
           data_f_covid: output/an_outcome_first_flu.arrow
 
   data_process_outcome_rsv:
-      run: r:latest analysis/data_processing_outcomes.R rsv flu_rsv 
+      run: r:v2 analysis/data_processing_outcomes.R rsv flu_rsv 
       needs: 
       - generate_dataset_flu_rsv_2018
       - generate_dataset_flu_rsv_2019
@@ -198,19 +242,21 @@ actions:
           data_f_covid: output/an_outcome_first_rsv.arrow
 
   tables:
-      run: r:latest analysis/descriptive_analysis.R 
+      run: r:v2 analysis/descriptive_analysis.R 
       needs: 
         - data_process_bl
         - data_process_outcome_covid
         - data_process_outcome_flu
         - data_process_outcome_rsv
         - measures_covid
-        - measures_flu_rsv_2018
-        - measures_flu_rsv_2021
+        - measures_flu_2018
+        - measures_flu_2021
+        - measures_rsv_2018
+        - measures_rsv_2021
       outputs: 
         moderately_sensitive:
-          table: output/tables/baseline_table_covid*.html
-          table_flu_rsv: output/tables/baseline_table_flu_rsv*.html
+          table: output/tables/baseline_table_covid*.csv
+          table_flu_rsv: output/tables/baseline_table_flu_rsv*.csv
           table_r: output/tables/baseline_table_covid_r.csv
           table_flu_rsv_r: output/tables/baseline_table_flu_rsv_r.csv
           table_out_c: output/tables/count_*.csv

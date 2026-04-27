@@ -32,6 +32,12 @@ rsv_primary_codelist = codelist_from_csv(
 # rsv emergency attendances - specific
 bronchiolitis_attendance = ["4120002"]
 
+# rsv emergency attendance - sensitive
+wheeze_attendance = ["4120002", "276191000000107"]
+
+# RSV emergency attendance (RSV and bronchiolitis SNOMED codes)
+rsv_attendance = ["55735004", "4120002"]  # RSV infection, Bronchiolitis
+
 # rsv secondary - specific
 rsv_secondary_codelist = codelist_from_csv(
   "codelists/opensafely-rsv-identification-secondary-care.csv",
@@ -39,9 +45,31 @@ rsv_secondary_codelist = codelist_from_csv(
 )
 rsv_secondary_codelist = expand_three_char_icd10_codes(rsv_secondary_codelist)
 
+# RSV primary care sensitive
+rsv_primary_sens_codelist = codelist_from_csv(
+    "codelists/opensafely-rsv-identification-primary-care-maximal-sensitivity.csv", 
+    column = "code",
+)
+
+rsv_primary_sens_excl_codelist = codelist_from_csv(
+    "codelists/opensafely-rsv-exclusion-primary-care-maximal-sensitivity.csv",
+    column = "code",
+)
+
 # flu primary - specific
 flu_primary_codelist = codelist_from_csv(
   "codelists/opensafely-influenza-identification-primary-care.csv",
+  column = "code",
+)
+
+# flu primary care - sensitive
+flu_primary_sens_codelist = codelist_from_csv(
+  "codelists/opensafely-influenza-identification-primary-care-maximal-sensitivity.csv",
+  column = "code",
+)
+
+flu_primary_sens_excl_codelist = codelist_from_csv(
+  "codelists/opensafely-influenza-exclusion-primary-care-maximal-sensitivity.csv",
   column = "code",
 )
 
@@ -61,9 +89,26 @@ ari_primary_codelist = codelist_from_csv(
   column = "code",
 )
 
+# Fever
+fever_codelist = codelist_from_csv(
+    "codelists/opensafely-symptoms-fever.csv",
+    column = "code",
+)
+
 # covid primary - specific
 covid_primary_codelist = codelist_from_csv(
   "codelists/opensafely-covid-19-identification-primary-care.csv",
+  column = "code",
+)
+
+# covid primary - sensitive
+covid_primary_sens_codelist = codelist_from_csv(
+  "codelists/opensafely-covid-19-identification-primary-care-maximal-sensitivity.csv",
+  column = "code",
+)
+
+covid_primary_sens_excl_codelist = codelist_from_csv(
+  "codelists/opensafely-covid-19-exclusion-primary-care-maximal-sensitivity.csv",
   column = "code",
 )
 
@@ -73,8 +118,15 @@ covid_secondary_codelist = codelist_from_csv(
   column = "icd10_code",
 )
 
-covid_attendance = ["1240751000000100"]
+covid_attendance = codelist_from_csv(
+  "codelists/opensafely-covid-19-ae-diagnosis-codes.csv",
+  column = "code",
+)
 
+covid_notest_codelist = codelist_from_csv(
+    "codelists/user-ruthcostello-covid-19-notest-identification-primary-care.csv",
+    column = "code",
+)
 # covariates 
 
 # migrant

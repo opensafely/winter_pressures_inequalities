@@ -63,7 +63,7 @@ was_alive = ((patients.date_of_death.is_after(start_date) | patients.date_of_dea
 )
 
 # known sex
-has_known_sex = patients.sex.is_in(["female", "male", "intersex"])
+has_known_sex = patients.sex.is_in(["female", "male"])
 
 dataset.define_population(
     was_alive
@@ -327,3 +327,11 @@ hospitalisation_primary_secondary_diagnosis_matches(codelists.rsv_secondary_code
 .where(hospital_events.admission_date.is_on_or_after(dataset.rsv_sc_date + months(1)))
 .admission_date.minimum_for_patient()
 )
+
+# emergency_events function takes A & E attendances in year after start date
+# emergency_care_diagnosis_matches function identifies A & E attendance diagnoses in the first 3 positions
+dataset.rsv_emerg_date = emergency_care_diagnosis_matches(codelists.rsv_attendance).arrival_date.minimum_for_patient()
+# extract second emergency care date
+dataset.rsv_emerg_second_date = emergency_care_diagnosis_matches(codelists.rsv_attendance).where(
+       emergency_events.arrival_date
+        .is_on_or_between(dataset.rsv_emerg_date + months(1), start_date + years(1))).arrival_date.minimum_for_patient()

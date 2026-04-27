@@ -1,22 +1,24 @@
 opensafely/ethnicity-snomed-0removed/22911876/
 
 
-opensafely/rsv-identification-primary-care/47b6884f/
-opensafely/rsv-identification-secondary-care/560dcda6/
+opensafely/rsv-identification-primary-care/13907155/
+opensafely/rsv-identification-secondary-care/5ebecaf4/
 opensafely/rsv-identification-primary-care-maximal-sensitivity/7c882eaf/
 opensafely/rsv-identification-prescriptions-maximal-sensitivity-dmd/65062298/
 opensafely/rsv-exclusion-primary-care-maximal-sensitivity/0e4f7e8f/
 opensafely/rsv-exclusion-secondary-care-maximal-sensitivity/625ccb9f/
 
-opensafely/covid-19-identification-primary-care/2f7731a6/
+opensafely/covid-19-identification-primary-care/507a5797/
 opensafely/covid-identification/2020-06-03
 opensafely/covid-19-identification-primary-care-maximal-sensitivity/52781f2a/
 opensafely/covid-19-identification-prescriptions-dmd/32e73c2e
 opensafely/covid-19-exclusion-primary-care-maximal-sensitivity/03e32400/
 opensafely/covid-19-exclusion-secondary-care-maximal-sensitivity/1fa5572b/
+opensafely/covid-19-ae-diagnosis-codes/1df1c0b2/
+user/ruthcostello/covid-19-notest-identification-primary-care/54e0ae06/
 
-opensafely/influenza-identification-primary-care/2b370a92/
-opensafely/influenza-identification-secondary-care/3cfe5a71/
+opensafely/influenza-identification-primary-care/4b14d7ab/
+opensafely/influenza-identification-secondary-care/7d33be15/
 opensafely/influenza-identification-primary-care-maximal-sensitivity/178d1749/
 opensafely/acute-respiratory-illness-primary-care/30f1c6ca/
 opensafely/symptoms-fever/758b5341/

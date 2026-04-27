@@ -7,14 +7,14 @@
       "sha": "d95a2f826299563aa57f6fa99009e6e13a65151b"
     },
     "opensafely-rsv-identification-primary-care.csv": {
-      "id": "opensafely/rsv-identification-primary-care/47b6884f",
-      "url": "https://www.opencodelists.org/codelist/opensafely/rsv-identification-primary-care/47b6884f/",
-      "downloaded_at": "2025-04-28 14:34:19.650924Z",
-      "sha": "e0a6b548665f92602c8ed8ce6faf89b0285418cd"
+      "id": "opensafely/rsv-identification-primary-care/13907155",
+      "url": "https://www.opencodelists.org/codelist/opensafely/rsv-identification-primary-care/13907155/",
+      "downloaded_at": "2026-04-08 15:43:48.249929Z",
+      "sha": "13cf42ed070c699d2d9734698fc275f6e610aaa6"
     },
     "opensafely-rsv-identification-secondary-care.csv": {
-      "id": "opensafely/rsv-identification-secondary-care/560dcda6",
-      "url": "https://www.opencodelists.org/codelist/opensafely/rsv-identification-secondary-care/560dcda6/",
+      "id": "opensafely/rsv-identification-secondary-care/5ebecaf4",
+      "url": "https://www.opencodelists.org/codelist/opensafely/rsv-identification-secondary-care/5ebecaf4/",
       "downloaded_at": "2025-04-28 14:34:19.755183Z",
       "sha": "ab9f9712939394b9b8f6a261ab3afb2d9f94daa4"
     },
@@ -43,10 +43,10 @@
       "sha": "85acc2056cf8b0b0700c0ee1a6784c804d50325b"
     },
     "opensafely-covid-19-identification-primary-care.csv": {
-      "id": "opensafely/covid-19-identification-primary-care/2f7731a6",
-      "url": "https://www.opencodelists.org/codelist/opensafely/covid-19-identification-primary-care/2f7731a6/",
-      "downloaded_at": "2025-04-28 14:34:20.448056Z",
-      "sha": "7f7b874001887d5a2649685484f5b0240b9bfc35"
+      "id": "opensafely/covid-19-identification-primary-care/507a5797",
+      "url": "https://www.opencodelists.org/codelist/opensafely/covid-19-identification-primary-care/507a5797/",
+      "downloaded_at": "2026-04-08 15:43:48.869646Z",
+      "sha": "6fe9ce480caab486bbba9e6a6b4b8e5ae94c4ace"
     },
     "opensafely-covid-identification.csv": {
       "id": "opensafely/covid-identification/2020-06-03",
@@ -78,15 +78,27 @@
       "downloaded_at": "2025-04-28 14:34:21.009353Z",
       "sha": "8385338c41606f05b550704400f59c20431774a9"
     },
+    "opensafely-covid-19-ae-diagnosis-codes.csv": {
+      "id": "opensafely/covid-19-ae-diagnosis-codes/1df1c0b2",
+      "url": "https://www.opencodelists.org/codelist/opensafely/covid-19-ae-diagnosis-codes/1df1c0b2/",
+      "downloaded_at": "2026-04-08 11:02:03.094067Z",
+      "sha": "e948d6944aa5e2c5f36d92ba009077bc28fdcc31"
+    },
+    "user-ruthcostello-covid-19-notest-identification-primary-care.csv": {
+      "id": "user/ruthcostello/covid-19-notest-identification-primary-care/54e0ae06",
+      "url": "https://www.opencodelists.org/codelist/user/ruthcostello/covid-19-notest-identification-primary-care/54e0ae06/",
+      "downloaded_at": "2026-04-09 11:48:17.172138Z",
+      "sha": "65b7a70cb273418a300e3421736b1e7ed638147f"
+    },
     "opensafely-influenza-identification-primary-care.csv": {
-      "id": "opensafely/influenza-identification-primary-care/2b370a92",
-      "url": "https://www.opencodelists.org/codelist/opensafely/influenza-identification-primary-care/2b370a92/",
-      "downloaded_at": "2025-04-28 14:34:21.109314Z",
-      "sha": "eac1e41a22ca77f453969710e55a6a6322c82a56"
+      "id": "opensafely/influenza-identification-primary-care/4b14d7ab",
+      "url": "https://www.opencodelists.org/codelist/opensafely/influenza-identification-primary-care/4b14d7ab/",
+      "downloaded_at": "2026-04-08 15:43:49.734185Z",
+      "sha": "5da888027958114795a6165bbcbe77ae282f90e4"
     },
     "opensafely-influenza-identification-secondary-care.csv": {
-      "id": "opensafely/influenza-identification-secondary-care/3cfe5a71",
-      "url": "https://www.opencodelists.org/codelist/opensafely/influenza-identification-secondary-care/3cfe5a71/",
+      "id": "opensafely/influenza-identification-secondary-care/7d33be15",
+      "url": "https://www.opencodelists.org/codelist/opensafely/influenza-identification-secondary-care/7d33be15/",
       "downloaded_at": "2025-04-28 14:34:21.190454Z",
       "sha": "29f102e6fd667e9ed466cbfc06c310d7d781991e"
     },
