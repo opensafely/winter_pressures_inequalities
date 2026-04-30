@@ -156,15 +156,7 @@ def make_dataset_covid_utilisation(index_date, end_date):
         when(imd_rounded <= max_imd).then(5),
         otherwise = 99
     )
-    
-    # GP code for COVID
-    dataset.covid_gp = clinical_events.where(
-        clinical_events.snomedct_code.is_in(codelists.covid_primary_codelist)
-        ).where(
-        clinical_events.date.is_on_or_between(index_date,end_date)
-        ).exists_for_patient()
-    
-    # GP code for COVID where there is an appointment on the same day (aim to take out testing)
+    # Date of GP code for COVID
     covid_gp_date = (clinical_events.where(
         clinical_events.snomedct_code.is_in(codelists.covid_primary_codelist))
         .where(clinical_events.date.is_on_or_between(index_date,end_date))
@@ -172,49 +164,133 @@ def make_dataset_covid_utilisation(index_date, end_date):
         .first_for_patient()
         .date
     )
+
+    # Code for COVID in 28 days prior
+    covid_prior_date = (clinical_events.where(
+        clinical_events.snomedct_code.is_in(codelists.covid_primary_codelist))
+        .where(clinical_events.date.is_on_or_between((covid_gp_date - days(28)), covid_gp_date))
+        .sort_by(clinical_events.date)
+        .first_for_patient()
+        .date
+    )
+
+    # GP code for COVID
+    dataset.covid_gp = case(
+         when((covid_gp_date.is_not_null()) & (covid_prior_date.is_null())).then(True),
+         otherwise = False,
+         )
     
-    dataset.covid_gp_appt = appointments.where(appointments.seen_date.is_on_or_between(index_date, end_date)).where(
-        covid_gp_date.is_on_or_between(index_date, end_date)).exists_for_patient()
+    # GP code for COVID where there is an appointment within the same month (aim to take out testing)  
+    covid_appt_prior = appointments.where(appointments.seen_date.is_on_or_between((index_date - days(28)), index_date)).where(
+        covid_prior_date.is_not_null()).exists_for_patient()
+    
+    dataset.covid_gp_appt = case(
+         when((appointments.where(appointments.seen_date.is_on_or_between(index_date, end_date)).where(
+        dataset.covid_gp == True).exists_for_patient()) & (covid_appt_prior==False)).then(True),
+        otherwise = False,
+    )
     
     # Code for COVID - not including testing codes
-    dataset.covid_gp_notest = clinical_events.where(
-        clinical_events.snomedct_code.is_in(codelists.covid_notest_codelist)
-        ).where(
-        clinical_events.date.is_on_or_between(index_date,end_date)
-        ).exists_for_patient()
+    covid_notest_date = (clinical_events.where(
+        clinical_events.snomedct_code.is_in(codelists.covid_notest_codelist))
+        .where(clinical_events.date.is_on_or_between(index_date,end_date))
+        .sort_by(clinical_events.date)
+        .first_for_patient()
+        .date
+    )
+    # Code for COVID in 28 days prior
+    covid_notest_prior_date = (clinical_events.where(
+        clinical_events.snomedct_code.is_in(codelists.covid_notest_codelist))
+        .where(clinical_events.date.is_on_or_between((covid_notest_date - days(28)), covid_notest_date))
+        .sort_by(clinical_events.date)
+        .first_for_patient()
+        .date
+    )
+    dataset.covid_gp_notest = case(
+         when((covid_notest_date.is_not_null()) & (covid_notest_prior_date.is_null())).then(True),
+         otherwise = False,
+         )
 
     # GP consultation - Sensitive definition
-    gp_covid_sens_excl = clinical_events.where(
+    # Find code and exclusions during interval
+    gp_covid_sens_excl = (clinical_events.where(
         clinical_events.snomedct_code.is_in(codelists.covid_primary_sens_excl_codelist)
         ).where(
         clinical_events.date.is_on_or_between(index_date,end_date)
         ).exists_for_patient()
-    gp_covid_sens = clinical_events.where(
+    )
+    gp_covid_sens_date = (clinical_events.where(
         clinical_events.snomedct_code.is_in(codelists.covid_primary_sens_codelist)
         ).where(
         clinical_events.date.is_on_or_between(index_date,end_date)
-        ).exists_for_patient()
-    
-    dataset.covid_gp_sens = case(
+        ).sort_by(clinical_events.date)
+        .first_for_patient()
+        .date
+    )
+    covid_gp_sens_flag = case(
          when(dataset.covid_gp==True).then(True),
-         when((gp_covid_sens==True) & (gp_covid_sens_excl==False)).then(True),
+         when((gp_covid_sens_date.is_not_null()) & (gp_covid_sens_excl==False)).then(True),
         otherwise = False,
         )
     
+    #Find sensitive events in prior 28 days if 
+    gp_covid_sens_excl_prior = case(when((clinical_events.where(
+        clinical_events.snomedct_code.is_in(codelists.covid_primary_sens_excl_codelist)
+        ).where(
+        clinical_events.date.is_on_or_between((gp_covid_sens_date - days(28)),gp_covid_sens_date)
+        ).exists_for_patient()) & (covid_gp_sens_flag == True)).then(True),
+        otherwise = False,
+    )
+    gp_covid_sens_prior = case(when((clinical_events.where(
+        clinical_events.snomedct_code.is_in(codelists.covid_primary_sens_codelist)
+        ).where(
+        clinical_events.date.is_on_or_between((gp_covid_sens_date - days(28)),gp_covid_sens_date)
+        ).exists_for_patient()) & (covid_gp_sens_flag == True)).then(True),
+        otherwise = False,
+    )
+    covid_sens_flag_prior = case(
+         when((gp_covid_sens_prior==True) & (gp_covid_sens_excl_prior==False)).then(True),
+         otherwise = False,
+         )
+    dataset.covid_gp_sens = case(when(
+         (covid_gp_sens_flag == True) & (covid_sens_flag_prior == False)).then(True),
+         otherwise = False,
+    )
 
     # Hospital admission for COVID
-    dataset.covid_sc = (apcs.where(
+    # Date of admission during interval
+    covid_sc_date = (apcs.where(
         apcs.primary_diagnosis.is_in(codelists.covid_secondary_codelist)
         ).where(
         apcs.admission_date.is_on_or_between(index_date,end_date)
-        ).exists_for_patient()) 
+        ) .admission_date.minimum_for_patient()) 
+    # Any admission in prior 28 days?
+    covid_sc_prior = (apcs.where(
+        apcs.primary_diagnosis.is_in(codelists.covid_secondary_codelist)
+        ).where(
+        apcs.admission_date.is_on_or_between((covid_sc_date - days(28)),covid_sc_date)
+        ) .exists_for_patient()) 
+    dataset.covid_sc = case(
+         when((covid_sc_date.is_not_null()) & (covid_sc_prior==False)).then(True),
+         otherwise = False,
+    )
 
     # Emergency care attendance for COVID
-    dataset.covid_emerg = (emergency_care_diagnosis_matches(codelists.covid_attendance).where(
+    # Date of emergency attendance
+    covid_emerg_date = (emergency_care_diagnosis_matches(codelists.covid_attendance).where(
          emergency_care_attendances.arrival_date
-        .is_on_or_between(index_date, end_date)).exists_for_patient()
+        .is_on_or_between(index_date, end_date)).arrival_date.minimum_for_patient()
         )
-        
+    # Any attendance in 28 days prior?
+    covid_emerg_prior =(emergency_care_diagnosis_matches(codelists.covid_attendance).where(
+         emergency_care_attendances.arrival_date
+        .is_on_or_between((covid_emerg_date - days(28)), covid_emerg_date)).exists_for_patient()
+        ) 
+    dataset.covid_emerg = case(
+         when((covid_emerg_date.is_not_null()) & (covid_emerg_prior==False)).then(True),
+         otherwise = False
+    )
+
     return dataset
 
 # Function to define dataset for flu and RSV with ethnicity and utilisation variables
@@ -242,11 +318,28 @@ def make_dataset_flu_rsv_utilisation(index_date, end_date):
     
     #flu
     # GP consultation - specific
-    dataset.flu_gp = clinical_events.where(
-        clinical_events.snomedct_code.is_in(codelists.flu_primary_codelist)
-        ).where(
-            clinical_events.date.is_on_or_between(index_date,end_date)
-        ).exists_for_patient()
+    # Date of GP code for Flu
+    flu_gp_date = (clinical_events.where(
+        clinical_events.snomedct_code.is_in(codelists.flu_primary_codelist))
+        .where(clinical_events.date.is_on_or_between(index_date,end_date))
+        .sort_by(clinical_events.date)
+        .first_for_patient()
+        .date
+    )
+
+    # Code for Flu in 28 days prior
+    flu_prior_date = (clinical_events.where(
+        clinical_events.snomedct_code.is_in(codelists.flu_primary_codelist))
+        .where(clinical_events.date.is_on_or_between((flu_gp_date - days(28)), flu_gp_date))
+        .sort_by(clinical_events.date)
+        .first_for_patient()
+        .date
+    )
+    # GP code for Flu
+    dataset.flu_gp = case(
+         when((flu_gp_date.is_not_null()) & (flu_prior_date.is_null())).then(True),
+         otherwise = False,
+         )
     
     # GP consultation  - sensitive
     gp_flu_sens_excl = clinical_events.where(
@@ -254,28 +347,79 @@ def make_dataset_flu_rsv_utilisation(index_date, end_date):
         ).where(
         clinical_events.date.is_on_or_between(index_date,end_date)
         ).exists_for_patient()
-    gp_flu_sens = clinical_events.where(
+    gp_flu_sens_date = (clinical_events.where(
         clinical_events.snomedct_code.is_in(codelists.flu_primary_sens_codelist)
         ).where(
         clinical_events.date.is_on_or_between(index_date,end_date)
-        ).exists_for_patient()
-    dataset.flu_gp_sens = case(
+        ).sort_by(clinical_events.date)
+        .first_for_patient()
+        .date
+    )
+    flu_gp_sens_flag = case(
          when(dataset.flu_gp==True).then(True),
-         when((gp_flu_sens==True) & (gp_flu_sens_excl==False)).then(True),
+         when((gp_flu_sens_date.is_not_null()) & (gp_flu_sens_excl==False)).then(True),
         otherwise = False,
         )
+    
+    #Find sensitive events in prior 28 days if 
+    gp_flu_sens_excl_prior = case(when((clinical_events.where(
+        clinical_events.snomedct_code.is_in(codelists.flu_primary_sens_excl_codelist)
+        ).where(
+        clinical_events.date.is_on_or_between((gp_flu_sens_date - days(28)),gp_flu_sens_date)
+        ).exists_for_patient()) & (flu_gp_sens_flag == True)).then(True),
+        otherwise = False,
+    )
+    gp_flu_sens_prior = case(when((clinical_events.where(
+        clinical_events.snomedct_code.is_in(codelists.flu_primary_sens_codelist)
+        ).where(
+        clinical_events.date.is_on_or_between((gp_flu_sens_date - days(28)),gp_flu_sens_date)
+        ).exists_for_patient()) & (flu_gp_sens_flag == True)).then(True),
+        otherwise = False,
+    )
+    flu_sens_flag_prior = case(
+         when((gp_flu_sens_prior==True) & (gp_flu_sens_excl_prior==False)).then(True),
+         otherwise = False,
+         )
+    dataset.flu_gp_sens = case(when(
+         (flu_gp_sens_flag == True) & (flu_sens_flag_prior == False)).then(True),
+         otherwise = False,
+    )
+
 
     #Hospital admission
-    dataset.flu_sc = (apcs.where(
+    # Admission date
+    flu_sc_date = (apcs.where(
         apcs.primary_diagnosis.is_in(codelists.flu_secondary_codelist)
         ).where(
         apcs.admission_date.is_on_or_between(index_date,end_date)
-        ).exists_for_patient()) 
-    # Emergency attendance
-    dataset.flu_emerg = (emergency_care_diagnosis_matches(codelists.flu_attendance).where(
-         emergency_care_attendances.arrival_date
-        .is_on_or_between(index_date, end_date)).exists_for_patient()
+        ) .admission_date.minimum_for_patient()) 
+    # Any admission in prior 28 days?
+    flu_sc_prior = (apcs.where(
+        apcs.primary_diagnosis.is_in(codelists.flu_secondary_codelist)
+        ).where(
+        apcs.admission_date.is_on_or_between((flu_sc_date - days(28)),flu_sc_date)
+        ) .exists_for_patient()) 
+    dataset.flu_sc = case(
+         when((flu_sc_date.is_not_null()) & (flu_sc_prior==False)).then(True),
+         otherwise = False,
     )
+    
+    # Emergency attendance
+    # Date of emergency attendance
+    flu_emerg_date = (emergency_care_diagnosis_matches(codelists.flu_attendance).where(
+         emergency_care_attendances.arrival_date
+        .is_on_or_between(index_date, end_date)).arrival_date.minimum_for_patient()
+        )
+    # Any attendance in 28 days prior?
+    flu_emerg_prior =(emergency_care_diagnosis_matches(codelists.flu_attendance).where(
+         emergency_care_attendances.arrival_date
+        .is_on_or_between((flu_emerg_date - days(28)), flu_emerg_date)).exists_for_patient()
+        ) 
+    dataset.flu_emerg = case(
+         when((flu_emerg_date.is_not_null()) & (flu_emerg_prior==False)).then(True),
+         otherwise = False
+    )
+
     
     #RSV
     # define age as RSV definition age dependent
@@ -284,54 +428,154 @@ def make_dataset_flu_rsv_utilisation(index_date, end_date):
     dataset.age_infants = (dataset.age <= 2)
 
     # GP consultation - definition takes age into account and for infants diagnosis also basedo n emergency care attendance
-    gp_rsv = (clinical_events.where(
-              clinical_events.snomedct_code.is_in(codelists.rsv_primary_codelist)
-                 ).where(
-                      clinical_events.date.is_on_or_between(index_date,end_date)
-                      ).exists_for_patient()
+    gp_rsv_date = (clinical_events.where(
+                clinical_events.snomedct_code.is_in(codelists.rsv_primary_codelist)
+                ).where(clinical_events.date.is_on_or_between(index_date,end_date)
+                ).sort_by(clinical_events.date)
+                .first_for_patient()
+                .date
     )
 
-    infant_ae_rsv =(emergency_care_diagnosis_matches(codelists.bronchiolitis_attendance).where(
+    infant_ae_rsv_date = (emergency_care_diagnosis_matches(codelists.bronchiolitis_attendance).where(
          emergency_care_attendances.arrival_date
-        .is_on_or_between(index_date, end_date)).exists_for_patient())
+        .is_on_or_between(index_date, end_date))
+        .sort_by(emergency_care_attendances.arrival_date)
+        .first_for_patient()
+        .arrival_date
+        )
     
-    dataset.rsv_gp = case(when((dataset.age <= 2) & ((gp_rsv == True) | (infant_ae_rsv == True))).then(True),
-                          when((dataset.age > 2) & (gp_rsv==True)).then(True),
+    infant_rsv_date = case(
+         when(dataset.age <= 2).then(minimum_of(gp_rsv_date, infant_ae_rsv_date))
+    )
+         
+    # Washout - identifying events in 28 days prior to event date
+    # This differs depending on age, as infants date can be either of GP or emergency care attendance
+    gp_rsv_prior_date = case(
+         when(dataset.age <= 2).then(clinical_events.where(
+                clinical_events.snomedct_code.is_in(codelists.rsv_primary_codelist)
+                ).where(clinical_events.date.is_on_or_between((infant_rsv_date - days(28)),infant_rsv_date)
+                ).sort_by(clinical_events.date)
+                .first_for_patient()
+                .date),
+        otherwise = ((clinical_events.where(
+                clinical_events.snomedct_code.is_in(codelists.rsv_primary_codelist)
+                ).where(clinical_events.date.is_on_or_between((gp_rsv_date - days(28)),gp_rsv_date))
+                ).sort_by(clinical_events.date)
+                .first_for_patient()
+                .date)
+    )
+
+    infant_rsv_prior_date = (emergency_care_diagnosis_matches(codelists.bronchiolitis_attendance).where(
+         emergency_care_attendances.arrival_date
+        .is_on_or_between((infant_rsv_date - days(28)),infant_rsv_date))
+        .sort_by(emergency_care_attendances.arrival_date)
+        .first_for_patient()
+        .arrival_date
+        )
+
+    dataset.rsv_gp = case(when((dataset.age <= 2) & ((infant_rsv_date.is_not_null()) & (gp_rsv_prior_date.is_null()) & (infant_rsv_prior_date.is_null()))).then(True),
+                          when((dataset.age > 2) & (gp_rsv_date.is_not_null()) & (gp_rsv_prior_date.is_null())).then(True),
                         otherwise=False,
     )
     
     # GP consultation  - sensitive
+    # GP code from sensitive list with no exclusion, if infant also include bronciolitis or wheeze emergency admission
     gp_rsv_sens_excl = clinical_events.where(
         clinical_events.snomedct_code.is_in(codelists.rsv_primary_sens_excl_codelist)
         ).where(
         clinical_events.date.is_on_or_between(index_date,end_date)
         ).exists_for_patient()
-    gp_rsv_sens = clinical_events.where(
+    gp_rsv_sens_date = (clinical_events.where(
         clinical_events.snomedct_code.is_in(codelists.rsv_primary_sens_codelist)
         ).where(
         clinical_events.date.is_on_or_between(index_date,end_date)
-        ).exists_for_patient()
-    infant_ae_wheeze =(emergency_care_diagnosis_matches(codelists.wheeze_attendance).where(
+        ).sort_by(clinical_events.date)
+                .first_for_patient()
+                .date)
+    infant_ae_wheeze_date =(emergency_care_diagnosis_matches(codelists.wheeze_attendance).where(
          emergency_care_attendances.arrival_date
-        .is_on_or_between(index_date, end_date)).exists_for_patient())
+        .is_on_or_between(index_date, end_date))
+        .sort_by(emergency_care_attendances.arrival_date)
+        .first_for_patient()
+        .arrival_date)
+    
+    rsv_sens_date = case(
+         when((dataset.age <= 2) & (gp_rsv_sens_excl == False) & (gp_rsv_sens_date.is_not_null())).then(minimum_of(gp_rsv_sens_date, infant_ae_rsv_date, infant_ae_wheeze_date)),
+         when((dataset.age <= 2) & (gp_rsv_sens_excl == True) & (gp_rsv_sens_date.is_not_null())).then(minimum_of(infant_ae_rsv_date, infant_ae_wheeze_date)),
+         when((dataset.age > 2) & (gp_rsv_sens_excl == False) & (gp_rsv_sens_date.is_not_null())).then(gp_rsv_sens_date),
+    )
 
-    dataset.rsv_gp_sens = case(when((dataset.age <= 2) & (((dataset.rsv_gp == True) | (gp_rsv_sens == True) | (infant_ae_rsv == True) | (infant_ae_wheeze == True)) & (gp_rsv_sens_excl== False))).then(True),
-                          when((dataset.age > 2) & ((gp_rsv_sens==True) & (gp_rsv_sens_excl==False))).then(True),
+    # Washout period
+    # GP code without exclusion code
+    gp_rsv_sens_excl_prior = clinical_events.where(
+        clinical_events.snomedct_code.is_in(codelists.rsv_primary_sens_excl_codelist)
+        ).where(
+        clinical_events.date.is_on_or_between((rsv_sens_date - days(28)),rsv_sens_date)
+        ).exists_for_patient()
+    gp_rsv_sens_date_prior = (clinical_events.where(
+        clinical_events.snomedct_code.is_in(codelists.rsv_primary_sens_codelist)
+        ).where(
+        clinical_events.date.is_on_or_between((rsv_sens_date - days(28)),rsv_sens_date)
+        ).sort_by(clinical_events.date)
+                .first_for_patient()
+                .date)
+    # Emergency attendance for wheeze or bronchiolitis
+    infant_ae_wheeze_date_prior =(emergency_care_diagnosis_matches(codelists.wheeze_attendance).where(
+         emergency_care_attendances.arrival_date
+        .is_on_or_between((rsv_sens_date - days(28)),rsv_sens_date))
+        .sort_by(emergency_care_attendances.arrival_date)
+        .first_for_patient()
+        .arrival_date)
+    infant_ae_date_prior =(emergency_care_diagnosis_matches(codelists.bronchiolitis_attendance).where(
+         emergency_care_attendances.arrival_date
+        .is_on_or_between((rsv_sens_date - days(28)),rsv_sens_date))
+        .sort_by(emergency_care_attendances.arrival_date)
+        .first_for_patient()
+        .arrival_date)
+
+    prior_rsv = case(
+         when((dataset.age <= 2) & ((gp_rsv_sens_excl_prior == False) & (gp_rsv_sens_date_prior.is_not_null()) | (infant_ae_date_prior.is_not_null()) | (infant_ae_wheeze_date_prior.is_not_null()))).then(True),
+         when((dataset.age > 2) & ((gp_rsv_sens_excl_prior == False) & gp_rsv_sens_date_prior.is_not_null())).then(True),
+         otherwise = False,
+    )
+
+    dataset.rsv_gp_sens = case(when((rsv_sens_date.is_not_null()) & (prior_rsv == False)).then(True),
                         otherwise=False)
     
 
     # Hospital admission
-    dataset.rsv_sc = (apcs.where(
+    # Admission date
+    rsv_sc_date = (apcs.where(
         apcs.primary_diagnosis.is_in(codelists.rsv_secondary_codelist)
         ).where(
         apcs.admission_date.is_on_or_between(index_date,end_date)
-        ).exists_for_patient()) 
+        ) .admission_date.minimum_for_patient()) 
+    # Any admission in prior 28 days?
+    rsv_sc_prior = (apcs.where(
+        apcs.primary_diagnosis.is_in(codelists.rsv_secondary_codelist)
+        ).where(
+        apcs.admission_date.is_on_or_between((rsv_sc_date - days(28)),rsv_sc_date)
+        ) .exists_for_patient()) 
+    dataset.rsv_sc = case(
+         when((rsv_sc_date.is_not_null()) & (rsv_sc_prior==False)).then(True),
+         otherwise = False,
+    )
     
-    # Emergency care attendance - uses extra code to pick up attendances (infants uses bronchiolitis only)
-    dataset.rsv_emerg = (emergency_care_diagnosis_matches(codelists.rsv_attendance).where(
+    # Emergency attendance
+    # Date of emergency attendance
+    rsv_emerg_date = (emergency_care_diagnosis_matches(codelists.rsv_attendance).where(
          emergency_care_attendances.arrival_date
-        .is_on_or_between(index_date, end_date)).exists_for_patient()
-    )      
+        .is_on_or_between(index_date, end_date)).arrival_date.minimum_for_patient()
+        )
+    # Any attendance in 28 days prior?
+    rsv_emerg_prior =(emergency_care_diagnosis_matches(codelists.rsv_attendance).where(
+         emergency_care_attendances.arrival_date
+        .is_on_or_between((rsv_emerg_date - days(28)), rsv_emerg_date)).exists_for_patient()
+        ) 
+    dataset.rsv_emerg = case(
+         when((rsv_emerg_date.is_not_null()) & (rsv_emerg_prior==False)).then(True),
+         otherwise = False
+    )
     
     return dataset
 
