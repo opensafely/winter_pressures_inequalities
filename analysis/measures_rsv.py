@@ -4,7 +4,6 @@
 #
 # 
 #####################################################################
-
 from ehrql import months, INTERVAL, create_measures
 from ehrql.tables.tpp import (
     patients, 

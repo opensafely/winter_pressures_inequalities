@@ -1,12 +1,12 @@
 import operator
 from functools import reduce
-
+from datetime import date
 from ehrql.codes import SNOMEDCTCode, CTV3Code, ICD10Code
-from ehrql import case, years, when, get_parameter
+from ehrql import case, years, when, get_parameter, days
 from ehrql.tables.tpp import (emergency_care_attendances, 
 apcs, clinical_events, ethnicity_from_sus, addresses, medications)
 
-start_date = get_parameter("start_date")
+start_date = date.fromisoformat(get_parameter("start_date"))
 
 def any_of(conditions):
     return reduce(operator.or_, conditions)
@@ -24,6 +24,32 @@ def first_gp_event(codelist, where = True):
         .where(gp_events.snomedct_code.is_in(codelist))
         .sort_by(clinical_events.date)
         .first_for_patient()
+    )
+
+#query gp_events for date of earliest event-in-codelist
+def first_gp_event_with_washout(codelist, where = True):
+    primary_prior = (clinical_events.where(
+        clinical_events.snomedct_code.is_in(codelist))
+        .where(clinical_events.date.is_on_or_between((start_date - days(28)), start_date))
+        .sort_by(clinical_events.date)
+        .first_for_patient()
+        .date)
+    # date if based on start date
+    first_date = (
+        first_gp_event(codelist).date
+        )
+    # date if 28 days after prior event
+    first_date_prior = (
+        clinical_events.where(
+        clinical_events.snomedct_code.is_in(codelist))
+        .where(clinical_events.date.is_on_or_after(primary_prior + days(28)))
+        .sort_by(clinical_events.date).first_for_patient().date
+    )
+    return (
+            case(
+                when(primary_prior.is_not_null()).then(first_date_prior),
+                when(primary_prior.is_null()).then(first_date)
+                )
     )
 
 def has_prior_event(codelist, start_date, where=True):
@@ -113,6 +139,8 @@ def hospitalisation_primary_secondary_diagnosis_matches(codelist):
         (hospital_events.secondary_diagnosis.is_in(codelist))
     ]
     return hospital_events.where(any_of(conditions))
+
+
 
 ##define function for outcome identification
 def get_codes_dates(codelist_name, num_events, start_date, num_codes):

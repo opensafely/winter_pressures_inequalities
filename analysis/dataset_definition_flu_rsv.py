@@ -12,6 +12,7 @@ from ehrql.tables.tpp import (
   vaccinations,
   appointments,
   emergency_care_attendances,
+  apcs,
   ethnicity_from_sus
 )
 
@@ -29,6 +30,7 @@ from variable_lib import (
   has_prior_meds,
   is_gp_event,
   emergency_events,
+  first_gp_event_with_washout
 )
 
 from clinical_risk_grps import *
@@ -242,7 +244,7 @@ dataset.english_language = has_prior_event(codelists.english_language_codelist, 
 # Flu outcome
 # first_gp_event function takes first event in the year after start date
 dataset.flu_primary_date = (
-      first_gp_event(codelists.flu_primary_codelist).date
+      first_gp_event_with_washout(codelists.flu_primary_codelist)
     )
 #extract date of second episode
 # is_gp_event function identifies any clinical events in year after start date
@@ -260,10 +262,24 @@ dataset.flu_primary_third_date = (
 )
 # hospital events function takes hospital admissions in the year after start date
 # hospitalisation_primary_secondary_diagnosis_matches function takes events which are primary or secondarty diagnoses
-dataset.flu_sc_date = (
-    hospitalisation_primary_secondary_diagnosis_matches(codelists.flu_secondary_codelist)
-    .admission_date.minimum_for_patient()
-  )
+flu_sc = (hospitalisation_primary_secondary_diagnosis_matches(codelists.flu_secondary_codelist)
+        ).admission_date.minimum_for_patient()
+prior_sc = apcs.where(
+   (apcs.primary_diagnosis.is_in(codelists.flu_secondary_codelist)) | (apcs.secondary_diagnosis.is_in(codelists.flu_secondary_codelist))).where(
+      apcs.admission_date.is_on_or_between((flu_sc - days(28)), (flu_sc - days(1)))).admission_date.minimum_for_patient()
+
+
+# Date of first hospitalisation based on 28 days after prior hospitalisation
+prior_sc_first = apcs.where(
+   (apcs.primary_diagnosis.is_in(codelists.flu_secondary_codelist)) | (apcs.secondary_diagnosis.is_in(codelists.flu_secondary_codelist))).where(
+      apcs.admission_date.is_on_or_between((prior_sc + days(28)), (start_date + years(1)))).admission_date.minimum_for_patient()
+
+# Date of first hospitalisation based on start date
+dataset.flu_sc_date = case(
+        when((flu_sc.is_not_null()) & (prior_sc.is_null())).then(flu_sc),
+        when(flu_sc.is_not_null() & (prior_sc.is_not_null()) & (prior_sc_first.is_not_null())).then(prior_sc_first),
+        otherwise = None,
+)
 #extract date of second episode - using the same criteria as the first episode
 dataset.flu_sc_second_date = (
     hospitalisation_primary_secondary_diagnosis_matches(codelists.flu_secondary_codelist)
@@ -272,7 +288,23 @@ dataset.flu_sc_second_date = (
 )
 # emergency_events function takes A & E attendances in year after start date
 # emergency_care_diagnosis_matches function identifies A & E attendance diagnoses in the first 3 positions
-dataset.flu_emerg_date = emergency_care_diagnosis_matches(codelists.flu_attendance).arrival_date.minimum_for_patient()
+flu_emerg = emergency_care_diagnosis_matches(codelists.flu_attendance).where(
+       emergency_care_attendances.arrival_date
+        .is_on_or_between(start_date, start_date + years(1))).arrival_date.minimum_for_patient()
+ # Any attendance in 28 days prior?
+flu_emerg_prior =(emergency_care_diagnosis_matches(codelists.flu_attendance).where(
+        emergency_care_attendances.arrival_date
+    .is_on_or_between((flu_emerg - days(28)), flu_emerg)).arrival_date.minimum_for_patient()
+    ) 
+# Any attendance after prior admission within interval?
+flu_emerg_first_prior =(emergency_care_diagnosis_matches(codelists.flu_attendance).where(
+        emergency_care_attendances.arrival_date.is_on_or_between((flu_emerg_prior + days(28)), start_date + years(1))).arrival_date.minimum_for_patient()
+    ) 
+dataset.flu_emerg_date = case(
+    when((flu_emerg.is_not_null()) & (flu_emerg_prior.is_null())).then(flu_emerg),
+    when((flu_emerg.is_not_null()) & (flu_emerg_prior.is_not_null()) & (flu_emerg_first_prior.is_not_null())).then(flu_emerg_first_prior),
+    otherwise = None,
+)
 # extract second emergency care date
 dataset.flu_emerg_second_date = emergency_care_diagnosis_matches(codelists.flu_attendance).where(
        emergency_events.arrival_date
@@ -284,13 +316,29 @@ dataset.has_flu_second_admission = dataset.flu_sc_second_date.is_not_null() | da
 dataset.flu_second_admission_date = minimum_of(dataset.flu_sc_second_date, dataset.flu_emerg_second_date)
 
 # RSV outcome 
+bronchiolitis_emerg = emergency_care_diagnosis_matches(codelists.bronchiolitis_attendance).where(
+       emergency_care_attendances.arrival_date
+        .is_on_or_between(start_date, start_date + years(1))).arrival_date.minimum_for_patient()
+ # Any attendance in 28 days prior?
+bronchiolitis_emerg_prior =(emergency_care_diagnosis_matches(codelists.bronchiolitis_attendance).where(
+        emergency_care_attendances.arrival_date
+    .is_on_or_between((bronchiolitis_emerg - days(28)), bronchiolitis_emerg)).arrival_date.minimum_for_patient()
+    ) 
+# Any attendance after prior admission within interval?
+bronchiolitis_emerg_first_prior =(emergency_care_diagnosis_matches(codelists.bronchiolitis_attendance).where(
+        emergency_care_attendances.arrival_date.is_on_or_between((bronchiolitis_emerg_prior + days(28)), start_date + years(1))).arrival_date.minimum_for_patient()
+    ) 
+bronchiolitis_emerg_date = case(
+    when((bronchiolitis_emerg.is_not_null()) & (bronchiolitis_emerg_prior.is_null())).then(bronchiolitis_emerg),
+    when((bronchiolitis_emerg.is_not_null()) & (bronchiolitis_emerg_prior.is_not_null()) & (bronchiolitis_emerg_first_prior.is_not_null())).then(bronchiolitis_emerg_first_prior),
+    otherwise = None,
+)
+
 dataset.rsv_primary_date = case(
     when(dataset.age <= 2).then(
-        minimum_of((first_gp_event(codelists.rsv_primary_codelist).date),(emergency_care_diagnosis_matches(codelists.bronchiolitis_attendance))
-        .arrival_date.minimum_for_patient())
-    ),
+        minimum_of((first_gp_event_with_washout(codelists.rsv_primary_codelist)),(bronchiolitis_emerg_date))),
     when(dataset.age > 2).then(
-        first_gp_event(codelists.rsv_primary_codelist).date
+        first_gp_event_with_washout(codelists.rsv_primary_codelist)
     )
 )
 #extract date of second episode - using the same criteria
@@ -317,10 +365,25 @@ dataset.rsv_primary_second_date = case(
   
 #extract date of first episode - looking at the first date for which there is
 #a code in the RSV secondary codelist as the primary or secondary diagnosis
-dataset.rsv_sc_date = (
-hospitalisation_primary_secondary_diagnosis_matches(codelists.rsv_secondary_codelist)
-.admission_date.minimum_for_patient()
+rsv_sc = (hospitalisation_primary_secondary_diagnosis_matches(codelists.rsv_secondary_codelist)
+        ).admission_date.minimum_for_patient()
+prior_sc = apcs.where(
+   (apcs.primary_diagnosis.is_in(codelists.rsv_secondary_codelist)) | (apcs.secondary_diagnosis.is_in(codelists.rsv_secondary_codelist))).where(
+      apcs.admission_date.is_on_or_between((rsv_sc - days(28)), (rsv_sc - days(1)))).admission_date.minimum_for_patient()
+
+
+# Date of first hospitalisation based on 28 days after prior hospitalisation
+prior_sc_first = apcs.where(
+   (apcs.primary_diagnosis.is_in(codelists.rsv_secondary_codelist)) | (apcs.secondary_diagnosis.is_in(codelists.rsv_secondary_codelist))).where(
+      apcs.admission_date.is_on_or_between((prior_sc + days(28)), (start_date + years(1)))).admission_date.minimum_for_patient()
+
+# Date of first hospitalisation based on start date
+dataset.rsv_sc_date = case(
+        when((rsv_sc.is_not_null()) & (prior_sc.is_null())).then(rsv_sc),
+        when(rsv_sc.is_not_null() & (prior_sc.is_not_null()) & (prior_sc_first.is_not_null())).then(prior_sc_first),
+        otherwise = None,
 )
+
 #extract date of second episode - using the same criteria as the first episode
 dataset.rsv_sc_second_date = (
 hospitalisation_primary_secondary_diagnosis_matches(codelists.rsv_secondary_codelist)
@@ -330,7 +393,24 @@ hospitalisation_primary_secondary_diagnosis_matches(codelists.rsv_secondary_code
 
 # emergency_events function takes A & E attendances in year after start date
 # emergency_care_diagnosis_matches function identifies A & E attendance diagnoses in the first 3 positions
-dataset.rsv_emerg_date = emergency_care_diagnosis_matches(codelists.rsv_attendance).arrival_date.minimum_for_patient()
+rsv_emerg = emergency_care_diagnosis_matches(codelists.rsv_attendance).where(
+       emergency_care_attendances.arrival_date
+        .is_on_or_between(start_date, start_date + years(1))).arrival_date.minimum_for_patient()
+ # Any attendance in 28 days prior?
+rsv_emerg_prior =(emergency_care_diagnosis_matches(codelists.rsv_attendance).where(
+        emergency_care_attendances.arrival_date
+    .is_on_or_between((rsv_emerg - days(28)), rsv_emerg)).arrival_date.minimum_for_patient()
+    ) 
+# Any attendance after prior admission within interval?
+rsv_emerg_first_prior =(emergency_care_diagnosis_matches(codelists.rsv_attendance).where(
+        emergency_care_attendances.arrival_date.is_on_or_between((rsv_emerg_prior + days(28)), start_date + years(1))).arrival_date.minimum_for_patient()
+    ) 
+dataset.rsv_emerg_date = case(
+    when((rsv_emerg.is_not_null()) & (rsv_emerg_prior.is_null())).then(rsv_emerg),
+    when((rsv_emerg.is_not_null()) & (rsv_emerg_prior.is_not_null()) & (rsv_emerg_first_prior.is_not_null())).then(rsv_emerg_first_prior),
+    otherwise = None,
+)
+
 # extract second emergency care date
 dataset.rsv_emerg_second_date = emergency_care_diagnosis_matches(codelists.rsv_attendance).where(
        emergency_events.arrival_date

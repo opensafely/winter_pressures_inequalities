@@ -162,7 +162,11 @@ test_data = {
             },
             {
                 "snomedct_code": "1157045004", # covid
-                "date": date(2022, 7, 1),
+                "date": date(2022, 2, 15),
+            },
+            {
+                "snomedct_code": "1157045004", # covid
+                "date": date(2022, 3, 5),
             },
             {
                 "snomedct_code": "195927002", # flu
@@ -224,7 +228,7 @@ test_data = {
             "bmi": None,
             "bmi_date": None,
             "migrant": False,
-            "covid_primary_date": date(2022, 7, 1),
+            "covid_primary_date": None,
             "covid_primary_appt": False,
             "covid_sc_date": None,
             "covid_emerg_date": date(2022, 5, 2),

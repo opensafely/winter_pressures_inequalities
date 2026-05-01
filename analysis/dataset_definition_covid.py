@@ -1,6 +1,6 @@
 from pathlib import Path 
 
-from datetime import date, datetime
+from datetime import date
 from ehrql import Dataset, create_dataset, case, when, minimum_of, years, days, months, get_parameter, claim_permissions
 from ehrql.tables.tpp import (
   patients,
@@ -27,7 +27,8 @@ from variable_lib import (
   rural_urban_5,
   has_prior_event,
   has_prior_meds,
-  is_gp_event
+  is_gp_event,
+  first_gp_event_with_washout
 )
 
 from clinical_risk_grps import *
@@ -239,20 +240,40 @@ dataset.migrant = has_prior_event(codelists.migrant_codelist, start_date)
 dataset.english_language = has_prior_event(codelists.english_language_codelist, start_date)
 
 # Define outcome - primary care or secondary care COVID
-# extract date of first episode 
-dataset.covid_primary_date = (
-      first_gp_event(codelists.covid_primary_codelist).date
-    )
+# Identify if there is a covid event in 28 days prior to index
+dataset.covid_primary_date = first_gp_event_with_washout(codelists.covid_primary_codelist)
+# covid_primary_prior = (clinical_events.where(
+#     clinical_events.snomedct_code.is_in(codelists.covid_primary_codelist))
+#     .where(clinical_events.date.is_on_or_between((start_date - days(28)), start_date))
+#     .sort_by(clinical_events.date)
+#     .first_for_patient()
+#     .date)
+# # date if based on start date
+# covid_first_date = (
+#       first_gp_event(codelists.covid_primary_codelist).date
+#     )
+# # date if 28 days after prior event
+# covid_first_date_prior = (
+#    is_gp_event(codelists.covid_primary_codelist)
+#     .where(gp_events.date.is_on_or_after(covid_primary_prior + days(28)))
+#     .sort_by(gp_events.date).first_for_patient().date
+# )
+# # extract date of first episode use either index or 28 days after prior covid if there is one
+# dataset.covid_primary_date = case(
+#    when(covid_primary_prior.is_not_null()).then(covid_first_date_prior),
+#    when(covid_primary_prior.is_null()).then(covid_first_date)
+# )
+
 #extract date of second episode
 dataset.covid_primary_second_date = (
     is_gp_event(codelists.covid_primary_codelist)
-    .where(gp_events.date.is_on_or_after(dataset.covid_primary_date + months(1)))
+    .where(gp_events.date.is_on_or_after(dataset.covid_primary_date + days(28)))
     .sort_by(gp_events.date).first_for_patient().date
 )
 #extract date of third episode
 dataset.covid_primary_third_date = (
     is_gp_event(codelists.covid_primary_codelist)
-    .where(gp_events.date.is_on_or_after(dataset.covid_primary_second_date + months(1)))
+    .where(gp_events.date.is_on_or_after(dataset.covid_primary_second_date + days(28)))
     .sort_by(gp_events.date).first_for_patient().date
 )
 # identifying covid in primary care  where there is an appointment in the appointments table 10 days or less prior to covid date
@@ -269,39 +290,66 @@ dataset.covid_primary_third_appt = (
 )
 
 # Identifying covid from codes that do not include testing
-dataset.covid_notest_primary_date = (
-   first_gp_event(codelists.covid_notest_codelist).date
-)
+dataset.covid_notest_primary_date = first_gp_event_with_washout(codelists.covid_notest_codelist)
 #extract date of second episode
 dataset.covid_notest_primary_second_date = (
     is_gp_event(codelists.covid_notest_codelist)
-    .where(gp_events.date.is_on_or_after(dataset.covid_notest_primary_date + months(1)))
+    .where(gp_events.date.is_on_or_after(dataset.covid_notest_primary_date + days(28)))
     .sort_by(gp_events.date).first_for_patient().date
 )
 #extract date of third episode
 dataset.covid_notest_primary_third_date = (
     is_gp_event(codelists.covid_notest_codelist)
-    .where(gp_events.date.is_on_or_after(dataset.covid_notest_primary_second_date + months(1)))
+    .where(gp_events.date.is_on_or_after(dataset.covid_notest_primary_second_date + days(28)))
     .sort_by(gp_events.date).first_for_patient().date
 )
 
 
 # extract date of first hospitalisation
-dataset.covid_sc_date = (
-    hospitalisation_primary_secondary_diagnosis_matches(codelists.covid_secondary_codelist)
-    .where(hospital_events.admission_date.is_on_or_between(start_date, start_date + years(1)))
-    .admission_date.minimum_for_patient()
+# determine if prior hospitalisation 28 days before start date
+covid_sc = (hospitalisation_primary_secondary_diagnosis_matches(codelists.covid_secondary_codelist)
+        ).admission_date.minimum_for_patient()
+prior_sc = apcs.where(
+   (apcs.primary_diagnosis.is_in(codelists.covid_secondary_codelist)) | (apcs.secondary_diagnosis.is_in(codelists.covid_secondary_codelist))).where(
+      apcs.admission_date.is_on_or_between((covid_sc - days(28)), (covid_sc - days(1)))).admission_date.minimum_for_patient()
+
+
+# Date of first hospitalisation based on 28 days after prior hospitalisation
+prior_sc_first = apcs.where(
+   (apcs.primary_diagnosis.is_in(codelists.covid_secondary_codelist)) | (apcs.secondary_diagnosis.is_in(codelists.covid_secondary_codelist))).where(
+      apcs.admission_date.is_on_or_between((prior_sc + days(28)), (start_date + years(1)))).admission_date.minimum_for_patient()
+
+# Date of first hospitalisation based on start date
+dataset.covid_sc_date = case(
+        when((covid_sc.is_not_null()) & (prior_sc.is_null())).then(covid_sc),
+        when(covid_sc.is_not_null() & (prior_sc.is_not_null()) & (prior_sc_first.is_not_null())).then(prior_sc_first),
+        otherwise = None,
 )
 #extract date of second episode - using the same criteria as the first episode
 dataset.covid_sc_second_date = (
-    hospitalisation_primary_secondary_diagnosis_matches(codelists.covid_secondary_codelist)
-    .where(hospital_events.admission_date.is_on_or_after(dataset.covid_sc_date + months(1)))
-    .admission_date.minimum_for_patient()
-)
+    hospitalisation_primary_secondary_diagnosis_matches(codelists.covid_secondary_codelist)).where(
+       hospital_events.admission_date.is_on_or_after(dataset.covid_sc_date + days(28))).admission_date.minimum_for_patient()
+
+
 # extract first emergency care date
-dataset.covid_emerg_date = emergency_care_diagnosis_matches(codelists.covid_attendance).where(
+covid_emerg = emergency_care_diagnosis_matches(codelists.covid_attendance).where(
        emergency_care_attendances.arrival_date
         .is_on_or_between(start_date, start_date + years(1))).arrival_date.minimum_for_patient()
+ # Any attendance in 28 days prior?
+covid_emerg_prior =(emergency_care_diagnosis_matches(codelists.covid_attendance).where(
+        emergency_care_attendances.arrival_date
+    .is_on_or_between((covid_emerg - days(28)), covid_emerg)).arrival_date.minimum_for_patient()
+    ) 
+# Any attendance after prior admission within interval?
+covid_emerg_first_prior =(emergency_care_diagnosis_matches(codelists.covid_attendance).where(
+        emergency_care_attendances.arrival_date.is_on_or_between((covid_emerg_prior + days(28)), start_date + years(1))).arrival_date.minimum_for_patient()
+    ) 
+dataset.covid_emerg_date = case(
+    when((covid_emerg.is_not_null()) & (covid_emerg_prior.is_null())).then(covid_emerg),
+    when((covid_emerg.is_not_null()) & (covid_emerg_prior.is_not_null()) & (covid_emerg_first_prior.is_not_null())).then(covid_emerg_first_prior),
+    otherwise = None,
+)
+
 # extract second emergency care date
 dataset.covid_emerg_second_date = emergency_care_diagnosis_matches(codelists.covid_attendance).where(
        emergency_care_attendances.arrival_date
