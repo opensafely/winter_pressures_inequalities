@@ -338,7 +338,7 @@ covid_emerg = emergency_care_diagnosis_matches(codelists.covid_attendance).where
  # Any attendance in 28 days prior?
 covid_emerg_prior =(emergency_care_diagnosis_matches(codelists.covid_attendance).where(
         emergency_care_attendances.arrival_date
-    .is_on_or_between((covid_emerg - days(28)), covid_emerg)).arrival_date.minimum_for_patient()
+    .is_on_or_between((covid_emerg - days(28)), (covid_emerg - days(1)))).arrival_date.minimum_for_patient()
     ) 
 # Any attendance after prior admission within interval?
 covid_emerg_first_prior =(emergency_care_diagnosis_matches(codelists.covid_attendance).where(

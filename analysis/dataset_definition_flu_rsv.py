@@ -399,7 +399,7 @@ rsv_emerg = emergency_care_diagnosis_matches(codelists.rsv_attendance).where(
  # Any attendance in 28 days prior?
 rsv_emerg_prior =(emergency_care_diagnosis_matches(codelists.rsv_attendance).where(
         emergency_care_attendances.arrival_date
-    .is_on_or_between((rsv_emerg - days(28)), rsv_emerg)).arrival_date.minimum_for_patient()
+    .is_on_or_between((rsv_emerg - days(28)), (rsv_emerg - days(1)))).arrival_date.minimum_for_patient()
     ) 
 # Any attendance after prior admission within interval?
 rsv_emerg_first_prior =(emergency_care_diagnosis_matches(codelists.rsv_attendance).where(
