@@ -27,7 +27,7 @@ def first_gp_event(codelist, where = True):
     )
 
 #query gp_events for date of earliest event-in-codelist
-def first_gp_event_with_washout(codelist, where = True):
+def first_gp_event_with_washout(codelist):
     primary_prior = (clinical_events.where(
         clinical_events.snomedct_code.is_in(codelist))
         .where(clinical_events.date.is_on_or_between((start_date - days(28)), start_date))
