@@ -457,11 +457,12 @@ write_csv(cox_table, file.path(outdir, "cox_models.csv"))
 km_gp <- survfit(Surv(stop_gp, gp_binary) ~ ethnicity6_combined, data = outcomes_covid)
 # Generate GP plot 
 names(km_gp$strata) <- gsub("ethnicity6_combined=", "", names(km_gp$strata))
-gp_plot <- ggsurvplot(km_gp, data = outcomes_covid, risk.table = TRUE,
-        conf.int = TRUE, pval = FALSE, legend = "right", title = ("Kaplan-Meier: COVID-19 (GP)"),
+gp_plot <- ggsurvplot_facet(km_gp, data = outcomes_covid, facet.by = "year_end_gp", fun = "event", risk.table = FALSE,
+        conf.int = TRUE, pval = FALSE, legend = "right", #title = ("Kaplan-Meier: COVID-19 (GP)"),
+        legend.labs = c("Asian", "Black", "Chinese", "Missing", "Mixed", "White"),
         ggtheme = theme_bw())
 
-ggsave(file.path(outdir, "plot_km_covid_gp.svg"), gp_plot$plot)
+ggsave(file.path(outdir, "plot_km_covid_gp.svg"), gp_plot)
 
 # Kaplan Meier plots - COVID
  run_km <- function(disease) {
@@ -492,20 +493,20 @@ ggsave(file.path(outdir, "plot_km_covid_gp.svg"), gp_plot$plot)
         # Ethnicity
         km_gp <- survfit(Surv(start, stop_gp, gp_binary) ~ ethnicity6_combined, data = data_df)
 #         # Generate GP plot 
-        gp_plot <- ggsurvplot(km_gp, data = data_df, risk.table = TRUE, 
+        gp_plot <- ggsurvplot(km_gp, data = data_df, fun = "event", risk.table = TRUE, 
                 conf.int = TRUE, pval = FALSE, legend = "right", 
                 title = paste("Kaplan-Meier:", disease, ", ethnicity (GP)"),
-                ylim=c(0.75, 1),
+                #ylim=c(0.75, 1),
                 ggtheme = theme_bw())
         graph_file <- paste0("plot_km_", disease, "_ethnicity_gp.svg")
         ggsave(file.path(outdir, graph_file), gp_plot$plot)
 
         km_sc <- survfit(Surv(start, stop_sc, sc_binary) ~ ethnicity6_combined, data = data_df)
 #         # Generate SC plot 
-        sc_plot <- ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
+        sc_plot <- ggsurvplot(km_sc, data = data_df, fun = "event", risk.table = TRUE,
                 conf.int = TRUE, pval = FALSE, legend = "right", 
                 title = paste("Kaplan-Meier:", disease, ", ethnicity (sc)"),
-                ylim=c(0.95, 1),
+                #ylim=c(0.95, 1),
                 ggtheme = theme_bw())
         graph_file <- paste0("plot_km_", disease, "_ethnicity_sc.svg")
         ggsave(file.path(outdir, graph_file), sc_plot$plot)
