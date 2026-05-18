@@ -275,6 +275,7 @@ actions:
         - measures_flu_2021
         - measures_rsv_2018
         - measures_rsv_2021
+        - measures_rsv_2023
       outputs: 
         moderately_sensitive:
           table: output/tables/baseline_table_covid*.csv
