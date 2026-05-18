@@ -153,10 +153,21 @@ actions:
         --output output/measures/measures_rsv_2021.csv 
         --
         --start-date 2021-09-01
-        --intervals 48
+        --intervals 24
       outputs:
         moderately_sensitive:
           measures_csv: output/measures/measures_rsv_2021.csv
+
+  measures_rsv_2023: 
+      run: >
+        ehrql:v1 generate-measures analysis/measures_rsv.py
+        --output output/measures/measures_rsv_2023.csv 
+        --
+        --start-date 2023-09-01
+        --intervals 24
+      outputs:
+        moderately_sensitive:
+          measures_csv: output/measures/measures_rsv_2023.csv
 
   measures_rsv_age_2018: 
       run: >
@@ -175,10 +186,21 @@ actions:
         --output output/measures/measures_rsv_age_2021.csv 
         --
         --start-date 2021-09-01
-        --intervals 48
+        --intervals 24
       outputs:
         moderately_sensitive:
           measures_csv: output/measures/measures_rsv_age_2021.csv
+
+  measures_rsv_age_2023: 
+      run: >
+        ehrql:v1 generate-measures analysis/measures_rsv.py
+        --output output/measures/measures_rsv_age_2023.csv 
+        --
+        --start-date 2023-09-01
+        --intervals 24
+      outputs:
+        moderately_sensitive:
+          measures_csv: output/measures/measures_rsv_age_2023.csv
 
   data_process_bl:
       run: r:v2 analysis/data_processing_baseline.R 
