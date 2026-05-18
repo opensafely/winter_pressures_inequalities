@@ -181,6 +181,14 @@ rates_rsv_21 <- read_csv(here("output/measures/measures_rsv_2021.csv")) %>%
         select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_rsv_21, file.path(outdir, "rounded_rates_rsv_21.csv"))
 
+rates_rsv_23 <- read_csv(here("output/measures/measures_rsv_2023.csv")) %>% 
+        filter(measure=="rsv_gp" | measure=="rsv_admission" | measure=="rsv_emerg") %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_rsv_23, file.path(outdir, "rounded_rates_rsv_23.csv"))
+
 # #IMD
 rates_imd_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
         #filter(measure=="covid_gp_imd" | measure=="covid_admission_imd" | measure=="covid_emerg_imd") %>% 
@@ -221,6 +229,14 @@ rates_imd_rsv_21 <- read_csv(here("output/measures/measures_rsv_2021.csv")) %>%
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
         select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_imd_rsv_21, file.path(outdir, "rounded_rates_imd_rsv_21.csv"))
+
+rates_imd_rsv_23 <- read_csv(here("output/measures/measures_rsv_2023.csv")) %>% 
+        filter(measure=="rsv_gp_imd" | measure=="rsv_admission_imd" | measure=="rsv_emerg_imd") %>% 
+        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
+                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
+                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
+        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_imd_rsv_23, file.path(outdir, "rounded_rates_imd_rsv_23.csv"))
 
 # # Making (not very good) line graphs of rates 
 # plot_line <- function(file, disease) {
