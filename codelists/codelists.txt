@@ -3,30 +3,30 @@ opensafely/ethnicity-snomed-0removed/22911876/
 
 opensafely/rsv-identification-primary-care/13907155/
 opensafely/rsv-identification-secondary-care/5ebecaf4/
-opensafely/rsv-identification-primary-care-maximal-sensitivity/7c882eaf/
-opensafely/rsv-identification-prescriptions-maximal-sensitivity-dmd/65062298/
-opensafely/rsv-exclusion-primary-care-maximal-sensitivity/0e4f7e8f/
-opensafely/rsv-exclusion-secondary-care-maximal-sensitivity/625ccb9f/
+opensafely/rsv-identification-primary-care-maximal-sensitivity/2c9fe48a/
+opensafely/rsv-identification-prescriptions-maximal-sensitivity-dmd/210e3123/
+opensafely/rsv-exclusion-primary-care-maximal-sensitivity/02993e02/
+opensafely/rsv-exclusion-secondary-care-maximal-sensitivity/61718aea/
 
 opensafely/covid-19-identification-primary-care/507a5797/
 opensafely/covid-identification/2020-06-03
-opensafely/covid-19-identification-primary-care-maximal-sensitivity/52781f2a/
+opensafely/covid-19-identification-primary-care-maximal-sensitivity/4dc797a1/
 opensafely/covid-19-identification-prescriptions-dmd/32e73c2e
-opensafely/covid-19-exclusion-primary-care-maximal-sensitivity/03e32400/
-opensafely/covid-19-exclusion-secondary-care-maximal-sensitivity/1fa5572b/
+opensafely/covid-19-exclusion-primary-care-maximal-sensitivity/054bfdf8/
+opensafely/covid-19-exclusion-secondary-care-maximal-sensitivity/1e5b712d/
 opensafely/covid-19-ae-diagnosis-codes/1df1c0b2/
 user/ruthcostello/covid-19-notest-identification-primary-care/54e0ae06/
 
 opensafely/influenza-identification-primary-care/4b14d7ab/
 opensafely/influenza-identification-secondary-care/7d33be15/
-opensafely/influenza-identification-primary-care-maximal-sensitivity/178d1749/
-opensafely/acute-respiratory-illness-primary-care/30f1c6ca/
-opensafely/symptoms-fever/758b5341/
-opensafely/symptoms-cough/72d8934b/
+opensafely/influenza-identification-primary-care-maximal-sensitivity/64244ae0/
+opensafely/acute-respiratory-illness-primary-care/3a1da458/
+opensafely/symptoms-fever/3cd0644e/
+opensafely/symptoms-cough/55dfd783/
 opensafely/influenza-identification-prescriptions-maximal-sensitivity-dmd/4bf6af63
-opensafely/influenza-exclusion-primary-care-maximal-sensitivity/7ed2e05f/
-opensafely/acute-respiratory-illness-secondary-care/680e1eda/
-opensafely/influenza-exclusion-secondary-care-maximal-sensitivity/011d9210/
+opensafely/influenza-exclusion-primary-care-maximal-sensitivity/6989cacc/
+opensafely/acute-respiratory-illness-secondary-care/532d178d/
+opensafely/influenza-exclusion-secondary-care-maximal-sensitivity/18f5f141/
 
 opensafely/migration-status/4095ab22
 user/YaminaB/migration-status/47586e6d

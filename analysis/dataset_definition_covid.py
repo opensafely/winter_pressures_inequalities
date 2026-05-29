@@ -309,6 +309,7 @@ dataset.covid_notest_primary_third_date = (
 # determine if prior hospitalisation 28 days before start date
 covid_sc = (hospitalisation_primary_secondary_diagnosis_matches(codelists.covid_secondary_codelist)
         ).admission_date.minimum_for_patient()
+
 prior_sc = apcs.where(
    (apcs.primary_diagnosis.is_in(codelists.covid_secondary_codelist)) | (apcs.secondary_diagnosis.is_in(codelists.covid_secondary_codelist))).where(
       apcs.admission_date.is_on_or_between((covid_sc - days(28)), (covid_sc - days(1)))).admission_date.minimum_for_patient()

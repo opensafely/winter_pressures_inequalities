@@ -294,7 +294,7 @@ flu_emerg = emergency_care_diagnosis_matches(codelists.flu_attendance).where(
  # Any attendance in 28 days prior?
 flu_emerg_prior =(emergency_care_diagnosis_matches(codelists.flu_attendance).where(
         emergency_care_attendances.arrival_date
-    .is_on_or_between((flu_emerg - days(28)), flu_emerg)).arrival_date.minimum_for_patient()
+    .is_on_or_between((flu_emerg - days(28)), flu_emerg - days(1))).arrival_date.minimum_for_patient()
     ) 
 # Any attendance after prior admission within interval?
 flu_emerg_first_prior =(emergency_care_diagnosis_matches(codelists.flu_attendance).where(
@@ -322,7 +322,7 @@ bronchiolitis_emerg = emergency_care_diagnosis_matches(codelists.bronchiolitis_a
  # Any attendance in 28 days prior?
 bronchiolitis_emerg_prior =(emergency_care_diagnosis_matches(codelists.bronchiolitis_attendance).where(
         emergency_care_attendances.arrival_date
-    .is_on_or_between((bronchiolitis_emerg - days(28)), bronchiolitis_emerg)).arrival_date.minimum_for_patient()
+    .is_on_or_between((bronchiolitis_emerg - days(28)), bronchiolitis_emerg - days(1))).arrival_date.minimum_for_patient()
     ) 
 # Any attendance after prior admission within interval?
 bronchiolitis_emerg_first_prior =(emergency_care_diagnosis_matches(codelists.bronchiolitis_attendance).where(
