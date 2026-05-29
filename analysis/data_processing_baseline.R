@@ -14,6 +14,7 @@ prepare_data <- function(file_patterns, output_file) {
     cr_data <- cr_data %>%
         group_by(patient_id) %>%
         mutate(min_start_yr = min(year)) %>%
+        filter(min_start_yr == year) %>%
         ungroup() %>%
         mutate(
             #study_end = as.Date("2025-08-31"),
@@ -95,15 +96,14 @@ prepare_data <- function(file_patterns, output_file) {
             ),
             imd_quintile = na_if(imd_quintile, 99),
             imd_quintile = factor(imd_quintile),
-            imd_quintile = forcats::fct_explicit_na(imd_quintile, "Missing"),
+            imd_quintile = forcats::fct_na_value_to_level(imd_quintile, level = "Missing"),
             migrant = factor(migrant),
-            migrant = forcats::fct_explicit_na(migrant, "Missing"),
+            migrant = forcats::fct_na_value_to_level(migrant, level = "Missing"),
             english_language = factor(english_language),
-            english_language = forcats::fct_explicit_na(english_language, "Missing"),
+            english_language = forcats::fct_na_value_to_level(english_language, level = "Missing"),
         )
 
     cr_data %>%
-        filter(min_start_yr == year) %>%
         select(
             patient_id, min_start_yr, ethnicity6_combined, ethnicity16_combined, sex,
             age_group, urban_rural_5, imd_quintile,
