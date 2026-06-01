@@ -530,10 +530,10 @@ ggsave(file.path(outdir, "plot_km_covid_gp.svg"), gp_plot)
         # Emergency care plot
         km_emerg <- survfit(Surv(start, stop_emerg, emerg_binary) ~ ethnicity6_combined, data = data_df)
 #         # Generate GP plot 
-        emerg_plot <- ggsurvplot(km_emerg, data = data_df, risk.table = TRUE, 
+        emerg_plot <- ggsurvplot(km_emerg, data = data_df, fun = "event", risk.table = TRUE, 
                 conf.int = TRUE, pval = FALSE, legend = "right", 
                 title = paste("Kaplan-Meier:", disease, ", ethnicity (GP)"),
-                ylim=c(0.75, 1),
+                #ylim=c(0.75, 1),
                 ggtheme = theme_bw())
         graph_file <- paste0("plot_km_", disease, "_ethnicity_emerg.svg")
         ggsave(file.path(outdir, graph_file), emerg_plot$plot)
@@ -541,20 +541,20 @@ ggsave(file.path(outdir, "plot_km_covid_gp.svg"), gp_plot)
         # IMD
         km_gp <- survfit(Surv(start, stop_gp, gp_binary) ~ imd_quintile, data = data_df)
 #         # Generate GP plot 
-        gp_plot <- ggsurvplot(km_gp, data = data_df, risk.table = TRUE,
+        gp_plot <- ggsurvplot(km_gp, data = data_df, fun = "event", risk.table = TRUE,
                 conf.int = TRUE, pval = FALSE, legend = "right", 
                 title = paste("Kaplan-Meier:", disease, ", IMD (GP)"),
-                ylim=c(0.75, 1),
+                #ylim=c(0.75, 1),
                 ggtheme = theme_bw())
         graph_file <- paste0("plot_km_", disease, "_imd_gp.svg")
         ggsave(file.path(outdir, graph_file), gp_plot$plot)
 
         km_sc <- survfit(Surv(start, stop_sc, sc_binary) ~ imd_quintile, data = data_df)
 #         # Generate SC plot 
-        sc_plot <- ggsurvplot(km_sc, data = data_df, risk.table = TRUE,
+        sc_plot <- ggsurvplot(km_sc, data = data_df, fun = "event", risk.table = TRUE,
                 conf.int = TRUE, pval = FALSE, legend = "right", 
                 title = paste("Kaplan-Meier:", disease, ", IMD (SC)"),
-                ylim=c(0.95, 1),
+                #ylim=c(0.95, 1),
                 ggtheme = theme_bw())
         graph_file <- paste0("plot_km_", disease, "_imd_sc.svg")
         ggsave(file.path(outdir, graph_file), sc_plot$plot)
@@ -562,10 +562,10 @@ ggsave(file.path(outdir, "plot_km_covid_gp.svg"), gp_plot)
         # Emergency care plot
         km_emerg <- survfit(Surv(start, stop_emerg, emerg_binary) ~ imd_quintile, data = data_df)
 #         # Generate GP plot 
-        emerg_plot <- ggsurvplot(km_emerg, data = data_df, risk.table = TRUE, 
+        emerg_plot <- ggsurvplot(km_emerg, data = data_df, fun = "event", risk.table = TRUE, 
                 conf.int = TRUE, pval = FALSE, legend = "right", 
                 title = paste("Kaplan-Meier:", disease, ", ethnicity (GP)"),
-                ylim=c(0.75, 1),
+                #ylim=c(0.75, 1),
                 ggtheme = theme_bw())
         graph_file <- paste0("plot_km_", disease, "_imd_emerg.svg")
         ggsave(file.path(outdir, graph_file), emerg_plot$plot)

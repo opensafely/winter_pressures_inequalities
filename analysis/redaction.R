@@ -192,7 +192,7 @@ fn_redact_tbl_summary <- function(tbl_summary_obj,
             txt <- str_trim(txt)
             count <- suppressWarnings(as.numeric(str_extract(txt, "^[0-9]+")))
             if (is.na(count)) return(cell)
-            ifelse(cell <=threshold, NA_real_, roundmid_any(count)) %>% as.character()
+            ifelse(count <=threshold, NA_real_, roundmid_any(count)) %>% as.character()
           }),
           .x
         )
