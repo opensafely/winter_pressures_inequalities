@@ -14,8 +14,8 @@ prepare_data <- function(file_patterns, output_file) {
     cr_data <- cr_data %>%
         group_by(patient_id) %>%
         mutate(min_start_yr = min(year)) %>%
-        filter(min_start_yr == year) %>%
         ungroup() %>%
+        filter(min_start_yr == year) %>%
         mutate(
             #study_end = as.Date("2025-08-31"),
             #fu_end = pmin(dereg_date, ons_death_date, study_end, na.rm = TRUE),
