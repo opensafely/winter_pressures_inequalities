@@ -9,6 +9,8 @@ args <- commandArgs(trailingOnly = TRUE)
 
 disease <- args[1]
 file <- args[2]
+min_year <- args[3]
+max_year <- args[4]
 
 # Generate outcomes dataset for cohort analyses - identifying first event for each infection: COVID-19, RSV and flu
 #prepare_outcomes_data <- function(file_patterns, output_file) {
@@ -28,6 +30,10 @@ path = "output",
 pattern = file_pattern,
 full.names = TRUE
 )
+
+years <- as.numeric(gsub("\\D", "", basename(file_patterns)))
+
+file_patterns <- file_patterns[years <= max_year & years >= min_year]
 
 # Check files were found
 if (length(file_patterns) == 0) {
@@ -105,7 +111,7 @@ cr_data[, `:=`(
 # filter to only rows 
 cr_data <- cr_data[min_start_yr_out == year]
 
-study_end <- as.Date("2025-08-31")
+study_end <- as.Date(max_year,"-08-31")
 fu_start_month <- if (disease == "covid") 3L else 9L
 
 cr_data[, `:=`(
@@ -150,7 +156,7 @@ cr_data[, `:=`(
     year_end = year(date_stop)
     )]
 
-output_file <- paste0("an_outcome_data_", disease,".rds")
+output_file <- paste0("an_outcome_data_", disease,"_", min_year,".rds")
 # File with outcome data only
 cr_data %>%
     filter(min_start_yr_out == year) %>%
@@ -166,7 +172,7 @@ baseline <- read_feather(here("output", bl_file), as_data_frame = TRUE)
 stopifnot(!anyDuplicated(outcomes$patient_id))
 stopifnot(!anyDuplicated(baseline$patient_id))
 
-final_file <- paste0("an_outcome_first_",disease,".arrow")
+final_file <- paste0("an_outcome_first_",disease,"_",min_year,".arrow")
 
 # choose left_join if outcomes are the analysis denominator
 outcome_bl <- baseline %>%

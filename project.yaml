@@ -220,8 +220,8 @@ actions:
           data: output/an_bl_data_covid.arrow
           data_flu_rsv: output/an_bl_data_flu_rsv.arrow
 
-  data_process_outcome_covid:
-      run: r:v2 analysis/data_processing_outcomes.R covid covid
+  data_process_outcome_covid_2021:
+      run: r:v2 analysis/data_processing_outcomes.R covid covid 2021 2025
       needs: 
       - generate_dataset_covid_2021
       - generate_dataset_covid_2022
@@ -230,14 +230,23 @@ actions:
       - data_process_bl
       outputs: 
         highly_sensitive:
-          data_o_covid: output/an_outcome_data_covid.rds
-          data_f_covid: output/an_outcome_first_covid.arrow
+          data_o_covid: output/an_outcome_data_covid_2021.rds
+          data_f_covid: output/an_outcome_first_covid_2021.arrow
 
-  data_process_outcome_flu:
-      run: r:v2 analysis/data_processing_outcomes.R flu flu_rsv 
+  data_process_outcome_flu_2018:
+      run: r:v2 analysis/data_processing_outcomes.R flu flu_rsv 2018 2019
       needs: 
       - generate_dataset_flu_rsv_2018
       - generate_dataset_flu_rsv_2019
+      - data_process_bl
+      outputs: 
+        highly_sensitive:
+          data_o_covid: output/an_outcome_data_flu_2018.rds
+          data_f_covid: output/an_outcome_first_flu_2018.arrow
+
+  data_process_outcome_flu_2021:
+      run: r:v2 analysis/data_processing_outcomes.R flu flu_rsv 2021 2025
+      needs: 
       - generate_dataset_flu_rsv_2021
       - generate_dataset_flu_rsv_2022
       - generate_dataset_flu_rsv_2023
@@ -245,14 +254,23 @@ actions:
       - data_process_bl
       outputs: 
         highly_sensitive:
-          data_o_covid: output/an_outcome_data_flu.rds
-          data_f_covid: output/an_outcome_first_flu.arrow
+          data_o_covid: output/an_outcome_data_flu_2021.rds
+          data_f_covid: output/an_outcome_first_flu_2021.arrow
 
-  data_process_outcome_rsv:
-      run: r:v2 analysis/data_processing_outcomes.R rsv flu_rsv 
+  data_process_outcome_rsv_2018:
+      run: r:v2 analysis/data_processing_outcomes.R rsv flu_rsv 2018 2019
       needs: 
       - generate_dataset_flu_rsv_2018
       - generate_dataset_flu_rsv_2019
+      - data_process_bl
+      outputs: 
+        highly_sensitive:
+          data_o_covid: output/an_outcome_data_rsv_2018.rds
+          data_f_covid: output/an_outcome_first_rsv_2018.arrow
+
+  data_process_outcome_rsv_2021:
+      run: r:v2 analysis/data_processing_outcomes.R rsv flu_rsv 2021 2025
+      needs: 
       - generate_dataset_flu_rsv_2021
       - generate_dataset_flu_rsv_2022
       - generate_dataset_flu_rsv_2023
@@ -260,16 +278,18 @@ actions:
       - data_process_bl
       outputs: 
         highly_sensitive:
-          data_o_covid: output/an_outcome_data_rsv.rds
-          data_f_covid: output/an_outcome_first_rsv.arrow
+          data_o_covid: output/an_outcome_data_rsv_2021.rds
+          data_f_covid: output/an_outcome_first_rsv_2021.arrow
 
   tables:
       run: r:v2 analysis/descriptive_analysis.R 
       needs: 
         - data_process_bl
-        - data_process_outcome_covid
-        - data_process_outcome_flu
-        - data_process_outcome_rsv
+        - data_process_outcome_covid_2021
+        - data_process_outcome_flu_2018
+        - data_process_outcome_rsv_2018
+        - data_process_outcome_flu_2021
+        - data_process_outcome_rsv_2021
         - measures_covid
         - measures_flu_2018
         - measures_flu_2021
