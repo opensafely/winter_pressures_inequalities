@@ -52,7 +52,7 @@ read_feather(file_patterns[i]) %>%
     -bmi_date, -migrant, -english_language) %>%
     mutate(year = as.numeric(gsub("\\D", "", basename(file_patterns[i]))))
 }))
-
+print(paste("size of outcomes cr_data file"))
 print(dim(cr_data))
 
 if (any(is.na(cr_data$year))) {
@@ -87,10 +87,12 @@ if (disease == "rsv") {
 setDT(cr_data)
 
 # check whether dereg_Date and ons_death_date are unique across rows per patient
+print(paste("Number of people with multiple deregistration dates"))
 multiple_dereg <- cr_data[, .(
   n_dereg_date = uniqueN(dereg_date, na.rm = TRUE)
 ), by = patient_id][n_dereg_date > 1]
 print(dim(multiple_dereg))
+print(paste("Number of people with multiple ONS death dates"))
 multiple_ons <- cr_data[, .(
   n_ons_death_date = uniqueN(ons_death_date, na.rm = TRUE)
 ), by = patient_id][n_ons_death_date > 1]
