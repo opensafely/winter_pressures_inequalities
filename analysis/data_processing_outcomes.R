@@ -97,6 +97,8 @@ multiple_ons <- cr_data[, .(
 print(dim(multiple_ons))
 
 # Find first year in follow-up and first GP and secondary care healthcare utilisation
+# Find first deregistration date as people could deregister one year and then re-register one of the years after, so taking first registration period
+
 safe_min_date <- function(x) {
   x <- x[!is.na(x)]
   if (!length(x)) as.Date(NA) else min(x)
@@ -106,7 +108,9 @@ cr_data[, `:=`(
   min_start_yr_out = min(year),
   first_gp_col = safe_min_date(primary_col),
   first_sc_col = safe_min_date(sc_col),
-  first_emerg_col = safe_min_date(emerg_col)
+  first_emerg_col = safe_min_date(emerg_col),
+  first_dereg_date = safe_min_date(dereg_date)
+
 ), by = patient_id]
 # filter to only rows 
 cr_data <- cr_data[min_start_yr_out == year]
@@ -120,8 +124,7 @@ cr_data[, `:=`(
         as.Date(NA),
         pmin(first_gp_col, first_sc_col, first_emerg_col, na.rm = TRUE)
     ),
-    # I'm thinking this won't vary across dataset definitions.. will check earlier and think about if is different
-    dereg_date = as.Date(dereg_date),
+    
     ons_death_date = as.Date(ons_death_date),
     fu_start = as.Date(sprintf("%d-%02d-01", min_start_yr_out, fu_start_month))
 )]
@@ -129,7 +132,7 @@ cr_data[, `:=`(
 # safer fu_end with all-NA handling
 
 cr_data[, fu_end := {
-  x <- pmin(dereg_date, ons_death_date, study_end, na.rm = TRUE)
+  x <- pmin(first_dereg_date, ons_death_date, study_end, na.rm = TRUE)
   as.Date(x)
 }]
 
