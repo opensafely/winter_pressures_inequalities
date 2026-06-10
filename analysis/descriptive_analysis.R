@@ -469,15 +469,35 @@ run_cox_models <- function(disease, difference) {
         f_gp <- as.formula(paste0("Surv(start, stop_gp, gp_binary) ~ ", difference, " + strata(year_end_gp)"))
         f_sc <- as.formula(paste0("Surv(start, stop_sc, sc_binary) ~ ", difference, " + strata(year_end_sc)"))
         f_emerg <- as.formula(paste0("Surv(start, stop_emerg, emerg_binary) ~ ", difference, " + strata(year_end_emerg)"))
-        # Fit Cox models
-        mod_gp <- coxph(f_gp, data = data_df)
-        mod_sc <- coxph(f_sc, data = data_df)
-        mod_emerg <- coxph(f_emerg, data = data_df)
+        # Helper to either fit model or return redacted row
+        fit_or_redact <- function(formula, binary_var, outcome_name) {
+                n_events <- sum(data_df[[binary_var]] == 1, na.rm = TRUE)
+                if (n_events > 7) {
+                        coxph(formula, data = data_df) %>%
+                                tidy(exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>%
+                                mutate(outcome = outcome_name, by_var = difference, disease = disease)
+                } else {
+                        message("Redacted: 7 or fewer ", disease, " ", outcome_name, " events")
+                        tibble(
+                                term        = difference,
+                                estimate    = NA_real_,
+                                std.error   = NA_real_,
+                                statistic   = NA_real_,
+                                p.value     = NA_real_,
+                                conf.low    = NA_real_,
+                                conf.high   = NA_real_,
+                                outcome     = outcome_name,
+                                by_var      = difference,
+                                disease     = disease,
+                                redacted    = TRUE
+                        )
+                }
+        }
 
         new_rows <- bind_rows(
-                tidy(mod_gp, exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>% mutate(outcome = "gp_binary", by_var = difference, disease = disease),
-                tidy(mod_sc, exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>% mutate(outcome = "sc_binary", by_var = difference, disease = disease),
-                tidy(mod_emerg, exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>% mutate(outcome = "emerg_binary", by_var = difference, disease = disease),
+                fit_or_redact(f_gp,    "gp_binary",    "gp_binary"),
+                fit_or_redact(f_sc,    "sc_binary",    "sc_binary"),
+                fit_or_redact(f_emerg, "emerg_binary", "emerg_binary")
         )
 
         return(new_rows)
