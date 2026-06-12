@@ -196,6 +196,13 @@ count_outcomes <- function(disease,
     ),
     create_event_table(
       data,
+      time = "stop_gp_sens",
+      status = "gp_sens_binary",
+      outcome = paste(disease, "- GP sens"),
+      group = strata
+    ),
+    create_event_table(
+      data,
       time = "stop_sc",
       status = "sc_binary",
       outcome = paste(disease, "- SC"),
@@ -460,6 +467,11 @@ run_cox_models <- function(disease, difference) {
                 data_df[[difference]] <- relevel(data_df[[difference]], ref = "White")
         }
 
+        if (difference == "ethnicity16_combined") {
+                data_df[[difference]] <- factor(data_df[[difference]])
+                data_df[[difference]] <- relevel(data_df[[difference]], ref = "White British")
+        }
+
         if (difference == "imd_quintile") {
                 data_df[[difference]] <- factor(data_df[[difference]])
                 data_df[[difference]] <- relevel(data_df[[difference]], ref = "5") 
@@ -467,6 +479,7 @@ run_cox_models <- function(disease, difference) {
         
         # define Cox model formulas
         f_gp <- as.formula(paste0("Surv(start, stop_gp, gp_binary) ~ ", difference, " + strata(year_end_gp)"))
+        f_gp_sens <- as.formula(paste0("Surv(start, stop_gp_sens, gp_sens_binary) ~ ", difference, " + strata(year_end_gp)"))
         f_sc <- as.formula(paste0("Surv(start, stop_sc, sc_binary) ~ ", difference, " + strata(year_end_sc)"))
         f_emerg <- as.formula(paste0("Surv(start, stop_emerg, emerg_binary) ~ ", difference, " + strata(year_end_emerg)"))
         # Helper to either fit model or return redacted row
@@ -496,6 +509,7 @@ run_cox_models <- function(disease, difference) {
 
         new_rows <- bind_rows(
                 fit_or_redact(f_gp,    "gp_binary",    "gp_binary"),
+                fit_or_redact(f_gp_sens,    "gp_sens_binary",    "gp_sens_binary"),
                 fit_or_redact(f_sc,    "sc_binary",    "sc_binary"),
                 fit_or_redact(f_emerg, "emerg_binary", "emerg_binary")
         )
@@ -504,7 +518,7 @@ run_cox_models <- function(disease, difference) {
 }
 
 diseases <- c("covid_2021", "flu_2018", "rsv_2018", "flu_2021", "rsv_2021")
-by_vars <- c("imd_quintile", "ethnicity6_combined")
+by_vars <- c("imd_quintile", "ethnicity6_combined", "ethnicity16_combined")
 
 param_grid <- expand.grid(disease = diseases, difference = by_vars, stringsAsFactors = FALSE)
 

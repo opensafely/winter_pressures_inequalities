@@ -260,6 +260,22 @@ dataset.flu_primary_third_date = (
     .where(gp_events.date.is_on_or_after(dataset.flu_primary_second_date + months(1)))
     .sort_by(gp_events.date).first_for_patient().date
 )
+
+# Flu sensitive phenotype
+gp_flu_sens_date = first_gp_event_with_washout(codelists.flu_primary_sens_codelist)
+gp_flu_sens_excl_prior = (clinical_events.where(
+    clinical_events.snomedct_code.is_in(codelists.flu_primary_sens_excl_codelist)
+    ).where(
+    clinical_events.date.is_on_or_between((gp_flu_sens_date - days(28)),gp_flu_sens_date - days(1))
+    ).exists_for_patient()
+)
+
+dataset.flu_primary_sens_date = case(
+        when(dataset.flu_primary_date.is_not_null()).then(dataset.flu_primary_date),
+        when((gp_flu_sens_date.is_not_null()) & (gp_flu_sens_excl_prior==False)).then(gp_flu_sens_date),
+    otherwise = None,
+    )
+
 # hospital events function takes hospital admissions in the year after start date
 # hospitalisation_primary_secondary_diagnosis_matches function takes events which are primary or secondarty diagnoses
 flu_sc = (hospitalisation_primary_secondary_diagnosis_matches(codelists.flu_secondary_codelist)
@@ -360,6 +376,21 @@ dataset.rsv_primary_second_date = case(
             .sort_by(gp_events.date).first_for_patient().date
         ),
 )
+
+# sensitivie phenotype
+gp_rsv_sens_date = first_gp_event_with_washout(codelists.rsv_primary_sens_codelist)
+gp_rsv_sens_excl_prior = (clinical_events.where(
+    clinical_events.snomedct_code.is_in(codelists.rsv_primary_sens_excl_codelist)
+    ).where(
+    clinical_events.date.is_on_or_between((gp_rsv_sens_date - days(28)),gp_rsv_sens_date - days(1))
+    ).exists_for_patient()
+)
+
+dataset.rsv_primary_sens_date = case(
+        when(dataset.rsv_primary_date.is_not_null()).then(dataset.rsv_primary_date),
+        when((gp_rsv_sens_date.is_not_null()) & (gp_rsv_sens_excl_prior==False)).then(gp_rsv_sens_date),
+    otherwise = None,
+    )
 
 #extract rsv secondary care dates for 'specific' phenotype
   

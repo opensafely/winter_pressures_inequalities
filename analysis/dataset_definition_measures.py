@@ -210,7 +210,7 @@ def make_dataset_covid_utilisation(index_date, end_date):
     # Code for COVID - not including testing codes
     dataset.covid_gp_notest = first_gp_event_with_washout(codelists.covid_notest_codelist, index_date, end_date)
 
-    # GP consultation - Sensitive definition 
+    # GP consultation - Sensitive definition - pragmatic version where only need single sensitive code and no exclusion codes
     # Find code and exclusions during interval
     gp_covid_sens_excl = (clinical_events.where(
         clinical_events.snomedct_code.is_in(codelists.covid_primary_sens_excl_codelist)

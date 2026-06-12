@@ -36,7 +36,7 @@ bronchiolitis_attendance = ["4120002"]
 wheeze_attendance = ["4120002", "276191000000107"]
 
 # RSV emergency attendance (RSV and bronchiolitis SNOMED codes)
-rsv_attendance = ["55735004", "4120002"]  # RSV infection, Bronchiolitis
+rsv_attendance = ["79479005", "195727009", "4120002", "57089007", "195739001"]  # RSV bronchitis, Bronchiolitis
 
 # rsv secondary - specific
 rsv_secondary_codelist = codelist_from_csv(
@@ -81,7 +81,7 @@ flu_secondary_codelist = codelist_from_csv(
 flu_secondary_codelist = expand_three_char_icd10_codes(flu_secondary_codelist)
 
 # flu - emergency
-flu_attendance = ["6142004"]
+flu_attendance = ["6142004", "442696006", "195878008", "81524006", "442438000", "24662006"]
 
 # acute respiratory illness primary
 ari_primary_codelist = codelist_from_csv(

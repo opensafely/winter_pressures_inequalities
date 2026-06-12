@@ -10,7 +10,7 @@ prepare_data <- function(file_patterns, output_file) {
         read_feather(file_patterns[i]) %>%
         mutate(year = as.numeric(gsub("\\D", "", basename(file_patterns[i]))))
     }))
-
+    print(output_file)
     cr_data <- cr_data %>%
         group_by(patient_id) %>%
         mutate(min_start_yr = min(year)) %>%
@@ -28,71 +28,66 @@ prepare_data <- function(file_patterns, output_file) {
                 is.na(bmi) ~ "Missing",
                 TRUE ~ "Missing",
             ),
-            latest_ethnicity6_from_codes = case_when(
-                ethnicity6_gp == "1" ~ "White",
-                ethnicity6_gp == "2" ~ "Mixed",
-                ethnicity6_gp == "3" ~ "Asian or Asian British",
-                ethnicity6_gp == "4" ~ "Black or Black British",
-                ethnicity6_gp == "5" ~ "Chinese or Other Ethnic Groups",
-                is.na(ethnicity6_gp) ~ "Missing",
-                TRUE ~ "Missing",
-            ),
-            ethnicity6_from_sus = case_when(
-                ethnicity_sus %in% c("A", "B", "C") ~ "White",
-                ethnicity_sus %in% c("D", "E", "F", "G") ~ "Mixed",
-                ethnicity_sus %in% c("H", "J", "K", "L") ~ "Asian or Asian British",
-                ethnicity_sus %in% c("M", "N", "P") ~ "Black or Black British",
-                ethnicity_sus %in% c("R", "S") ~ "Chinese or Other Ethnic Groups",
-                is.na(ethnicity_sus) ~ "Missing",
-                TRUE ~ "Missing",
-            ),
-            latest_ethnicity16_from_codes = case_when(
-                ethnicity16_gp == "1" ~ "White British",
-                ethnicity16_gp == "2" ~ "White Irish",
-                ethnicity16_gp == "3" ~ "Other White",
-                ethnicity16_gp == "4" ~ "White and Caribbean",
-                ethnicity16_gp == "5" ~ "White and African",
-                ethnicity16_gp == "6" ~ "White and Asian",
-                ethnicity16_gp == "7" ~ "Other Mixed",
-                ethnicity16_gp == "8" ~ "Indian",
-                ethnicity16_gp == "9" ~ "Pakistani",
-                ethnicity16_gp == "10" ~ "Bangladeshi",
-                ethnicity16_gp == "11" ~ "Other Asian",
-                ethnicity16_gp == "12" ~ "Caribbean",
-                ethnicity16_gp == "13" ~ "African",
-                ethnicity16_gp == "14" ~ "Other Black",
-                ethnicity16_gp == "15" ~ "Chinese",
-                ethnicity16_gp == "16" ~ "All other ethnic groups",
-                is.na(ethnicity16_gp) ~ "Missing",
-                TRUE ~ "Missing",
-            ),
+            ethnicity6_from_codes = relevel(factor(ethnicity6_gp,
+                                     levels = c("1", "2", "3", "4", "5"),
+                                     labels = c("White", "Mixed",
+                                                "Asian or Asian British",
+                                                "Black or Black British",
+                                                "Other Ethnic Groups"),
+                                     ordered = FALSE), ref = "White"),
+            ethnicity6_from_sus = relevel(factor(recode(
+                    ethnicity_sus, "A" = "White", "B" = "White", "C" = "White",
+                    "D" = "Mixed", "E" = "Mixed", "F" = "Mixed", "G" = "Mixed",
+                    "H" = "Asian or Asian British", "J" = "Asian or Asian British",
+                    "K" = "Asian or Asian British", "L" = "Asian or Asian British",
+                    "M" = "Black or Black British", "N" = "Black or Black British",
+                    "P" = "Black or Black British", "R" = "Other Ethnic Groups",
+                    "S" = "Other Ethnic Groups"), ordered = F), ref = "White"),
 
-            ethnicity16_from_sus = case_when(
-                ethnicity_sus == "A" ~ "White British",
-                ethnicity_sus == "B" ~ "White Irish",
-                ethnicity_sus == "C" ~ "Other White",
-                ethnicity_sus == "D" ~ "White and Caribbean",
-                ethnicity_sus == "E" ~ "White and African",
-                ethnicity_sus == "F" ~ "White and Asian",
-                ethnicity_sus == "G" ~ "Other Mixed",
-                ethnicity_sus == "H" ~ "Indian",
-                ethnicity_sus == "J" ~ "Pakistani",
-                ethnicity_sus == "K" ~ "Bangladeshi",
-                ethnicity_sus == "L" ~ "Other Asian",
-                ethnicity_sus == "M" ~ "Caribbean",
-                ethnicity_sus == "N" ~ "African",
-                ethnicity_sus == "P" ~ "Other Black",
-                ethnicity_sus == "R" ~ "Chinese",
-                ethnicity_sus == "S" ~ "All other ethnic groups",
-                is.na(ethnicity_sus) ~ "Missing",
-                TRUE ~ "Missing",
-            ),
+            ethnicity16_from_codes = relevel(factor(ethnicity16_gp,
+                                     levels = c("1", "2", "3", "4", "5", "6", "7", "8", "9", 
+                                     "10", "11", "12", "13", "14", "15", "16"),
+                                     labels = c("White British", "White Irish", "Other White",
+                                                "White and Caribbean",
+                                                "White and African",
+                                                "White and Asian",
+                                                "Other Mixed",
+                                                "Indian",
+                                                "Pakistani",
+                                                "Bangladeshi",
+                                                "Other Asian",
+                                                "Caribbean",
+                                                "African",
+                                                "Other Black",
+                                                "Chinese",
+                                                "All other ethnic groups"),
+                                     ordered = FALSE), ref = "White British"),
+
+            ethnicity16_from_sus = relevel(factor(recode(
+                    ethnicity_sus, "A" = "White British",
+                "B" = "White Irish",
+                "C" = "Other White",
+                "D" = "White and Caribbean",
+                "E" = "White and African",
+                "F" = "White and Asian",
+                "G" = "Other Mixed",
+                "H" = "Indian",
+                "J" = "Pakistani",
+                "K" = "Bangladeshi",
+                "L" = "Other Asian",
+                "M" = "Caribbean",
+                "N" = "African",
+                "P" = "Other Black",
+                "R" = "Chinese",
+                "S" = "All other ethnic groups"), ordered = F), ref = "White British"),
 
             ethnicity6_combined = if_else(
-                !is.na(latest_ethnicity6_from_codes), latest_ethnicity6_from_codes, ethnicity6_from_sus
+                is.na(ethnicity6_from_codes), if_else(is.na(ethnicity6_from_sus), "Unknown", ethnicity6_from_sus), 
+                ethnicity6_from_codes
             ),
             ethnicity16_combined = if_else(
-                !is.na(latest_ethnicity16_from_codes), latest_ethnicity16_from_codes, ethnicity16_from_sus
+                is.na(ethnicity16_from_codes), if_else(is.na(ethnicity16_from_sus), "Unknown", ethnicity16_from_sus), 
+                ethnicity16_from_codes
             ),
             imd_quintile = na_if(imd_quintile, 99),
             imd_quintile = factor(imd_quintile),
@@ -102,7 +97,10 @@ prepare_data <- function(file_patterns, output_file) {
             english_language = factor(english_language),
             english_language = forcats::fct_na_value_to_level(english_language, level = "Missing"),
         )
-
+    print("Check ethnicity GP variable after recoding")
+    print(table(cr_data$ethnicity6_gp, cr_data$ethnicity6_from_codes, useNA = "always"))
+    print("Check ethnicity SUS variable after recoding")
+    print(table(cr_data$ethnicity_sus, cr_data$ethnicity6_from_sus, useNA = "always"))
     cr_data %>%
         select(
             patient_id, min_start_yr, ethnicity6_combined, ethnicity16_combined, sex,
