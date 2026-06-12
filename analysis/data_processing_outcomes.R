@@ -119,7 +119,8 @@ cr_data[, `:=`(
 # filter to only rows 
 cr_data <- cr_data[min_start_yr_out == year]
 
-study_end <- as.Date(max_year,"-08-31")
+study_end <- as.Date(paste0(max_year,"-08-31"))
+cat("study_end:", as.character(study_end), "\n")
 fu_start_month <- if (disease == "covid") 3L else 9L
 
 cr_data[, `:=`(
@@ -136,9 +137,25 @@ cr_data[, `:=`(
 # safer fu_end with all-NA handling
 
 cr_data[, fu_end := {
-  x <- pmin(first_dereg_date, ons_death_date, study_end, na.rm = TRUE)
-  as.Date(x)
+    x <- pmin(
+        as.numeric(first_dereg_date),
+        as.numeric(ons_death_date),
+        as.numeric(study_end),
+        na.rm = TRUE
+    )
+    as.Date(x, origin = "1970-01-01")
 }]
+
+# CHECK FOR TIMING ISSUES
+cat("\n=== Timing Check for", disease, "===\n")
+
+timing_issues <- cr_data %>%
+        summarise(
+        total = n(),
+        fu_end_study_end = sum(fu_end > study_end, na.rm = TRUE),
+        )
+
+print(timing_issues)
 
 cr_data[, `:=`(
   gp_binary = fifelse(!is.na(first_gp_col) & first_gp_col < fu_end, 1L, 0L),
