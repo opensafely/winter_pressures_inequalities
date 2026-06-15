@@ -3,15 +3,6 @@ library(broom)
 library(dplyr)
 library(tidyverse)
 library(arrow)
-library(finalfit)
-library(survival)
-library(rlang)
-library(purrr)
-library(finalfit)
-library(forcats)
-library(gtsummary)
-library(survminer)
-library(glue)
 
 ## Import custom user functions
 source(here::here("analysis", "redaction.R"))
@@ -28,103 +19,78 @@ roundmid_any <- function(x, to = 6) {
 }
 
 # # generating tables with rounded weekly events, denominators and rates from measures
-# # ethnicity
+
 rates_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
         #filter(measure=="covid_gp" | measure=="covid_admission" | measure=="covid_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+        select(measure, interval_start, interval_end, ethnicity, imd, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_covid, file.path(outdir, "rounded_rates_covid.csv"))
 
 rates_flu_18 <- read_csv(here("output/measures/measures_flu_2018.csv")) %>% 
-        filter(measure=="flu_gp" | measure=="flu_admission" | measure=="flu_emerg") %>% 
+        #filter(measure=="flu_gp" | measure=="flu_admission" | measure=="flu_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+        select(measure, interval_start, interval_end, ethnicity, imd, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_flu_18, file.path(outdir, "rounded_rates_flu_18.csv"))
 
 rates_flu_21 <- read_csv(here("output/measures/measures_flu_2021.csv")) %>% 
-        filter(measure=="flu_gp" | measure=="flu_admission" | measure=="flu_emerg") %>% 
+        #filter(measure=="flu_gp" | measure=="flu_admission" | measure=="flu_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+        select(measure, interval_start, interval_end, ethnicity, imd, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_flu_21, file.path(outdir, "rounded_rates_flu_21.csv"))
 
 rates_rsv_18 <- read_csv(here("output/measures/measures_rsv_2018.csv")) %>% 
-        filter(measure=="rsv_gp" | measure=="rsv_admission" | measure=="rsv_emerg") %>% 
+        #filter(measure=="rsv_gp" | measure=="rsv_admission" | measure=="rsv_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+        select(measure, interval_start, interval_end, ethnicity, imd, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_rsv_18, file.path(outdir, "rounded_rates_rsv_18.csv"))
 
 rates_rsv_21 <- read_csv(here("output/measures/measures_rsv_2021.csv")) %>% 
-        filter(measure=="rsv_gp" | measure=="rsv_admission" | measure=="rsv_emerg") %>% 
+        #filter(measure=="rsv_gp" | measure=="rsv_admission" | measure=="rsv_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+        select(measure, interval_start, interval_end, ethnicity, imd, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_rsv_21, file.path(outdir, "rounded_rates_rsv_21.csv"))
 
 rates_rsv_23 <- read_csv(here("output/measures/measures_rsv_2023.csv")) %>% 
-        filter(measure=="rsv_gp" | measure=="rsv_admission" | measure=="rsv_emerg") %>% 
+        #filter(measure=="rsv_gp" | measure=="rsv_admission" | measure=="rsv_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
+        select(measure, interval_start, interval_end, ethnicity, imd, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_rsv_23, file.path(outdir, "rounded_rates_rsv_23.csv"))
 
-# #IMD
-rates_imd_covid <- read_csv(here("output/measures/measures_covid.csv")) %>% 
-        #filter(measure=="covid_gp_imd" | measure=="covid_admission_imd" | measure=="covid_emerg_imd") %>% 
+rates_rsv_age_18 <- read_csv(here("output/measures/measures_rsv_age_2018.csv")) %>% 
+        #filter(measure=="rsv_gp" | measure=="rsv_admission" | measure=="rsv_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
-write_csv(rates_imd_covid, file.path(outdir, "rounded_rates_imd_covid.csv"))
+        select(measure, interval_start, interval_end, ethnicity, imd, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_rsv_age_18, file.path(outdir, "rounded_rates_rsv_age_18.csv"))
 
-rates_imd_flu_18 <- read_csv(here("output/measures/measures_flu_2018.csv")) %>% 
-        filter(measure=="flu_gp_imd" | measure=="flu_admission_imd" | measure=="flu_emerg_imd") %>% 
+rates_rsv_age_21 <- read_csv(here("output/measures/measures_rsv_age_2021.csv")) %>% 
+        #filter(measure=="rsv_gp" | measure=="rsv_admission" | measure=="rsv_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
-write_csv(rates_imd_flu_18, file.path(outdir, "rounded_rates_imd_flu_18.csv"))
+        select(measure, interval_start, interval_end, ethnicity, imd, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_rsv_age_21, file.path(outdir, "rounded_rates_rsv_age_21.csv"))
 
-rates_imd_flu_21 <- read_csv(here("output/measures/measures_flu_2021.csv")) %>% 
-        filter(measure=="flu_gp_imd" | measure=="flu_admission_imd" | measure=="flu_emerg_imd") %>% 
+rates_rsv_age_23 <- read_csv(here("output/measures/measures_rsv_age_2023.csv")) %>% 
+        #filter(measure=="rsv_gp" | measure=="rsv_admission" | measure=="rsv_emerg") %>% 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
-write_csv(rates_imd_flu_21, file.path(outdir, "rounded_rates_imd_flu_21.csv"))
-
-rates_imd_rsv_18 <- read_csv(here("output/measures/measures_rsv_2018.csv")) %>% 
-        filter(measure=="rsv_gp_imd" | measure=="rsv_admission_imd" | measure=="rsv_emerg_imd") %>% 
-        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
-                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
-                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
-write_csv(rates_imd_rsv_18, file.path(outdir, "rounded_rates_imd_rsv_18.csv"))
-
-rates_imd_rsv_21 <- read_csv(here("output/measures/measures_rsv_2021.csv")) %>% 
-        filter(measure=="rsv_gp_imd" | measure=="rsv_admission_imd" | measure=="rsv_emerg_imd") %>% 
-        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
-                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
-                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
-write_csv(rates_imd_rsv_21, file.path(outdir, "rounded_rates_imd_rsv_21.csv"))
-
-rates_imd_rsv_23 <- read_csv(here("output/measures/measures_rsv_2023.csv")) %>% 
-        filter(measure=="rsv_gp_imd" | measure=="rsv_admission_imd" | measure=="rsv_emerg_imd") %>% 
-        mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
-                n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
-                rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-        select(measure, interval_start, interval_end, ethnicity, outcome_mid6, n_mid6, rate_mid6)
-write_csv(rates_imd_rsv_23, file.path(outdir, "rounded_rates_imd_rsv_23.csv"))
+        select(measure, interval_start, interval_end, ethnicity, imd, outcome_mid6, n_mid6, rate_mid6)
+write_csv(rates_rsv_age_23, file.path(outdir, "rounded_rates_rsv_age_23.csv"))
 
 # # Making (not very good) line graphs of rates 
 # plot_line <- function(file, disease) {

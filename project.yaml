@@ -309,6 +309,9 @@ actions:
         - measures_rsv_2018
         - measures_rsv_2021
         - measures_rsv_2023
+        - measures_rsv_age_2018
+        - measures_rsv_age_2021
+        - measures_rsv_age_2023
       outputs: 
         moderately_sensitive:
           rates_covid: output/tables/rounded_rates_*.csv

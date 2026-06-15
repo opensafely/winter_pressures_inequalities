@@ -304,6 +304,21 @@ dataset.covid_notest_primary_third_date = (
     .sort_by(gp_events.date).first_for_patient().date
 )
 
+  # GP consultation - Sensitive definition 
+    # Find code and exclusions during interval - need washout prior to exclusion event??
+gp_covid_sens_date = first_gp_event_with_washout(codelists.covid_primary_sens_codelist)
+gp_covid_sens_excl_prior = (clinical_events.where(
+    clinical_events.snomedct_code.is_in(codelists.covid_primary_sens_excl_codelist)
+    ).where(
+    clinical_events.date.is_on_or_between((gp_covid_sens_date - days(28)),gp_covid_sens_date - days(1))
+    ).exists_for_patient()
+)
+
+dataset.covid_primary_sens_date = case(
+        when(dataset.covid_primary_date.is_not_null()).then(dataset.covid_primary_date),
+        when((gp_covid_sens_date.is_not_null()) & (gp_covid_sens_excl_prior==False)).then(gp_covid_sens_date),
+    otherwise = None,
+    )
 
 # extract date of first hospitalisation
 # determine if prior hospitalisation 28 days before start date
