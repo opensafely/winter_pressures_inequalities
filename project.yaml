@@ -298,7 +298,7 @@ actions:
           table_flu_rsv_r: output/tables/baseline_table_flu_rsv_r.csv
           table_out_c: output/tables/count_*.csv
           plots: output/tables/plot_*.svg
-          table_cox: output/tables/cox_models.csv
+          table_cox: output/tables/cox_models*.csv
         
   rates:
       run: r:v2 analysis/rates.R 
