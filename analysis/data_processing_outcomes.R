@@ -177,7 +177,8 @@ cr_data[, `:=`(
     stop_sc = as.numeric(date_stop_sc - fu_start),
     stop_emerg = as.numeric(date_stop_emerg - fu_start),
     stop = as.numeric(date_stop - fu_start),
-    start = 0L,
+    #Setting start as half a day prior to start date so that we can still have same day events
+    start = -0.5,
     # generating year of stop for stratification
     year_end_gp = year(date_stop_gp),
     year_end_gp_sens = year(date_stop_gp_sens),
