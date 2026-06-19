@@ -282,7 +282,7 @@ actions:
           data_f_covid: output/an_outcome_first_rsv_2021.arrow
 
   tables:
-      run: r:v2 analysis/descriptive_analysis.R 
+      run: r:v2 analysis/1_1_tables.R 
       needs: 
         - data_process_bl
         - data_process_outcome_covid_2021
@@ -297,11 +297,9 @@ actions:
           table_r: output/tables/baseline_table_covid_r.csv
           table_flu_rsv_r: output/tables/baseline_table_flu_rsv_r.csv
           table_out_c: output/tables/count_*.csv
-          plots: output/tables/plot_*.svg
-          table_cox: output/tables/cox_models*.csv
         
   rates:
-      run: r:v2 analysis/rates.R 
+      run: r:v2 analysis/1_2_rates.R 
       needs: 
         - measures_covid
         - measures_flu_2018
@@ -316,4 +314,41 @@ actions:
         moderately_sensitive:
           rates_covid: output/tables/rounded_rates_*.csv
 
-  
+  cox_models:
+      run: r:v2 analysis/1_3_cox_models.R 
+      needs: 
+        - data_process_bl
+        - data_process_outcome_covid_2021
+        - data_process_outcome_flu_2018
+        - data_process_outcome_rsv_2018
+        - data_process_outcome_flu_2021
+        - data_process_outcome_rsv_2021
+      outputs:
+        moderately_sensitive:
+          table_cox: output/tables/cox_models.csv
+
+  cox_models_strat:
+      run: r:v2 analysis/1_4_cox_models_stratified.R 
+      needs: 
+        - data_process_bl
+        - data_process_outcome_covid_2021
+        - data_process_outcome_flu_2018
+        - data_process_outcome_rsv_2018
+        - data_process_outcome_flu_2021
+        - data_process_outcome_rsv_2021
+      outputs:
+        moderately_sensitive:
+          table_cox_s: output/tables/cox_models_stratified.csv
+
+  km_plots:
+      run: r:v2 analysis/1_5_km_plots.R
+      needs: 
+        - data_process_bl
+        - data_process_outcome_covid_2021
+        - data_process_outcome_flu_2018
+        - data_process_outcome_rsv_2018
+        - data_process_outcome_flu_2021
+        - data_process_outcome_rsv_2021
+      outputs:
+        moderately_sensitive:
+          plots: output/tables/plot_*.svg
