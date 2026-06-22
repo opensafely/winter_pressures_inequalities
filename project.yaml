@@ -314,31 +314,95 @@ actions:
         moderately_sensitive:
           rates_covid: output/tables/rounded_rates_*.csv
 
-  cox_models:
-      run: r:v2 analysis/1_3_cox_models.R 
+  cox_models_covid_2021:
+      run: r:v2 analysis/1_3_cox_models.R covid_2021 
       needs: 
         - data_process_bl
         - data_process_outcome_covid_2021
-        - data_process_outcome_flu_2018
-        - data_process_outcome_rsv_2018
-        - data_process_outcome_flu_2021
-        - data_process_outcome_rsv_2021
       outputs:
         moderately_sensitive:
-          table_cox: output/tables/cox_models.csv
+          table_cox: output/tables/cox_models_covid_2021.csv
 
-  cox_models_strat:
-      run: r:v2 analysis/1_4_cox_models_stratified.R 
+  cox_models_flu_2018:
+      run: r:v2 analysis/1_3_cox_models.R flu_2018 
       needs: 
         - data_process_bl
-        - data_process_outcome_covid_2021
         - data_process_outcome_flu_2018
-        - data_process_outcome_rsv_2018
+      outputs:
+        moderately_sensitive:
+          table_cox: output/tables/cox_models_flu_2018.csv
+
+  cox_models_flu_2021:
+      run: r:v2 analysis/1_3_cox_models.R flu_2021 
+      needs: 
+        - data_process_bl
         - data_process_outcome_flu_2021
+      outputs:
+        moderately_sensitive:
+          table_cox: output/tables/cox_models_flu_2021.csv
+
+  cox_models_rsv_2018:
+      run: r:v2 analysis/1_3_cox_models.R rsv_2018 
+      needs: 
+        - data_process_bl
+        - data_process_outcome_rsv_2018
+      outputs:
+        moderately_sensitive:
+          table_cox: output/tables/cox_models_rsv_2018.csv
+
+  cox_models_rsv_2021:
+      run: r:v2 analysis/1_3_cox_models.R rsv_2021 
+      needs: 
+        - data_process_bl
         - data_process_outcome_rsv_2021
       outputs:
         moderately_sensitive:
-          table_cox_s: output/tables/cox_models_stratified.csv
+          table_cox: output/tables/cox_models_rsv_2021.csv
+
+  cox_models_strat_covid_2021:
+      run: r:v2 analysis/1_4_cox_models_stratified.R covid_2021
+      needs: 
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          table_cox_s: output/tables/cox_models_stratified_covid_2021.csv
+
+  cox_models_strat_flu_2018:
+      run: r:v2 analysis/1_4_cox_models_stratified.R flu_2018
+      needs: 
+        - data_process_bl
+        - data_process_outcome_flu_2018
+      outputs:
+        moderately_sensitive:
+          table_cox_s: output/tables/cox_models_stratified_flu_2018.csv
+
+  cox_models_strat_flu_2021:
+      run: r:v2 analysis/1_4_cox_models_stratified.R flu_2021
+      needs: 
+        - data_process_bl
+        - data_process_outcome_flu_2021
+      outputs:
+        moderately_sensitive:
+          table_cox_s: output/tables/cox_models_stratified_flu_2021.csv
+
+  cox_models_strat_rsv_2018:
+      run: r:v2 analysis/1_4_cox_models_stratified.R rsv_2018
+      needs: 
+        - data_process_bl
+        - data_process_outcome_rsv_2018
+      outputs:
+        moderately_sensitive:
+          table_cox_s: output/tables/cox_models_stratified_rsv_2018.csv
+
+  cox_models_strat_rsv_2021:
+      run: r:v2 analysis/1_4_cox_models_stratified.R rsv_2021
+      needs: 
+        - data_process_bl
+        - data_process_outcome_rsv_2021
+      outputs:
+        moderately_sensitive:
+          table_cox_s: output/tables/cox_models_stratified_rsv_2021.csv
 
   km_plots:
       run: r:v2 analysis/1_5_km_plots.R

@@ -20,13 +20,9 @@ source(here::here("analysis", "redaction.R"))
 outdir <- here("output", "tables")
 fs::dir_create(outdir)
 
-#define function for midpoint 6 rounding
-roundmid_any <- function(x, to = 6) {
-  
-  # like round_any, but centers on (integer) midpoint of the rounding points
-  ceiling(x/to)*to - (floor(to/2)*(x != 0))
-  
-}
+args <- commandArgs(trailingOnly = TRUE)
+
+disease <- args[1]
 
 # # Cox PH models to measure differences in utilisation by ethnicity and IMD
 run_cox_models <- function(disease, difference, adjustment) {
@@ -34,21 +30,21 @@ run_cox_models <- function(disease, difference, adjustment) {
         file_path <- paste0("an_outcome_first_",disease,".arrow")
         data_df <- read_feather(here("output", file_path), as_data_frame = TRUE)
 
-        # Ensure factor + set reference
-        if (difference == "ethnicity6_combined") {
-                data_df[[difference]] <- factor(data_df[[difference]])
-                data_df[[difference]] <- relevel(data_df[[difference]], ref = "White")
-        }
+        # # Ensure factor + set reference
+        # if (difference == "ethnicity6_combined") {
+        #         data_df[[difference]] <- factor(data_df[[difference]])
+        #         data_df[[difference]] <- relevel(data_df[[difference]], ref = "White")
+        # }
 
-        if (difference == "ethnicity16_combined") {
-                data_df[[difference]] <- factor(data_df[[difference]])
-                data_df[[difference]] <- relevel(data_df[[difference]], ref = "White British")
-        }
+        # if (difference == "ethnicity16_combined") {
+        #         data_df[[difference]] <- factor(data_df[[difference]])
+        #         data_df[[difference]] <- relevel(data_df[[difference]], ref = "White British")
+        # }
 
-        if (difference == "imd_quintile") {
-                data_df[[difference]] <- factor(data_df[[difference]])
-                data_df[[difference]] <- relevel(data_df[[difference]], ref = "5") 
-        }
+        # if (difference == "imd_quintile") {
+        #         data_df[[difference]] <- factor(data_df[[difference]])
+        #         data_df[[difference]] <- relevel(data_df[[difference]], ref = "5") 
+        # }
         
         # Define adjustment terms
         adj_vars <- switch(adjustment,
@@ -113,12 +109,11 @@ run_cox_models <- function(disease, difference, adjustment) {
         return(new_rows)
 }
 
-diseases <- c("covid_2021", "flu_2018", "rsv_2018", "flu_2021", "rsv_2021")
 by_vars <- c("imd_quintile", "ethnicity6_combined", "ethnicity16_combined")
 adjustments <- c("unadjusted", "age_sex", "migration", "area", "health")
 
 param_grid <- expand.grid(
-  disease = diseases, 
+  disease = disease, 
   difference = by_vars, 
   adjustment = adjustments,
   stringsAsFactors = FALSE
@@ -134,5 +129,5 @@ cox_table <- cox_table %>%
                 mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 2))) %>%
                 # don't need std.error or statistic
                 select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "adjustment")
-
-write_csv(cox_table, file.path(outdir, "cox_models.csv"))
+file_name <- paste0("cox_models_",disease,".csv")
+write_csv(cox_table, file.path(outdir, file_name))
