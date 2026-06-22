@@ -89,13 +89,11 @@ prepare_data <- function(file_patterns, output_file) {
                 is.na(ethnicity16_from_codes), if_else(is.na(ethnicity16_from_sus), "Unknown", ethnicity16_from_sus), 
                 ethnicity16_from_codes
             ),
-            imd_quintile = na_if(imd_quintile, 99),
-            imd_quintile = factor(imd_quintile),
-            imd_quintile = forcats::fct_na_value_to_level(imd_quintile, level = "Missing"),
+            imd_quintile = forcats::fct_na_value_to_level(factor(na_if(imd_quintile, 99)), level = "Missing"),
             migrant = factor(migrant),
-            migrant = forcats::fct_na_value_to_level(migrant, level = "Missing"),
+            #migrant = forcats::fct_na_value_to_level(migrant, level = "Missing"),
             english_language = factor(english_language),
-            english_language = forcats::fct_na_value_to_level(english_language, level = "Missing"),
+            #english_language = forcats::fct_na_value_to_level(english_language, level = "Missing"),
         )
     print("Check ethnicity GP variable after recoding")
     print(table(cr_data$ethnicity6_gp, cr_data$ethnicity6_from_codes, useNA = "always"))
