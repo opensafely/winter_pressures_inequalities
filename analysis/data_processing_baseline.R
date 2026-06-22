@@ -89,9 +89,7 @@ prepare_data <- function(file_patterns, output_file) {
                 is.na(ethnicity16_from_codes), if_else(is.na(ethnicity16_from_sus), "Unknown", ethnicity16_from_sus), 
                 ethnicity16_from_codes
             ),
-            imd_quintile = na_if(imd_quintile, 99),
-            imd_quintile = factor(imd_quintile),
-            imd_quintile = forcats::fct_na_value_to_level(imd_quintile, level = "Missing"),
+            imd_quintile = forcats::fct_na_value_to_level(factor(na_if(imd_quintile, 99)), level = "Missing"),
             migrant = factor(migrant),
             #migrant = forcats::fct_na_value_to_level(migrant, level = "Missing"),
             english_language = factor(english_language),
