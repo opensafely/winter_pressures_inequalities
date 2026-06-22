@@ -182,7 +182,7 @@ actions:
 
   measures_rsv_age_2021: 
       run: >
-        ehrql:v1 generate-measures analysis/measures_rsv.py
+        ehrql:v1 generate-measures analysis/measures_rsv_age.py
         --output output/measures/measures_rsv_age_2021.csv 
         --
         --start-date 2021-09-01
@@ -193,7 +193,7 @@ actions:
 
   measures_rsv_age_2023: 
       run: >
-        ehrql:v1 generate-measures analysis/measures_rsv.py
+        ehrql:v1 generate-measures analysis/measures_rsv_age.py
         --output output/measures/measures_rsv_age_2023.csv 
         --
         --start-date 2023-09-01
