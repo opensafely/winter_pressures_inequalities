@@ -38,19 +38,20 @@ var_labels_list <- list(
                 age_group ~ "Age group",
                 imd_quintile ~ "IMD quintile",
                 ethnicity16_combined ~ "Ethnicity (16 groups)",
-                sex ~ "N Sex",
+                sex ~ "Sex",
                 urban_rural_5 ~ "Urban-rural classification",
-                migrant ~ "Migrant N",
+                migrant ~ "Migrant",
                 english_language ~ "English not main language spoken",
                 flu_atrisk_grp ~ "Flu clinical risk group",
-                covid_atrisk_grp ~ "COVID-19 clinical risk group"
+                covid_atrisk_grp ~ "COVID-19 clinical risk group",
+                bmi_category ~ "BMI category"
                 )
 
 # COVID cohort baseline table by ethnicity
 desc_covid_by <- baseline_covid %>% 
         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
         urban_rural_5, imd_quintile, migrant, english_language, 
-        flu_atrisk_grp, covid_atrisk_grp) %>% 
+        flu_atrisk_grp, covid_atrisk_grp, bmi_category) %>% 
         mutate(ethnicity6_combined = fct_na_value_to_level(
                 ethnicity6_combined, 
                 level = "Missing")) %>%
@@ -81,7 +82,7 @@ write_csv(desc_covid_by$table_body, file.path(outdir, "baseline_table_covid.csv"
 desc_flu_rsv_by <- baseline_flu_rsv %>% 
         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
                urban_rural_5, imd_quintile, migrant, english_language, 
-               flu_atrisk_grp, covid_atrisk_grp) %>% 
+               flu_atrisk_grp, covid_atrisk_grp, bmi_category) %>% 
         mutate(ethnicity6_combined = fct_na_value_to_level(ethnicity6_combined, level = "Missing")) %>%
         tbl_summary(
                 missing = "no",

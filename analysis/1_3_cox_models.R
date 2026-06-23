@@ -52,7 +52,7 @@ run_cox_models <- function(disease, difference, adjustment) {
                 "age_sex"     = " + age_group + sex",
                 "migration"        = " + age_group + sex + migrant + english_language",
                 "area"  = " + age_group + sex + imd_quintile + urban_rural_5",
-                "health" = " + age_group + sex + vacc_elig_covid + vacc_elig_flu + vacc_elig_rsv + prior_flu_vaccination + prior_covid_vaccination + prior_rsv_vaccination + bmi",
+                "health" = " + age_group + sex + vacc_elig_covid + vacc_elig_flu + vacc_elig_rsv + prior_flu_vaccination + prior_covid_vaccination + bmi_category",
                 stop("Unknown adjustment: ", adjustment)
         )
 
@@ -62,18 +62,13 @@ run_cox_models <- function(disease, difference, adjustment) {
                                   difference, adj_vars, " + strata(", strata_var, ")"))
         }
 
+        # define Cox model formulas
         f_gp     <- make_formula("start", "stop_gp",      "gp_binary",      "year_end_gp")
         f_gp_sens <- make_formula("start", "stop_gp_sens", "gp_sens_binary", "year_end_gp")
         f_sc     <- make_formula("start", "stop_sc",      "sc_binary",      "year_end_sc")
         f_emerg  <- make_formula("start", "stop_emerg",   "emerg_binary",   "year_end_emerg")
 
-
-        # define Cox model formulas
-        f_gp <- as.formula(paste0("Surv(start, stop_gp, gp_binary) ~ ", difference, " + strata(year_end_gp)"))
-        f_gp_sens <- as.formula(paste0("Surv(start, stop_gp_sens, gp_sens_binary) ~ ", difference, " + strata(year_end_gp)"))
-        f_sc <- as.formula(paste0("Surv(start, stop_sc, sc_binary) ~ ", difference, " + strata(year_end_sc)"))
-        f_emerg <- as.formula(paste0("Surv(start, stop_emerg, emerg_binary) ~ ", difference, " + strata(year_end_emerg)"))
-        # Helper to either fit model or return redacted row
+        # # Helper to either fit model or return redacted row
         fit_or_redact <- function(formula, binary_var, outcome_name) {
                 n_events <- sum(data_df[[binary_var]] == 1, na.rm = TRUE)
                 if (n_events > 7) {
@@ -123,7 +118,7 @@ cox_table <- pmap_dfr(
   param_grid,
   function(disease, difference, adjustment) run_cox_models(disease, difference, adjustment)
 )
-print(head(cox_table))
+print(cox_table)
 
 cox_table <- cox_table %>% 
                 mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 2))) %>%
