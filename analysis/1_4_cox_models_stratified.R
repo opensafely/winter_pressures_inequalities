@@ -151,7 +151,7 @@ cox_table_stratified <- pmap_dfr(param_grid_strat, function(disease, difference,
 cox_table_stratified <- cox_table_stratified %>% 
                 mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 2))) %>%
                 # don't need std.error or statistic
-                select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "strat_var", "strat_level", "redacted", "redact_reason")
+                select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "strat_var", "strat_level")
 
 file_name <- paste0("cox_models_stratified_",disease,".csv")
 
