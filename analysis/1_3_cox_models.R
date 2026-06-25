@@ -30,21 +30,21 @@ run_cox_models <- function(disease, difference, adjustment) {
         file_path <- paste0("an_outcome_first_",disease,".arrow")
         data_df <- read_feather(here("output", file_path), as_data_frame = TRUE)
 
-        # # Ensure factor + set reference
-        # if (difference == "ethnicity6_combined") {
-        #         data_df[[difference]] <- factor(data_df[[difference]])
-        #         data_df[[difference]] <- relevel(data_df[[difference]], ref = "White")
-        # }
+        # Ensure factor + set reference
+        if (difference == "ethnicity6_combined") {
+                data_df[[difference]] <- factor(data_df[[difference]])
+                data_df[[difference]] <- relevel(data_df[[difference]], ref = "White")
+        }
 
-        # if (difference == "ethnicity16_combined") {
-        #         data_df[[difference]] <- factor(data_df[[difference]])
-        #         data_df[[difference]] <- relevel(data_df[[difference]], ref = "White British")
-        # }
+        if (difference == "ethnicity16_combined") {
+                data_df[[difference]] <- factor(data_df[[difference]])
+                data_df[[difference]] <- relevel(data_df[[difference]], ref = "White British")
+        }
 
-        # if (difference == "imd_quintile") {
-        #         data_df[[difference]] <- factor(data_df[[difference]])
-        #         data_df[[difference]] <- relevel(data_df[[difference]], ref = "5") 
-        # }
+        if (difference == "imd_quintile") {
+                data_df[[difference]] <- factor(data_df[[difference]])
+                data_df[[difference]] <- relevel(data_df[[difference]], ref = "5") 
+        }
         
         # Define adjustment terms
         adj_vars <- switch(adjustment,
