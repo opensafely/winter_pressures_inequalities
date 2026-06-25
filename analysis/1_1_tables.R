@@ -25,13 +25,22 @@ source(here::here("analysis", "redaction.R"))
 outdir <- here("output", "tables")
 fs::dir_create(outdir)
 
+# Define BMI categories
+bmi_levels <- c("Ideal", "Underweight", "Overweight", "Obese", "Unknown or outlier", "Missing")
+
 #Creating baseline tables - first import data
-baseline_covid <- read_feather(here("output/an_bl_data_covid.arrow")) %>% 
+baseline_covid_2021 <- read_feather(here("output/an_bl_data_covid_2021.arrow")) %>% 
         mutate(imd_quintile = as.factor(imd_quintile),
-        min_yr_start = as.factor(min_start_yr))
-baseline_flu_rsv <- read_feather(here("output/an_bl_data_flu_rsv.arrow"))%>% 
+        min_yr_start = as.factor(min_start_yr),
+        bmi_category = factor(bmi_category, levels = bmi_levels))
+baseline_flu_rsv_2021 <- read_feather(here("output/an_bl_data_flu_rsv_2021.arrow"))%>% 
         mutate(imd_quintile = as.factor(imd_quintile),
-        min_yr_start = as.factor(min_start_yr))
+        min_yr_start = as.factor(min_start_yr),
+        bmi_category = factor(bmi_category, levels = bmi_levels))
+baseline_flu_rsv_2018 <- read_feather(here("output/an_bl_data_flu_rsv_2018.arrow"))%>% 
+        mutate(imd_quintile = as.factor(imd_quintile),
+        min_yr_start = as.factor(min_start_yr),
+        bmi_category = factor(bmi_category, levels = bmi_levels))
 
 var_labels_list <- list(
                 min_start_yr ~ "Baseline year",
@@ -48,7 +57,7 @@ var_labels_list <- list(
                 )
 
 # COVID cohort baseline table by ethnicity
-desc_covid_by <- baseline_covid %>% 
+desc_covid_by <- baseline_covid_2021 %>% 
         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
         urban_rural_5, imd_quintile, migrant, english_language, 
         flu_atrisk_grp, covid_atrisk_grp, bmi_category) %>% 
@@ -79,7 +88,7 @@ write_csv(desc_covid_by$table_body, file.path(outdir, "baseline_table_covid.csv"
 # # Flu/RSV cohort baseline table by ethnicity
 # # Grouped table
 
-desc_flu_rsv_by <- baseline_flu_rsv %>% 
+desc_flu_rsv_2021_by <- baseline_flu_rsv_2021 %>% 
         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
                urban_rural_5, imd_quintile, migrant, english_language, 
                flu_atrisk_grp, covid_atrisk_grp, bmi_category) %>% 
@@ -93,8 +102,29 @@ desc_flu_rsv_by <- baseline_flu_rsv %>%
         modify_header(all_stat_cols() ~ "{level}") 
         
 # # Apply redactions to baseline table
-desc_flu_rsv_redact_round <- fn_redact_tbl_summary(
-        tbl_summary = desc_flu_rsv_by, 
+desc_flu_rsv_2021_redact_round <- fn_redact_tbl_summary(
+        tbl_summary = desc_flu_rsv_2021_by, 
+        threshold = 7,
+        col_names  = c( "stat_0", "stat_1", "stat_2", "stat_3", "stat_4", "stat_5", "stat_6"),
+        rename_cols = c("Overall", "Asian", "Black", "Chinese", "Missing", "Mixed", "White")
+        ) 
+
+desc_flu_rsv_2018_by <- baseline_flu_rsv_2018 %>% 
+        select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
+               urban_rural_5, imd_quintile, migrant, english_language, 
+               flu_atrisk_grp, covid_atrisk_grp, bmi_category) %>% 
+        mutate(ethnicity6_combined = fct_na_value_to_level(ethnicity6_combined, level = "Missing")) %>%
+        tbl_summary(
+                missing = "no",
+                by = ethnicity6_combined,
+                label = var_labels_list
+        )%>% 
+        add_overall(last = FALSE) %>% 
+        modify_header(all_stat_cols() ~ "{level}") 
+        
+# # Apply redactions to baseline table
+desc_flu_rsv_2018_redact_round <- fn_redact_tbl_summary(
+        tbl_summary = desc_flu_rsv_2018_by, 
         threshold = 7,
         col_names  = c( "stat_0", "stat_1", "stat_2", "stat_3", "stat_4", "stat_5", "stat_6"),
         rename_cols = c("Overall", "Asian", "Black", "Chinese", "Missing", "Mixed", "White")
@@ -129,8 +159,10 @@ desc_flu_rsv_redact_round <- fn_redact_tbl_summary(
 #                 values_from = value
 #         )
 # # saving both rounded/redacted and not rpound/redacted versions
-write_csv(desc_flu_rsv_redact_round, file.path(outdir, "baseline_table_flu_rsv_r.csv"))
-write_csv(desc_flu_rsv_by$table_body, file.path(outdir, "baseline_table_flu_rsv.csv"))
+write_csv(desc_flu_rsv_2018_redact_round, file.path(outdir, "baseline_table_flu_rsv_2018_r.csv"))
+write_csv(desc_flu_rsv_2018_by$table_body, file.path(outdir, "baseline_table_flu_rsv_2018.csv"))
+write_csv(desc_flu_rsv_2021_redact_round, file.path(outdir, "baseline_table_flu_rsv_2021_r.csv"))
+write_csv(desc_flu_rsv_2021_by$table_body, file.path(outdir, "baseline_table_flu_rsv_2021.csv"))
 
 # # Table of outcomes - first event for Cox models
 outcomes_covid_2021 <- read_feather(here("output/an_outcome_first_covid_2021.arrow")) 
