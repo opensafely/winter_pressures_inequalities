@@ -294,8 +294,6 @@ actions:
         moderately_sensitive:
           table: output/tables/baseline_table_covid*.csv
           table_flu_rsv: output/tables/baseline_table_flu_rsv*.csv
-          table_r: output/tables/baseline_table_covid_r.csv
-          table_flu_rsv_r: output/tables/baseline_table_flu_rsv_r.csv
           table_out_c: output/tables/count_*.csv
         
   rates:
