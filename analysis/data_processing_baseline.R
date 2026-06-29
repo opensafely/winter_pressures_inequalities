@@ -114,10 +114,20 @@ prepare_data <- function(file_patterns, output_file) {
     rm(cr_data)
 }
 
-prepare_data(list.files("output", pattern = "dataset_covid_.*\\.arrow", full.names = TRUE),
-"an_bl_data_covid.arrow")
+# Define your files explicitly
+covid_files <- list.files("output", pattern = "dataset_covid_.*\\.arrow", full.names = TRUE)
+flu_rsv_files <- list.files("output", pattern = "dataset_flu_rsv_.*\\.arrow", full.names = TRUE)
 
-prepare_data(list.files("output", pattern = "dataset_flu_rsv_.*\\.arrow", full.names = TRUE),
-"an_bl_data_flu_rsv.arrow")
+# Helper to filter files by year range
+filter_years <- function(files, years) {
+  files[as.numeric(gsub("\\D", "", basename(files))) %in% years]
+}
+
+# 2018-2019
+prepare_data(filter_years(flu_rsv_files, 2018:2019), "an_bl_data_flu_rsv_2018.arrow")
+
+# 2021-2024
+prepare_data(filter_years(covid_files, 2021:2024), "an_bl_data_covid_2021.arrow")
+prepare_data(filter_years(flu_rsv_files, 2021:2024), "an_bl_data_flu_rsv_2021.arrow")
 
 

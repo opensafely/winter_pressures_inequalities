@@ -196,7 +196,8 @@ cr_data %>%
 
 
 # safety checks before join
-bl_file <- paste0("an_bl_data_",file,".arrow")
+bl_file <- paste0("an_bl_data_",file,"_",min_year,".arrow")
+print(bl_file)
 outcomes <- read_rds(here("output", output_file))
 baseline <- read_feather(here("output", bl_file), as_data_frame = TRUE)
 
