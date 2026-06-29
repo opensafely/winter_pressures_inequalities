@@ -23,12 +23,16 @@ fs::dir_create(outdir)
 args <- commandArgs(trailingOnly = TRUE)
 
 disease <- args[1]
+adj_yr <- args[2]
 
 # # Cox PH models to measure differences in utilisation by ethnicity and IMD
 run_cox_models <- function(disease, difference, adjustment) {
         # Build filename and read dataset
         file_path <- paste0("an_outcome_first_",disease,".arrow")
         data_df <- read_feather(here("output", file_path), as_data_frame = TRUE)
+
+        message(paste0("Disease: ", disease, " | Difference: ", difference, " | Adjustment: ", adjustment))
+        #if (nrow(data_df) == 0) stop("Empty dataset for: ", file_path)
 
         # Ensure factor + set reference
         if (difference == "ethnicity6_combined") {
@@ -46,13 +50,14 @@ run_cox_models <- function(disease, difference, adjustment) {
                 data_df[[difference]] <- relevel(data_df[[difference]], ref = "5") 
         }
         
-        # Define adjustment terms
+        # Define adjustment terms - taking out rsv eligibility as is same as one of the age groups
         adj_vars <- switch(adjustment,
                 "unadjusted"  = "",
                 "age_sex"     = " + age_group + sex",
                 "migration"        = " + age_group + sex + migrant + english_language",
                 "area"  = " + age_group + sex + imd_quintile + urban_rural_5",
-                "health" = " + age_group + sex + vacc_elig_covid + vacc_elig_flu + vacc_elig_rsv + prior_flu_vaccination + prior_covid_vaccination + bmi_category",
+                "health" = " + age_group + sex + vacc_elig_covid + vacc_elig_flu + prior_flu_vaccination + prior_covid_vaccination + bmi_category",
+                "health_2018" = " + age_group + sex + vacc_elig_flu + prior_flu_vaccination + bmi_category",
                 stop("Unknown adjustment: ", adjustment)
         )
 
@@ -105,14 +110,18 @@ run_cox_models <- function(disease, difference, adjustment) {
 }
 
 by_vars <- c("imd_quintile", "ethnicity6_combined", "ethnicity16_combined")
-adjustments <- c("unadjusted", "age_sex", "migration", "area", "health")
+adjustments_2021 <- c("unadjusted", "age_sex", "migration", "area", "health")
+adjustments_2018 <- c("unadjusted", "age_sex", "migration", "area", "health_2018")
+
+adj <- get(paste0("adjustments_",adj_yr))
 
 param_grid <- expand.grid(
   disease = disease, 
   difference = by_vars, 
-  adjustment = adjustments,
+  adjustment = adj,
   stringsAsFactors = FALSE
   )
+print(param_grid)
 
 cox_table <- pmap_dfr(
   param_grid,

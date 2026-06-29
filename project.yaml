@@ -313,7 +313,7 @@ actions:
           rates_covid: output/tables/rounded_rates_*.csv
 
   cox_models_covid_2021:
-      run: r:v2 analysis/1_3_cox_models.R covid_2021 
+      run: r:v2 analysis/1_3_cox_models.R covid_2021 2021
       needs: 
         - data_process_bl
         - data_process_outcome_covid_2021
@@ -322,7 +322,7 @@ actions:
           table_cox: output/tables/cox_models_covid_2021.csv
 
   cox_models_flu_2018:
-      run: r:v2 analysis/1_3_cox_models.R flu_2018 
+      run: r:v2 analysis/1_3_cox_models.R flu_2018 2018
       needs: 
         - data_process_bl
         - data_process_outcome_flu_2018
@@ -331,7 +331,7 @@ actions:
           table_cox: output/tables/cox_models_flu_2018.csv
 
   cox_models_flu_2021:
-      run: r:v2 analysis/1_3_cox_models.R flu_2021 
+      run: r:v2 analysis/1_3_cox_models.R flu_2021 2021
       needs: 
         - data_process_bl
         - data_process_outcome_flu_2021
@@ -340,7 +340,7 @@ actions:
           table_cox: output/tables/cox_models_flu_2021.csv
 
   cox_models_rsv_2018:
-      run: r:v2 analysis/1_3_cox_models.R rsv_2018 
+      run: r:v2 analysis/1_3_cox_models.R rsv_2018 2018
       needs: 
         - data_process_bl
         - data_process_outcome_rsv_2018
@@ -349,7 +349,7 @@ actions:
           table_cox: output/tables/cox_models_rsv_2018.csv
 
   cox_models_rsv_2021:
-      run: r:v2 analysis/1_3_cox_models.R rsv_2021 
+      run: r:v2 analysis/1_3_cox_models.R rsv_2021 2021
       needs: 
         - data_process_bl
         - data_process_outcome_rsv_2021
