@@ -25,8 +25,8 @@ prepare_data <- function(file_patterns, output_file) {
                 bmi < 25 ~ "ideal",
                 bmi < 30 ~ "overweight",
                 bmi >= 30 ~ "obese",
-                #is.na(bmi) ~ "Missing",
-                #TRUE ~ "Missing",
+                is.na(bmi) ~ "Missing",
+                TRUE ~ "Missing"
             ),
             ethnicity6_from_codes = relevel(factor(ethnicity6_gp,
                                      levels = c("1", "2", "3", "4", "5"),
@@ -105,12 +105,25 @@ prepare_data <- function(file_patterns, output_file) {
             #english_language = factor(english_language),
             #english_language = forcats::fct_na_value_to_level(english_language, level = "Missing"),
         )
+    
     print("Check ethnicity GP variable after recoding")
     print(table(cr_data$ethnicity6_gp, cr_data$ethnicity6_from_codes, useNA = "always"))
     print("Check ethnicity SUS variable after recoding")
     print(table(cr_data$ethnicity_sus, cr_data$ethnicity6_from_sus, useNA = "always"))
     print("Check BMI")
     print(summary(cr_data$bmi))
+    bmi_summary <- cr_data %>%
+    group_by(bmi_category) %>%
+    summarise(
+        n = n(),
+        min_bmi = min(bmi, na.rm = TRUE),
+        max_bmi = max(bmi, na.rm = TRUE),
+        mean_bmi = mean(bmi, na.rm = TRUE),
+        median_bmi = median(bmi, na.rm = TRUE),
+        n_na_bmi = sum(is.na(bmi))
+    )
+    print(bmi_summary)
+    
     cr_data %>%
         select(
             patient_id, min_start_yr, ethnicity6_combined, ethnicity16_combined, sex,
