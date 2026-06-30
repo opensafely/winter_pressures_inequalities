@@ -30,7 +30,7 @@ run_cox_models <- function(disease, difference, adjustment) {
         # Build filename and read dataset
         file_path <- paste0("an_outcome_first_",disease,".arrow")
         data_df <- read_feather(here("output", file_path), as_data_frame = TRUE)
-
+        
         message(paste0("Disease: ", disease, " | Difference: ", difference, " | Adjustment: ", adjustment))
         #if (nrow(data_df) == 0) stop("Empty dataset for: ", file_path)
 
@@ -50,14 +50,23 @@ run_cox_models <- function(disease, difference, adjustment) {
                 data_df[[difference]] <- relevel(data_df[[difference]], ref = "5") 
         }
         
+        # Make sure age and sex are unordered factors
+        data_df <- data_df %>% 
+                mutate(
+                        age_group = relevel(factor(as.character(age_group), ordered = FALSE), ref = "adult_under_65"),
+                        sex = factor(as.character(sex), ordered = FALSE),
+                        urban_rural_5 = factor(as.character(urban_rural_5), ordered = FALSE)
+                        )
+
         # Define adjustment terms - taking out rsv eligibility as is same as one of the age groups
+        # taking out BMI for now as problems identifying
         adj_vars <- switch(adjustment,
                 "unadjusted"  = "",
                 "age_sex"     = " + age_group + sex",
                 "migration"        = " + age_group + sex + migrant + english_language",
                 "area"  = " + age_group + sex + imd_quintile + urban_rural_5",
-                "health" = " + age_group + sex + vacc_elig_covid + vacc_elig_flu + prior_flu_vaccination + prior_covid_vaccination + bmi_category",
-                "health_2018" = " + age_group + sex + vacc_elig_flu + prior_flu_vaccination + bmi_category",
+                "health" = " + age_group + sex + vacc_elig_covid + vacc_elig_flu + prior_flu_vacc_bin + prior_covid_vacc_bin",
+                "health_2018" = " + age_group + sex + vacc_elig_flu + prior_flu_vacc_bin",
                 stop("Unknown adjustment: ", adjustment)
         )
 

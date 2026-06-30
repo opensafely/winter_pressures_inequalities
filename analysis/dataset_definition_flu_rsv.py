@@ -170,7 +170,7 @@ dataset.prior_flu_vaccination = (
 vaccinations.where(vaccinations.target_disease.is_in(["INFLUENZA"]))
 .sort_by(vaccinations.date)
 .where(vaccinations.date.is_on_or_between(start_date - years(1), start_date - days(1)))
-.exists_for_patient()
+.last_for_patient().date
 )
 
 #extract flu vaccination in current season
@@ -222,23 +222,28 @@ bmi_record = clinical_events.where(
 dataset.bmi = bmi_record.numeric_value
 dataset.bmi_date = bmi_record.date
 
-
 # Migrant status
-# has_prior_event function takes event any time before the start date
-dataset.migrant = has_prior_event(codelists.migrant_codelist, start_date)
+migrant_status = has_prior_event(codelists.migrant_codelist, start_date)
+entry_uk = has_prior_event(codelists.entry_uk_codelist, start_date)
+born_in_uk = has_prior_event(codelists.born_in_uk_codelist, start_date)
+british_ethnicities = has_prior_event(codelists.british_ethnicities_codelist, start_date)
 
-# Date entered UK
-#dataset.uk_entry_date = clinical_events.where(
-#        clinical_events.snomedct_code.is_in(codelists.entry_uk_codelist)
-#    ).where(
-#        clinical_events.date.is_on_or_before(start_date)
-#    ).sort_by(
-#        clinical_events.date
-#    ).first_for_patient().date
-
+dataset.migrant = case(
+   when(migrant_status).then("Migrant"),
+   when(entry_uk).then("Non-migrant"),
+   when(british_ethnicities).then("Non-migrant"),
+   otherwise="Unknown"
+)
 
 # English language proficiency
-dataset.english_language = has_prior_event(codelists.english_language_codelist, start_date)
+english_spoken = has_prior_event(codelists.english_language_codelist, start_date)
+interpreter = has_prior_event(codelists.interpreter_codelist, start_date)
+
+dataset.english_language = case(
+   when(english_spoken).then(True),
+   when(interpreter).then(True),
+   otherwise=False
+)
 
 # Define outcomes 
 # Flu outcome

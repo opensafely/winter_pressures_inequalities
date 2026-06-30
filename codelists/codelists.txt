@@ -28,9 +28,11 @@ opensafely/influenza-exclusion-primary-care-maximal-sensitivity/6989cacc/
 opensafely/acute-respiratory-illness-secondary-care/532d178d/
 opensafely/influenza-exclusion-secondary-care-maximal-sensitivity/18f5f141/
 
-opensafely/migration-status/4095ab22
-user/YaminaB/migration-status/47586e6d
-user/ruthcostello/english-language-proficiency/5c8fc8d4 
+opensafely/migration-status/03277ba3
+opensafely/born-in-the-uk/4aa36068/
+opensafely/british-ethnicities/6a897fb0/
+opensafely/english-not-main-language/0eb92f0a/ 
+opensafely/interpreter-required/5734c8b3/
 
 nhsd-primary-care-domain-refsets/hyp_cod/20250627
 nhsd-primary-care-domain-refsets/ast_cod/20250627

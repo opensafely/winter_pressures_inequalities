@@ -260,7 +260,8 @@ count_outcomes <- function(disease,
         (Events_mid6 / Person_time_mid6) * rate_multiplier,
         5
       )
-    )
+    ) %>% 
+    select(-N, -Events, -Person_time)
 
   write_csv(
     counts,

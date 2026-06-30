@@ -151,22 +151,34 @@
       "sha": "1086f49c7646b98bf1c8f9fea7fbe27da125eb02"
     },
     "opensafely-migration-status.csv": {
-      "id": "opensafely/migration-status/4095ab22",
-      "url": "https://www.opencodelists.org/codelist/opensafely/migration-status/4095ab22/",
-      "downloaded_at": "2026-01-22 17:12:26.892198Z",
-      "sha": "93be296d33160a9d041c9cce118ea00659c0fd34"
+      "id": "opensafely/migration-status/03277ba3",
+      "url": "https://www.opencodelists.org/codelist/opensafely/migration-status/03277ba3/",
+      "downloaded_at": "2026-06-29 14:14:04.528181Z",
+      "sha": "f71b5b916caff6c92326466f2ce05d040e778af5"
     },
-    "user-YaminaB-migration-status.csv": {
-      "id": "user/YaminaB/migration-status/47586e6d",
-      "url": "https://www.opencodelists.org/codelist/user/YaminaB/migration-status/47586e6d/",
-      "downloaded_at": "2025-05-07 13:50:41.740655Z",
-      "sha": "e24f799bcf0ff98fa34240696268ec7c1b71cb1e"
+    "opensafely-born-in-the-uk.csv": {
+      "id": "opensafely/born-in-the-uk/4aa36068",
+      "url": "https://www.opencodelists.org/codelist/opensafely/born-in-the-uk/4aa36068/",
+      "downloaded_at": "2026-06-29 14:14:04.614077Z",
+      "sha": "43b8618968d5a6baf9ce130ea54c27b6a6aa2716"
     },
-    "user-ruthcostello-english-language-proficiency.csv": {
-      "id": "user/ruthcostello/english-language-proficiency/5c8fc8d4",
-      "url": "https://www.opencodelists.org/codelist/user/ruthcostello/english-language-proficiency/5c8fc8d4/",
-      "downloaded_at": "2025-04-28 15:37:54.129784Z",
-      "sha": "d8789c0899fd69f2c5fd7d848bc78d0a951c28e1"
+    "opensafely-british-ethnicities.csv": {
+      "id": "opensafely/british-ethnicities/6a897fb0",
+      "url": "https://www.opencodelists.org/codelist/opensafely/british-ethnicities/6a897fb0/",
+      "downloaded_at": "2026-06-29 14:38:12.084711Z",
+      "sha": "b29fb0154f75840482e61f4a66d62af208b31529"
+    },
+    "opensafely-english-not-main-language.csv": {
+      "id": "opensafely/english-not-main-language/0eb92f0a",
+      "url": "https://www.opencodelists.org/codelist/opensafely/english-not-main-language/0eb92f0a/",
+      "downloaded_at": "2026-06-29 14:14:04.715060Z",
+      "sha": "881fb0517a7d48aedd6e458dbe1f11cea53758fe"
+    },
+    "opensafely-interpreter-required.csv": {
+      "id": "opensafely/interpreter-required/5734c8b3",
+      "url": "https://www.opencodelists.org/codelist/opensafely/interpreter-required/5734c8b3/",
+      "downloaded_at": "2026-06-29 14:14:04.812943Z",
+      "sha": "9d4dafb36cf2896c418e1cff63bae31769e3a797"
     },
     "nhsd-primary-care-domain-refsets-hyp_cod.csv": {
       "id": "nhsd-primary-care-domain-refsets/hyp_cod/20250627",

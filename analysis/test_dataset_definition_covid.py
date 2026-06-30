@@ -14,7 +14,7 @@ test_data = {
         "ons_deaths": [],
         "clinical_events": [
             {
-                "snomedct_code": "185984009", # White British ethnic group
+                "snomedct_code": "154161000", # White British ethnic group
                 "date": date(2015, 1, 1),
             },
             {
@@ -85,7 +85,7 @@ test_data = {
             "age_group": "adult_under_65",
             "urban_rural_5": "Urban major conurbation",
             "ethnicity6_gp": "1",
-            "ethnicity16_gp": "3",
+            "ethnicity16_gp": "1",
             "ethnicity_sus": None,
             "imd_quintile": 1,
             "covid_atrisk_grp": True,
@@ -95,7 +95,7 @@ test_data = {
             "severe_obesity": False,
             "bmi": None,
             "bmi_date": None,
-            "migrant": False,
+            "migrant": "Non-migrant",
             "english_language": False,
             "covid_primary_date": None,
             "covid_sc_date": date(2022, 9, 8),
@@ -227,7 +227,7 @@ test_data = {
             "severe_obesity": False,
             "bmi": None,
             "bmi_date": None,
-            "migrant": False,
+            "migrant": "Unknown",
             "covid_primary_date": None,
             "covid_primary_appt": False,
             "covid_sc_date": None,
@@ -422,7 +422,7 @@ test_data = {
             "severe_obesity": False,
             "bmi": None,
             "bmi_date": None,
-            "migrant": False,
+            "migrant": "Unknown",
             "covid_primary_date": date(2022, 7, 1),
             "covid_primary_appt": True,
             "covid_sc_date": None,
@@ -493,7 +493,7 @@ test_data = {
             "severe_obesity": False,
             "bmi": 42,
             "bmi_date": date(2021, 7, 1),
-            "migrant": True,
+            "migrant": "Migrant",
             "covid_primary_date": None,
             "covid_sc_date": None,
             "covid_emerg_date": None,
@@ -550,7 +550,7 @@ test_data = {
             "severe_obesity": False,
             "bmi": None,
             "bmi_date": None,
-            "migrant": True,
+            "migrant": "Migrant",
             "covid_primary_date": None,
             "covid_sc_date": None,
             "covid_emerg_date": None,

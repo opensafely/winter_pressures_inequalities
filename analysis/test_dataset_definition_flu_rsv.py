@@ -67,7 +67,7 @@ test_data = {
             "severe_obesity": False,
             "bmi": None,
             "bmi_date" : None,
-            "migrant": False,
+            "migrant": "Unknown",
             "english_language": False,
             "flu_primary_date": None,
             "flu_sc_date": None,
@@ -90,7 +90,7 @@ test_data = {
         "ons_deaths": [],
         "clinical_events": [
             {
-                "snomedct_code": "185984009", # White British ethnic group
+                "snomedct_code": "185990008", # Black British ethnic group
                 "date": date(2015, 1, 1),
             },        
         ],
@@ -124,8 +124,8 @@ test_data = {
             "age": 84,
             "age_group": "adult_80+",
             "urban_rural_5": "Urban major conurbation",
-            "ethnicity6_gp": "1",
-            "ethnicity16_gp": "3",
+            "ethnicity6_gp": "4",
+            "ethnicity16_gp": "14",
             "ethnicity_sus": None,
             "imd_quintile": 1,
             "covid_atrisk_grp": False,
@@ -134,7 +134,7 @@ test_data = {
             "severe_obesity": False,
             "bmi": None,
             "bmi_date" : None,
-            "migrant": False,
+            "migrant": "Non-migrant",
             "english_language": False,
             "flu_primary_date": None,
             "flu_sc_date": None,

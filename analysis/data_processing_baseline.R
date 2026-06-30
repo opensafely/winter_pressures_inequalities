@@ -90,15 +90,27 @@ prepare_data <- function(file_patterns, output_file) {
                 ethnicity16_from_codes
             ),
             imd_quintile = forcats::fct_na_value_to_level(factor(na_if(imd_quintile, 99)), level = "Missing"),
-            migrant = factor(migrant),
+            across(c(migrant, english_language, age_group, sex),
+                ~factor(as.character(.x), ordered = FALSE)),
+            prior_covid_vacc_bin = case_when(
+                !is.na(prior_covid_vaccination) ~ "Vaccinated",
+                is.na(prior_covid_vaccination) ~ "Unvaccinated"    
+            ),
+            prior_flu_vacc_bin = case_when(
+                !is.na(prior_flu_vaccination) ~ "Vaccinated",
+                is.na(prior_flu_vaccination) ~ "Unvaccinated"    
+            )
+            #migrant = factor(migrant),
             #migrant = forcats::fct_na_value_to_level(migrant, level = "Missing"),
-            english_language = factor(english_language),
+            #english_language = factor(english_language),
             #english_language = forcats::fct_na_value_to_level(english_language, level = "Missing"),
         )
     print("Check ethnicity GP variable after recoding")
     print(table(cr_data$ethnicity6_gp, cr_data$ethnicity6_from_codes, useNA = "always"))
     print("Check ethnicity SUS variable after recoding")
     print(table(cr_data$ethnicity_sus, cr_data$ethnicity6_from_sus, useNA = "always"))
+    print("Check BMI")
+    print(summary(cr_data$bmi))
     cr_data %>%
         select(
             patient_id, min_start_yr, ethnicity6_combined, ethnicity16_combined, sex,
