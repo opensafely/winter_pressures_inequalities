@@ -20,12 +20,11 @@ prepare_data <- function(file_patterns, output_file) {
             #study_end = as.Date("2025-08-31"),
             #fu_end = pmin(dereg_date, ons_death_date, study_end, na.rm = TRUE),
             bmi_category = case_when(
-                bmi == 0 ~ "unknown or outlier",
-                bmi < 18.5 ~ "underweight",
-                bmi < 25 ~ "ideal",
-                bmi < 30 ~ "overweight",
-                bmi >= 30 ~ "obese",
-                is.na(bmi) ~ "Missing",
+                recent_bmi == 0 ~ "unknown or outlier",
+                recent_bmi < 18.5 ~ "underweight",
+                recent_bmi < 25 ~ "ideal",
+                recent_bmi < 30 ~ "overweight",
+                recent_bmi >= 30 ~ "obese",
                 TRUE ~ "Missing"
             ),
             ethnicity6_from_codes = relevel(factor(ethnicity6_gp,
@@ -111,16 +110,16 @@ prepare_data <- function(file_patterns, output_file) {
     print("Check ethnicity SUS variable after recoding")
     print(table(cr_data$ethnicity_sus, cr_data$ethnicity6_from_sus, useNA = "always"))
     print("Check BMI")
-    print(summary(cr_data$bmi))
+    print(summary(cr_data$recent_bmi))
     bmi_summary <- cr_data %>%
     group_by(bmi_category) %>%
     summarise(
         n = n(),
-        min_bmi = min(bmi, na.rm = TRUE),
-        max_bmi = max(bmi, na.rm = TRUE),
-        mean_bmi = mean(bmi, na.rm = TRUE),
-        median_bmi = median(bmi, na.rm = TRUE),
-        n_na_bmi = sum(is.na(bmi))
+        min_bmi = min(recent_bmi, na.rm = TRUE),
+        max_bmi = max(recent_bmi, na.rm = TRUE),
+        mean_bmi = mean(recent_bmi, na.rm = TRUE),
+        median_bmi = median(recent_bmi, na.rm = TRUE),
+        n_na_bmi = sum(is.na(recent_bmi))
     )
     print(bmi_summary)
     

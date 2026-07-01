@@ -28,7 +28,8 @@ from variable_lib import (
   has_prior_event,
   has_prior_meds,
   is_gp_event,
-  first_gp_event_with_washout
+  first_gp_event_with_washout,
+  most_recent_bmi
 )
 
 from clinical_risk_grps import *
@@ -211,26 +212,9 @@ if start_date.year==2024 :
 # BMI - part of risk groups so defining severe obesity
 dataset.severe_obesity = has_severe_obesity(start_date) 
 ## Latest BMI
-bmi_record = (clinical_events.where(
-        clinical_events.snomedct_code.is_in(codelists.bmi)
-    ).where(
-        (clinical_events.date >= (start_date - years(2))) & (clinical_events.date <= start_date)
-    ).sort_by(
-        clinical_events.date
-    ).last_for_patient()
-)
-
-# clinical_events.snomedct_code.is_in(["60621009", "846931000000101", "301331008"])
-#         # Ignore out-of-range values
-#         & (clinical_events.numeric_value > 4)
-#         & (clinical_events.numeric_value < 200)
-#         & (clinical_events.date >= patients.date_of_birth + years(16))
-#     )
-#     .sort_by(clinical_events.date)
-#     .last_for_patient()
-
-dataset.bmi = bmi_record.numeric_value
-dataset.bmi_date = bmi_record.date
+dataset.recent_bmi_date = most_recent_bmi(start_date).date
+dataset.recent_bmi_age = patients.age_on(dataset.recent_bmi_date)
+dataset.recent_bmi = most_recent_bmi(start_date).numeric_value
 
 # Migrant status
 migrant_status = has_prior_event(codelists.migrant_codelist, start_date)
