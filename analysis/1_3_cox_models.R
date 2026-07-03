@@ -34,6 +34,16 @@ run_cox_models <- function(disease, difference, adjustment) {
         message(paste0("Disease: ", disease, " | Difference: ", difference, " | Adjustment: ", adjustment))
         #if (nrow(data_df) == 0) stop("Empty dataset for: ", file_path)
 
+        print("stop check")
+        print("GP")
+        print(summary(data_df$stop_gp))
+        print("GP sens")
+        print(summary(data_df$stop_gp_sens))
+        print("SC")
+        print(summary(data_df$stop_sc))
+        print("A & E")
+        print(summary(data_df$stop_emerg))
+
         # Ensure factor + set reference
         if (difference == "ethnicity6_combined") {
                 data_df[[difference]] <- factor(data_df[[difference]])

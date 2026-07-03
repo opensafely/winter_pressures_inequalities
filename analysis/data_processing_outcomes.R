@@ -118,6 +118,14 @@ cr_data[, `:=`(
   first_dereg_date = safe_min_date(dereg_date)
 
 ), by = patient_id]
+
+# Checking event dates are after start date and not in the future
+print("Number of events prior to follow-up start")
+event_yr_prior <- cr_data[year(sc_col) < min_start_yr_out, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(event_yr_prior))
+
 # filter to only rows 
 cr_data <- cr_data[min_start_yr_out == year]
 
@@ -135,6 +143,13 @@ cr_data[, `:=`(
     ons_death_date = as.Date(ons_death_date),
     fu_start = as.Date(sprintf("%d-%02d-01", min_start_yr_out, fu_start_month))
 )]
+
+# Checking event dates are after start date and not in the future
+print("Number of events prior to follow-up start")
+events_prior <- cr_data[sc_col < fu_start, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(events_prior))
 
 # safer fu_end with all-NA handling
 
@@ -186,6 +201,28 @@ cr_data[, `:=`(
     year_end_emerg = year(date_stop_emerg),
     year_end = year(date_stop)
     )]
+
+print("Check stop times")
+print("GP")
+neg_gp <- cr_data[stop_gp < fu_start, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(neg_gp))
+print("GP sens")
+neg_gp_sens <- cr_data[stop_gp_sens < fu_start, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(neg_gp_sens))
+print("SC")
+neg_sc <- cr_data[stop_sc < fu_start, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(neg_sc))
+print("AE")
+neg_ae <- cr_data[stop_emerg < fu_start, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(neg_ae))
 
 output_file <- paste0("an_outcome_data_", disease,"_", min_year,".rds")
 # File with outcome data only

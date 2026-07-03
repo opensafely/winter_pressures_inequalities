@@ -28,7 +28,15 @@ test_data = {
         ],
         "apcs": [
             {
-                "admission_date": date(2022, 9, 8),
+                "admission_date": date(2022, 2, 15),
+                "primary_diagnosis": "U071", # covid
+            },
+            {
+                "admission_date": date(2022, 3, 1),
+                "primary_diagnosis": "U071", # covid
+            },
+            {
+                "admission_date": date(2020, 3, 1),
                 "primary_diagnosis": "U071", # covid
             },
         ],
@@ -99,10 +107,10 @@ test_data = {
             "migrant": "Non-migrant",
             "english_language": False,
             "covid_primary_date": None,
-            "covid_sc_date": date(2022, 9, 8),
+            "covid_sc_date": None,
             "covid_emerg_date": None,
-            "has_covid_admission": True,
-            "covid_admission_date": date(2022, 9, 8),
+            "has_covid_admission": False,
+            "covid_admission_date": None,
             "prior_flu_vaccination": date(2021,11,3),
         },
     },
