@@ -11,15 +11,21 @@ prepare_data <- function(file_patterns, output_file) {
         mutate(year = as.numeric(gsub("\\D", "", basename(file_patterns[i]))))
     }))
     print(output_file)
+    print("Check recent_bmi variable type")
+    print(class(cr_data$recent_bmi))
+    print("Summary of recent BMI")
+    print(summary(cr_data$recent_bmi)) 
     cr_data <- cr_data %>%
         group_by(patient_id) %>%
         mutate(min_start_yr = min(year)) %>%
         ungroup() %>%
         filter(min_start_yr == year) %>%
         mutate(
+            recent_bmi = as.numeric(as.character(recent_bmi)),
             #study_end = as.Date("2025-08-31"),
             #fu_end = pmin(dereg_date, ons_death_date, study_end, na.rm = TRUE),
             bmi_category = case_when(
+                is.na(recent_bmi)    ~ "Missing",
                 recent_bmi == 0 ~ "unknown or outlier",
                 recent_bmi < 18.5 ~ "underweight",
                 recent_bmi < 25 ~ "ideal",
