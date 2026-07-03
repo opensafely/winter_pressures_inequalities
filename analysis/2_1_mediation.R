@@ -8,6 +8,7 @@ library(mediation)
 # Need to generate code that may not run on dummy data but can try on real data
 # test with single subgroup
 data_df <- read_feather(here("output/an_outcome_first_covid_2021.arrow"), as_data_frame = TRUE) 
+print(summary(data_df$stop_sc))
 
 data_df_asian <- data_df %>% 
   mutate(stop_sc = if_else(stop_sc == 0, 0.5, stop_sc)) %>% 
