@@ -26,7 +26,7 @@ outdir <- here("output", "tables")
 fs::dir_create(outdir)
 
 # Define BMI categories
-bmi_levels <- c("Ideal", "Underweight", "Overweight", "Obese", "Unknown or outlier", "Missing")
+bmi_levels <- c("ideal", "underweight", "overweight", "obese", "unknown or outlier", "Missing")
 
 #Creating baseline tables - first import data
 baseline_covid_2021 <- read_feather(here("output/an_bl_data_covid_2021.arrow")) %>% 
