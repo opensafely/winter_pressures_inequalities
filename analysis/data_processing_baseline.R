@@ -119,7 +119,8 @@ prepare_data <- function(file_patterns, output_file) {
         max_bmi = max(recent_bmi, na.rm = TRUE),
         mean_bmi = mean(recent_bmi, na.rm = TRUE),
         median_bmi = median(recent_bmi, na.rm = TRUE),
-        n_na_bmi = sum(is.na(recent_bmi))
+        n_na_bmi = sum(is.na(recent_bmi)),
+        n_not_na_bmi = sum(!is.na(recent_bmi))
     )
     print(bmi_summary)
     
