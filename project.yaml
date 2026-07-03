@@ -414,3 +414,16 @@ actions:
       outputs:
         moderately_sensitive:
           plots: output/tables/plot_*.svg
+
+  mediation:
+      run: r:v2 analysis/2_1_mediation.R 
+      needs: 
+        - data_process_bl
+        - data_process_outcome_covid_2021
+        - data_process_outcome_flu_2018
+        - data_process_outcome_rsv_2018
+        - data_process_outcome_flu_2021
+        - data_process_outcome_rsv_2021
+      outputs:
+        moderately_sensitive:
+          med: output/tables/mediation.csv 
