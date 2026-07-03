@@ -73,7 +73,7 @@ rates_rsv_age_18 <- read_csv(here("output/measures/measures_rsv_age_2018.csv")) 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-        select(measure, interval_start, interval_end, ethnicity, imd, outcome_mid6, n_mid6, rate_mid6)
+        select(measure, interval_start, interval_end, ethnicity, imd, age, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_rsv_age_18, file.path(outdir, "rounded_rates_rsv_age_18.csv"))
 
 rates_rsv_age_21 <- read_csv(here("output/measures/measures_rsv_age_2021.csv")) %>% 
@@ -81,7 +81,7 @@ rates_rsv_age_21 <- read_csv(here("output/measures/measures_rsv_age_2021.csv")) 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-        select(measure, interval_start, interval_end, ethnicity, imd, outcome_mid6, n_mid6, rate_mid6)
+        select(measure, interval_start, interval_end, ethnicity, imd, age, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_rsv_age_21, file.path(outdir, "rounded_rates_rsv_age_21.csv"))
 
 rates_rsv_age_23 <- read_csv(here("output/measures/measures_rsv_age_2023.csv")) %>% 
@@ -89,7 +89,7 @@ rates_rsv_age_23 <- read_csv(here("output/measures/measures_rsv_age_2023.csv")) 
         mutate(outcome_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(numerator)),
                 n_mid6 = if_else(numerator <= 7, NA_real_, roundmid_any(denominator)),
                 rate_mid6 = round((outcome_mid6 / n_mid6) * 100000, 2)) %>% 
-        select(measure, interval_start, interval_end, ethnicity, imd, outcome_mid6, n_mid6, rate_mid6)
+        select(measure, interval_start, interval_end, ethnicity, imd, age, outcome_mid6, n_mid6, rate_mid6)
 write_csv(rates_rsv_age_23, file.path(outdir, "rounded_rates_rsv_age_23.csv"))
 
 # # Making (not very good) line graphs of rates 

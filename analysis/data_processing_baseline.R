@@ -20,13 +20,12 @@ prepare_data <- function(file_patterns, output_file) {
             #study_end = as.Date("2025-08-31"),
             #fu_end = pmin(dereg_date, ons_death_date, study_end, na.rm = TRUE),
             bmi_category = case_when(
-                bmi == 0 ~ "unknown or outlier",
-                bmi < 18.5 ~ "underweight",
-                bmi < 25 ~ "ideal",
-                bmi < 30 ~ "overweight",
-                bmi >= 30 ~ "obese",
-                is.na(bmi) ~ "Missing",
-                TRUE ~ "Missing",
+                recent_bmi == 0 ~ "unknown or outlier",
+                recent_bmi < 18.5 ~ "underweight",
+                recent_bmi < 25 ~ "ideal",
+                recent_bmi < 30 ~ "overweight",
+                recent_bmi >= 30 ~ "obese",
+                TRUE ~ "Missing"
             ),
             ethnicity6_from_codes = relevel(factor(ethnicity6_gp,
                                      levels = c("1", "2", "3", "4", "5"),
@@ -89,18 +88,42 @@ prepare_data <- function(file_patterns, output_file) {
                 is.na(ethnicity16_from_codes), if_else(is.na(ethnicity16_from_sus), "Unknown", ethnicity16_from_sus), 
                 ethnicity16_from_codes
             ),
-            imd_quintile = na_if(imd_quintile, 99),
-            imd_quintile = factor(imd_quintile),
-            imd_quintile = forcats::fct_na_value_to_level(imd_quintile, level = "Missing"),
-            migrant = factor(migrant),
+            imd_quintile = forcats::fct_na_value_to_level(factor(na_if(imd_quintile, 99)), level = "Missing"),
+            across(c(migrant, english_language, age_group, sex),
+                ~factor(as.character(.x), ordered = FALSE)),
+            prior_covid_vacc_bin = case_when(
+                !is.na(prior_covid_vaccination) ~ "Vaccinated",
+                is.na(prior_covid_vaccination) ~ "Unvaccinated"    
+            ),
+            prior_flu_vacc_bin = case_when(
+                !is.na(prior_flu_vaccination) ~ "Vaccinated",
+                is.na(prior_flu_vaccination) ~ "Unvaccinated"    
+            )
+            #migrant = factor(migrant),
             #migrant = forcats::fct_na_value_to_level(migrant, level = "Missing"),
-            english_language = factor(english_language),
+            #english_language = factor(english_language),
             #english_language = forcats::fct_na_value_to_level(english_language, level = "Missing"),
         )
+    
     print("Check ethnicity GP variable after recoding")
     print(table(cr_data$ethnicity6_gp, cr_data$ethnicity6_from_codes, useNA = "always"))
     print("Check ethnicity SUS variable after recoding")
     print(table(cr_data$ethnicity_sus, cr_data$ethnicity6_from_sus, useNA = "always"))
+    print("Check BMI")
+    print(summary(cr_data$recent_bmi))
+    bmi_summary <- cr_data %>%
+    group_by(bmi_category) %>%
+    summarise(
+        n = n(),
+        min_bmi = min(recent_bmi, na.rm = TRUE),
+        max_bmi = max(recent_bmi, na.rm = TRUE),
+        mean_bmi = mean(recent_bmi, na.rm = TRUE),
+        median_bmi = median(recent_bmi, na.rm = TRUE),
+        n_na_bmi = sum(is.na(recent_bmi)),
+        n_not_na_bmi = sum(!is.na(recent_bmi))
+    )
+    print(bmi_summary)
+    
     cr_data %>%
         select(
             patient_id, min_start_yr, ethnicity6_combined, ethnicity16_combined, sex,
@@ -129,5 +152,3 @@ prepare_data(filter_years(flu_rsv_files, 2018:2019), "an_bl_data_flu_rsv_2018.ar
 # 2021-2024
 prepare_data(filter_years(covid_files, 2021:2024), "an_bl_data_covid_2021.arrow")
 prepare_data(filter_years(flu_rsv_files, 2021:2024), "an_bl_data_flu_rsv_2021.arrow")
-
-

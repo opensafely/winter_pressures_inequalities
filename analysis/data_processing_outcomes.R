@@ -48,8 +48,8 @@ cr_data <- bind_rows(lapply(seq_along(file_patterns), function(i) {
 read_feather(file_patterns[i]) %>% 
     # Take out unneccessary columns
     select(-ethnicity6_gp, -ethnicity16_gp, -ethnicity_sus, -sex, -age, -urban_rural_5, -imd_quintile, 
-    -ends_with("atrisk_grp"), -starts_with("vacc_"), -starts_with("prior_"), , -ends_with("vaccination_date"), -severe_obesity, -bmi, 
-    -bmi_date, -migrant, -english_language) %>%
+    -ends_with("atrisk_grp"), -starts_with("vacc_"), -starts_with("prior_"), , -ends_with("vaccination_date"), -severe_obesity, -recent_bmi, 
+    -recent_bmi_date, -migrant, -english_language) %>%
     mutate(year = as.numeric(gsub("\\D", "", basename(file_patterns[i]))))
 }))
 print(paste("size of outcomes cr_data file"))

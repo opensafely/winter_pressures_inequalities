@@ -131,16 +131,29 @@ covid_notest_codelist = codelist_from_csv(
 
 # migrant
 migrant_codelist = codelist_from_csv(
-    "codelists/user-YaminaB-migration-status.csv",
+    "codelists/opensafely-migration-status.csv",
     column = "code",
 )
 
 # Years in UK
 entry_uk_codelist = ["860021000000109"]
 
+born_in_uk_codelist = codelist_from_csv(
+    "codelists/opensafely-born-in-the-uk.csv",
+    column = "code",
+)
+british_ethnicities_codelist = codelist_from_csv(
+    "codelists/opensafely-british-ethnicities.csv",
+    column = "code",
+)
 # English language proficiency
 english_language_codelist = codelist_from_csv(
-    "codelists/user-ruthcostello-english-language-proficiency.csv",
+    "codelists/opensafely-english-not-main-language.csv",
+    column = "code",
+)
+
+interpreter_codelist = codelist_from_csv(
+    "codelists/opensafely-interpreter-required.csv",
     column = "code",
 )
 

@@ -28,7 +28,8 @@ from variable_lib import (
   has_prior_event,
   has_prior_meds,
   is_gp_event,
-  first_gp_event_with_washout
+  first_gp_event_with_washout,
+  most_recent_bmi
 )
 
 from clinical_risk_grps import *
@@ -211,33 +212,32 @@ if start_date.year==2024 :
 # BMI - part of risk groups so defining severe obesity
 dataset.severe_obesity = has_severe_obesity(start_date) 
 ## Latest BMI
-bmi_record = clinical_events.where(
-        clinical_events.snomedct_code.is_in(codelists.bmi)
-    ).where(
-        (clinical_events.date >= (start_date - years(2))) & (clinical_events.date <= start_date)
-    ).sort_by(
-        clinical_events.date
-    ).last_for_patient()
-
-dataset.bmi = bmi_record.numeric_value
-dataset.bmi_date = bmi_record.date
+dataset.recent_bmi_date = most_recent_bmi(start_date).date
+dataset.recent_bmi_age = patients.age_on(dataset.recent_bmi_date)
+dataset.recent_bmi = most_recent_bmi(start_date).numeric_value
 
 # Migrant status
-dataset.migrant = has_prior_event(codelists.migrant_codelist, start_date)
+migrant_status = has_prior_event(codelists.migrant_codelist, start_date)
+entry_uk = has_prior_event(codelists.entry_uk_codelist, start_date)
+born_in_uk = has_prior_event(codelists.born_in_uk_codelist, start_date)
+british_ethnicities = has_prior_event(codelists.british_ethnicities_codelist, start_date)
 
-# Date entered UK
-#dataset.uk_entry_date = clinical_events.where(
-#        clinical_events.snomedct_code.is_in(codelists.entry_uk_codelist)
-#    ).where(
-#        clinical_events.date.is_on_or_before(start_date)
-#    ).sort_by(
-#        clinical_events.date
-#    ).first_for_patient().date
-#show(dataset.uk_entry_date)
-
+dataset.migrant = case(
+   when(migrant_status).then("Migrant"),
+   when(entry_uk).then("Non-migrant"),
+   when(british_ethnicities).then("Non-migrant"),
+   otherwise="Unknown"
+)
 
 # English language proficiency
-dataset.english_language = has_prior_event(codelists.english_language_codelist, start_date)
+english_spoken = has_prior_event(codelists.english_language_codelist, start_date)
+interpreter = has_prior_event(codelists.interpreter_codelist, start_date)
+
+dataset.english_language = case(
+   when(english_spoken).then(True),
+   when(interpreter).then(True),
+   otherwise=False
+)
 
 # Define outcome - primary care or secondary care COVID
 # Identify if there is a covid event in 28 days prior to index

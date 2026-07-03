@@ -19,6 +19,11 @@ source(here::here("analysis", "redaction.R"))
 outdir <- here("output", "tables")
 fs::dir_create(outdir)
 
+args <- commandArgs(trailingOnly = TRUE)
+
+disease <- args[1]
+
+
 # Stratified models - unadjusted
 run_cox_models_stratified <- function(disease, difference, 
                                        strat_var, strat_level) {
@@ -127,7 +132,6 @@ run_cox_models_stratified <- function(disease, difference,
         return(new_rows)
 }
 
-diseases <- c("covid_2021", "flu_2018", "rsv_2018", "flu_2021", "rsv_2021")
 eth_vars <- c("ethnicity6_combined", "ethnicity16_combined")
 strat_params <- bind_rows(
         expand.grid(strat_var = "sex",         strat_level = c("male", "female"),   stringsAsFactors = FALSE),
@@ -135,7 +139,7 @@ strat_params <- bind_rows(
 )
 
 param_grid_strat <- expand.grid(
-        disease    = diseases,
+        disease    = disease,
         difference = eth_vars,
         stringsAsFactors = FALSE
 ) %>% cross_join(strat_params)
@@ -147,6 +151,8 @@ cox_table_stratified <- pmap_dfr(param_grid_strat, function(disease, difference,
 cox_table_stratified <- cox_table_stratified %>% 
                 mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 2))) %>%
                 # don't need std.error or statistic
-                select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "strat_var", "strat_level", "redacted", "redact_reason")
+                select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "strat_var", "strat_level")
 
-write_csv(cox_table_stratified, file.path(outdir, "cox_models_stratified.csv"))
+file_name <- paste0("cox_models_stratified_",disease,".csv")
+
+write_csv(cox_table_stratified, file.path(outdir, file_name))

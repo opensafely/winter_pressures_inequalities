@@ -20,19 +20,19 @@ source(here::here("analysis", "redaction.R"))
 outdir <- here("output", "tables")
 fs::dir_create(outdir)
 
-#define function for midpoint 6 rounding
-roundmid_any <- function(x, to = 6) {
-  
-  # like round_any, but centers on (integer) midpoint of the rounding points
-  ceiling(x/to)*to - (floor(to/2)*(x != 0))
-  
-}
+args <- commandArgs(trailingOnly = TRUE)
+
+disease <- args[1]
+adj_yr <- args[2]
 
 # # Cox PH models to measure differences in utilisation by ethnicity and IMD
 run_cox_models <- function(disease, difference, adjustment) {
         # Build filename and read dataset
         file_path <- paste0("an_outcome_first_",disease,".arrow")
         data_df <- read_feather(here("output", file_path), as_data_frame = TRUE)
+        
+        message(paste0("Disease: ", disease, " | Difference: ", difference, " | Adjustment: ", adjustment))
+        #if (nrow(data_df) == 0) stop("Empty dataset for: ", file_path)
 
         # Ensure factor + set reference
         if (difference == "ethnicity6_combined") {
@@ -50,13 +50,23 @@ run_cox_models <- function(disease, difference, adjustment) {
                 data_df[[difference]] <- relevel(data_df[[difference]], ref = "5") 
         }
         
-        # Define adjustment terms
+        # Make sure age and sex are unordered factors
+        data_df <- data_df %>% 
+                mutate(
+                        age_group = relevel(factor(as.character(age_group), ordered = FALSE), ref = "adult_under_65"),
+                        sex = factor(as.character(sex), ordered = FALSE),
+                        urban_rural_5 = factor(as.character(urban_rural_5), ordered = FALSE)
+                        )
+
+        # Define adjustment terms - taking out rsv eligibility as is same as one of the age groups
+        # taking out BMI for now as problems identifying
         adj_vars <- switch(adjustment,
                 "unadjusted"  = "",
                 "age_sex"     = " + age_group + sex",
                 "migration"        = " + age_group + sex + migrant + english_language",
                 "area"  = " + age_group + sex + imd_quintile + urban_rural_5",
-                "health" = " + age_group + sex + vacc_elig_covid + vacc_elig_flu + vacc_elig_rsv + prior_flu_vaccination + prior_covid_vaccination + prior_rsv_vaccination + bmi",
+                "health" = " + age_group + sex + vacc_elig_covid + vacc_elig_flu + prior_flu_vacc_bin + prior_covid_vacc_bin",
+                "health_2018" = " + age_group + sex + vacc_elig_flu + prior_flu_vacc_bin",
                 stop("Unknown adjustment: ", adjustment)
         )
 
@@ -66,18 +76,13 @@ run_cox_models <- function(disease, difference, adjustment) {
                                   difference, adj_vars, " + strata(", strata_var, ")"))
         }
 
+        # define Cox model formulas
         f_gp     <- make_formula("start", "stop_gp",      "gp_binary",      "year_end_gp")
         f_gp_sens <- make_formula("start", "stop_gp_sens", "gp_sens_binary", "year_end_gp")
         f_sc     <- make_formula("start", "stop_sc",      "sc_binary",      "year_end_sc")
         f_emerg  <- make_formula("start", "stop_emerg",   "emerg_binary",   "year_end_emerg")
 
-
-        # define Cox model formulas
-        f_gp <- as.formula(paste0("Surv(start, stop_gp, gp_binary) ~ ", difference, " + strata(year_end_gp)"))
-        f_gp_sens <- as.formula(paste0("Surv(start, stop_gp_sens, gp_sens_binary) ~ ", difference, " + strata(year_end_gp)"))
-        f_sc <- as.formula(paste0("Surv(start, stop_sc, sc_binary) ~ ", difference, " + strata(year_end_sc)"))
-        f_emerg <- as.formula(paste0("Surv(start, stop_emerg, emerg_binary) ~ ", difference, " + strata(year_end_emerg)"))
-        # Helper to either fit model or return redacted row
+        # # Helper to either fit model or return redacted row
         fit_or_redact <- function(formula, binary_var, outcome_name) {
                 n_events <- sum(data_df[[binary_var]] == 1, na.rm = TRUE)
                 if (n_events > 7) {
@@ -113,26 +118,29 @@ run_cox_models <- function(disease, difference, adjustment) {
         return(new_rows)
 }
 
-diseases <- c("covid_2021", "flu_2018", "rsv_2018", "flu_2021", "rsv_2021")
 by_vars <- c("imd_quintile", "ethnicity6_combined", "ethnicity16_combined")
-adjustments <- c("unadjusted", "age_sex", "migration", "area", "health")
+adjustments_2021 <- c("unadjusted", "age_sex", "migration", "area", "health")
+adjustments_2018 <- c("unadjusted", "age_sex", "migration", "area", "health_2018")
+
+adj <- get(paste0("adjustments_",adj_yr))
 
 param_grid <- expand.grid(
-  disease = diseases, 
+  disease = disease, 
   difference = by_vars, 
-  adjustment = adjustments,
+  adjustment = adj,
   stringsAsFactors = FALSE
   )
+print(param_grid)
 
 cox_table <- pmap_dfr(
   param_grid,
   function(disease, difference, adjustment) run_cox_models(disease, difference, adjustment)
 )
-print(head(cox_table))
+print(cox_table)
 
 cox_table <- cox_table %>% 
                 mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 2))) %>%
                 # don't need std.error or statistic
                 select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "adjustment")
-
-write_csv(cox_table, file.path(outdir, "cox_models.csv"))
+file_name <- paste0("cox_models_",disease,".csv")
+write_csv(cox_table, file.path(outdir, file_name))
