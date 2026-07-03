@@ -55,7 +55,8 @@ run_cox_models <- function(disease, difference, adjustment) {
                 mutate(
                         age_group = relevel(factor(as.character(age_group), ordered = FALSE), ref = "adult_under_65"),
                         sex = factor(as.character(sex), ordered = FALSE),
-                        urban_rural_5 = factor(as.character(urban_rural_5), ordered = FALSE)
+                        urban_rural_5 = relevel(factor(as.character(urban_rural_5), ordered = FALSE), ref = "Urban minor conurbation"),
+                        migrant = relevel(factor(as.character(migrant), ordered = FALSE), ref = "Non-migrant")
                         )
 
         # Define adjustment terms - taking out rsv eligibility as is same as one of the age groups
@@ -65,8 +66,8 @@ run_cox_models <- function(disease, difference, adjustment) {
                 "age_sex"     = " + age_group + sex",
                 "migration"        = " + age_group + sex + migrant + english_language",
                 "area"  = " + age_group + sex + imd_quintile + urban_rural_5",
-                "health" = " + age_group + sex + vacc_elig_covid + vacc_elig_flu + prior_flu_vacc_bin + prior_covid_vacc_bin",
-                "health_2018" = " + age_group + sex + vacc_elig_flu + prior_flu_vacc_bin",
+                "health" = " + age_group + sex + vacc_elig_covid + vacc_elig_flu + prior_flu_vacc_bin + prior_covid_vacc_bin + bmi_category",
+                "health_2018" = " + age_group + sex + vacc_elig_flu + prior_flu_vacc_bin +bmi_category",
                 stop("Unknown adjustment: ", adjustment)
         )
 
