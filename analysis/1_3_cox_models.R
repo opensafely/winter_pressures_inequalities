@@ -93,15 +93,56 @@ run_cox_models <- function(disease, difference, adjustment) {
         f_sc     <- make_formula("start", "stop_sc",      "sc_binary",      "year_end_sc")
         f_emerg  <- make_formula("start", "stop_emerg",   "emerg_binary",   "year_end_emerg")
 
+        ## Check if >2 events for each level of expo in full data
+        check_events_full <- data_df %>%
+        group_by(across(all_of(difference))) %>%
+        summarise(
+                total_events_gp = sum(gp_binary),
+                total_events_gp_s = sum(gp_sens_binary),
+                total_events_sc = sum(sc_binary),
+                total_events_emerg = sum(emerg_binary),
+                .groups = "keep") %>%
+        ungroup() 
+        full_gp = all(check_events_full$total_events_gp > 2) 
+        full_gp_s = all(check_events_full$total_events_gp_s > 2) 
+        full_sc = all(check_events_full$total_events_sc > 2) 
+        full_emerg = all(check_events_full$total_events_emerg > 2) 
+
         # # Helper to either fit model or return redacted row
-        fit_or_redact <- function(formula, binary_var, outcome_name) {
+        fit_or_redact <- function(formula, binary_var, full_var, outcome_name) {
                 n_events <- sum(data_df[[binary_var]] == 1, na.rm = TRUE)
-                if (n_events > 7) {
-                        coxph(formula, data = data_df) %>%
-                                tidy(exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>%
-                                mutate(outcome = outcome_name, by_var = difference, disease = disease, adjustment = adjustment)
-                } else {
+                if (n_events > 7 & full_var) {
+                        tryCatch({
+                                coxph(formula, data = data_df) %>%
+                                        tidy(exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>%
+                                        mutate(outcome = outcome_name, by_var = difference, disease = disease, adjustment = adjustment)
+                                }, error = function(e) {
+                                message("Model failed for ", disease, " ", outcome_name, ": ", e$message)
+                                tibble(
+                                        term = difference, estimate = NA_real_, std.error = NA_real_,
+                                        statistic = NA_real_, p.value = NA_real_, conf.low = NA_real_,
+                                        conf.high = NA_real_, outcome = outcome_name, by_var = difference,
+                                        disease = disease, adjustment = adjustment, redacted = TRUE
+                                )
+                                })
+                } else if (n_events <= 7) {
                         message("Redacted: 7 or fewer ", disease, " ", outcome_name, " events")
+                        tibble(
+                                term        = difference,
+                                estimate    = NA_real_,
+                                std.error   = NA_real_,
+                                statistic   = NA_real_,
+                                p.value     = NA_real_,
+                                conf.low    = NA_real_,
+                                conf.high   = NA_real_,
+                                outcome     = outcome_name,
+                                by_var      = difference,
+                                disease     = disease,
+                                adjustment = adjustment,
+                                redacted    = TRUE
+                        )
+                } else {
+                        message("Redacted: 2 or fewer ", disease, " ", outcome_name, " events per strata")
                         tibble(
                                 term        = difference,
                                 estimate    = NA_real_,
@@ -120,10 +161,10 @@ run_cox_models <- function(disease, difference, adjustment) {
         }
 
         new_rows <- bind_rows(
-                fit_or_redact(f_gp,    "gp_binary",    "gp_binary"),
-                fit_or_redact(f_gp_sens,    "gp_sens_binary",    "gp_sens_binary"),
-                fit_or_redact(f_sc,    "sc_binary",    "sc_binary"),
-                fit_or_redact(f_emerg, "emerg_binary", "emerg_binary")
+                fit_or_redact(f_gp,    "gp_binary",  full_gp,  "gp_binary"),
+                fit_or_redact(f_gp_sens,    "gp_sens_binary",  full_gp_s,  "gp_sens_binary"),
+                fit_or_redact(f_sc,    "sc_binary",  full_sc,  "sc_binary"),
+                fit_or_redact(f_emerg, "emerg_binary", full_emerg, "emerg_binary")
         )
 
         return(new_rows)
@@ -141,13 +182,16 @@ param_grid <- expand.grid(
   adjustment = adj,
   stringsAsFactors = FALSE
   )
-print(param_grid)
+print(param_grid[4, ])
 
 cox_table <- pmap_dfr(
   param_grid,
   function(disease, difference, adjustment) run_cox_models(disease, difference, adjustment)
 )
-print(cox_table)
+
+#table(data_df$your_difference_var, data_df$gp_binary)
+#table(data_df$age_group, data_df$gp_binary)
+#table(data_df$imd_quintile, data_df$gp_binary)
 
 cox_table <- cox_table %>% 
                 mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 2))) %>%
