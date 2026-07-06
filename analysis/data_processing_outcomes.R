@@ -104,8 +104,11 @@ print(dim(multiple_ons))
 # Find first year in follow-up and first GP and secondary care healthcare utilisation
 # Find first deregistration date as people could deregister one year and then re-register one of the years after, so taking first registration period
 
-safe_min_date <- function(x) {
+safe_min_date <- function(x, fu_start = NULL) {
   x <- x[!is.na(x)]
+  if (!is.null(fu_start)) {
+        x <- x[x >= fu_start]
+    }
   if (!length(x)) as.Date(NA) else min(x)
 }
 
@@ -145,8 +148,8 @@ cr_data[, `:=`(
 )]
 
 # Checking event dates are after start date and not in the future
-print("Number of events prior to follow-up start")
-events_prior <- cr_data[sc_col < fu_start, .(
+print("Number of events prior to first follow-up start")
+events_prior <- cr_data[first_sc_col < fu_start, .(
     n_prior_events = .N
 ), by = patient_id]
 print(dim(events_prior))
