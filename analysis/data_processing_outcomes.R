@@ -207,25 +207,30 @@ cr_data[, `:=`(
 
 print("Check stop times")
 print("GP")
-neg_gp <- cr_data[stop_gp < fu_start, .(
+neg_gp <- cr_data[stop_gp < 0, .(
     n_prior_events = .N
 ), by = patient_id]
 print(dim(neg_gp))
 print("GP sens")
-neg_gp_sens <- cr_data[stop_gp_sens < fu_start, .(
+neg_gp_sens <- cr_data[stop_gp_sens < 0, .(
     n_prior_events = .N
 ), by = patient_id]
 print(dim(neg_gp_sens))
 print("SC")
-neg_sc <- cr_data[stop_sc < fu_start, .(
+neg_sc <- cr_data[stop_sc < 0, .(
     n_prior_events = .N
 ), by = patient_id]
 print(dim(neg_sc))
 print("AE")
-neg_ae <- cr_data[stop_emerg < fu_start, .(
+neg_ae <- cr_data[stop_emerg < 0, .(
     n_prior_events = .N
 ), by = patient_id]
 print(dim(neg_ae))
+print("Check fu_end")
+neg_end <- cr_data[fu_end < fu_start, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(neg_end))
 
 output_file <- paste0("an_outcome_data_", disease,"_", min_year,".rds")
 # File with outcome data only
