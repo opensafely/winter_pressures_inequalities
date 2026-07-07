@@ -358,7 +358,7 @@ actions:
           table_cox: output/tables/cox_models_rsv_2021.csv
 
   cox_models_strat_covid_2021:
-      run: r:v2 analysis/1_4_cox_models_stratified.R covid_2021
+      run: r:v2 analysis/1_4_cox_models_stratified.R covid_2021 strat_params
       needs: 
         - data_process_bl
         - data_process_outcome_covid_2021
@@ -367,7 +367,7 @@ actions:
           table_cox_s: output/tables/cox_models_stratified_covid_2021.csv
 
   cox_models_strat_flu_2018:
-      run: r:v2 analysis/1_4_cox_models_stratified.R flu_2018
+      run: r:v2 analysis/1_4_cox_models_stratified.R flu_2018 strat_params
       needs: 
         - data_process_bl
         - data_process_outcome_flu_2018
@@ -376,7 +376,7 @@ actions:
           table_cox_s: output/tables/cox_models_stratified_flu_2018.csv
 
   cox_models_strat_flu_2021:
-      run: r:v2 analysis/1_4_cox_models_stratified.R flu_2021
+      run: r:v2 analysis/1_4_cox_models_stratified.R flu_2021 strat_params
       needs: 
         - data_process_bl
         - data_process_outcome_flu_2021
@@ -385,7 +385,7 @@ actions:
           table_cox_s: output/tables/cox_models_stratified_flu_2021.csv
 
   cox_models_strat_rsv_2018:
-      run: r:v2 analysis/1_4_cox_models_stratified.R rsv_2018
+      run: r:v2 analysis/1_4_cox_models_stratified.R rsv_2018 strat_params_rsv
       needs: 
         - data_process_bl
         - data_process_outcome_rsv_2018
@@ -394,7 +394,7 @@ actions:
           table_cox_s: output/tables/cox_models_stratified_rsv_2018.csv
 
   cox_models_strat_rsv_2021:
-      run: r:v2 analysis/1_4_cox_models_stratified.R rsv_2021
+      run: r:v2 analysis/1_4_cox_models_stratified.R rsv_2021 strat_params_rsv
       needs: 
         - data_process_bl
         - data_process_outcome_rsv_2021

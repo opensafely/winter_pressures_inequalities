@@ -21,6 +21,10 @@ prepare_data <- function(file_patterns, output_file) {
         ungroup() %>%
         filter(min_start_yr == year) %>%
         mutate(
+            age_infants = case_when(
+                age <= 2 ~ "infant",
+                age > 2 ~ "not infant",
+            ),
             recent_bmi = as.numeric(as.character(recent_bmi)),
             #study_end = as.Date("2025-08-31"),
             #fu_end = pmin(dereg_date, ons_death_date, study_end, na.rm = TRUE),
@@ -133,7 +137,7 @@ prepare_data <- function(file_patterns, output_file) {
     cr_data %>%
         select(
             patient_id, min_start_yr, ethnicity6_combined, ethnicity16_combined, sex,
-            age_group, urban_rural_5, imd_quintile,
+            age_group, age_infants, urban_rural_5, imd_quintile,
             ends_with("atrisk_grp"), starts_with("vacc_"),
             starts_with("prior_"), bmi_category, migrant, english_language
         ) %>%
