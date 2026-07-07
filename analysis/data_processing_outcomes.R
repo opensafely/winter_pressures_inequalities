@@ -146,13 +146,25 @@ cr_data[, `:=`(
     ons_death_date = as.Date(ons_death_date),
     fu_start = as.Date(sprintf("%d-%02d-01", min_start_yr_out, fu_start_month))
 )]
-
+print("Check fu_start")
+print(summary(cr_data$fu_start))
+print(summary(cr_data$min_start_yr_out))
 # Checking event dates are after start date and not in the future
 print("Number of events prior to first follow-up start")
 events_prior <- cr_data[first_sc_col < fu_start, .(
     n_prior_events = .N
 ), by = patient_id]
 print(dim(events_prior))
+print("First dereg prior to follow-up start")
+dereg_prior <- cr_data[first_dereg_date < fu_start, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(dereg_prior))
+print("Death prior to follow-up start")
+death_prior <- cr_data[ons_death_date < fu_start, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(death_prior))
 
 # safer fu_end with all-NA handling
 
@@ -206,23 +218,27 @@ cr_data[, `:=`(
     )]
 
 print("Check stop times")
+print(summary(cr_data$stop_gp))
+print(summary(cr_data$stop_gp_sens))
+print(summary(cr_data$stop_sc))
+print(summary(cr_data$stop_emerg))
 print("GP")
-neg_gp <- cr_data[stop_gp < 0, .(
+neg_gp <- cr_data[stop_gp < -0.5, .(
     n_prior_events = .N
 ), by = patient_id]
 print(dim(neg_gp))
 print("GP sens")
-neg_gp_sens <- cr_data[stop_gp_sens < 0, .(
+neg_gp_sens <- cr_data[stop_gp_sens < -0.5, .(
     n_prior_events = .N
 ), by = patient_id]
 print(dim(neg_gp_sens))
 print("SC")
-neg_sc <- cr_data[stop_sc < 0, .(
+neg_sc <- cr_data[stop_sc < -0.5, .(
     n_prior_events = .N
 ), by = patient_id]
 print(dim(neg_sc))
 print("AE")
-neg_ae <- cr_data[stop_emerg < 0, .(
+neg_ae <- cr_data[stop_emerg < -0.5, .(
     n_prior_events = .N
 ), by = patient_id]
 print(dim(neg_ae))
