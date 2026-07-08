@@ -276,6 +276,6 @@ final_file <- paste0("an_outcome_first_",disease,"_",min_year,".arrow")
 
 # choose left_join if outcomes are the analysis denominator
 outcome_bl <- baseline %>%
-  left_join(outcomes, by = "patient_id")
+  inner_join(outcomes, by = "patient_id")
 
 write_feather(outcome_bl, here("output", final_file))
