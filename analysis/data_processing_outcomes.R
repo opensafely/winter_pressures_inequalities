@@ -165,6 +165,13 @@ death_prior <- cr_data[ons_death_date < fu_start, .(
     n_prior_events = .N
 ), by = patient_id]
 print(dim(death_prior))
+# number of people in dataset prior to filtering on ONS death prior to start of follow-up
+print(dim(cr_data))
+# take out people who have an ONS death date prior to the start of follow-up
+cr_data <- cr_data[is.na(ons_death_date<fu_start) | ons_death_date >= fu_start]
+# number of people in dataset after filtering on ONS death prior to start of follow-up 
+print(dim(cr_data))
+
 
 # safer fu_end with all-NA handling
 
