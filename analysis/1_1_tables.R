@@ -29,15 +29,25 @@ fs::dir_create(outdir)
 bmi_levels <- c("ideal", "underweight", "overweight", "obese", "unknown or outlier", "Missing")
 
 #Creating baseline tables - first import data
-baseline_covid_2021 <- read_feather(here("output/an_bl_data_covid_2021.arrow")) %>% 
+# using tables with outcomes as people removed with ONS death date prior to start of follow-up in that file
+# # Table of outcomes - first event for Cox models
+outcomes_covid_2021 <- read_feather(here("output/an_outcome_first_covid_2021.arrow"))%>% 
+        mutate(imd_quintile = as.factor(imd_quintile),
+        min_yr_start = as.factor(min_start_yr),
+        bmi_category = factor(bmi_category, levels = bmi_levels)) 
+outcomes_flu_2018 <- read_feather(here("output/an_outcome_first_flu_2018.arrow")) %>% 
         mutate(imd_quintile = as.factor(imd_quintile),
         min_yr_start = as.factor(min_start_yr),
         bmi_category = factor(bmi_category, levels = bmi_levels))
-baseline_flu_rsv_2021 <- read_feather(here("output/an_bl_data_flu_rsv_2021.arrow"))%>% 
+outcomes_rsv_2018 <- read_feather(here("output/an_outcome_first_rsv_2018.arrow")) %>% 
         mutate(imd_quintile = as.factor(imd_quintile),
         min_yr_start = as.factor(min_start_yr),
         bmi_category = factor(bmi_category, levels = bmi_levels))
-baseline_flu_rsv_2018 <- read_feather(here("output/an_bl_data_flu_rsv_2018.arrow"))%>% 
+outcomes_flu_2021 <- read_feather(here("output/an_outcome_first_flu_2021.arrow")) %>% 
+        mutate(imd_quintile = as.factor(imd_quintile),
+        min_yr_start = as.factor(min_start_yr),
+        bmi_category = factor(bmi_category, levels = bmi_levels))
+outcomes_rsv_2021 <- read_feather(here("output/an_outcome_first_rsv_2021.arrow")) %>% 
         mutate(imd_quintile = as.factor(imd_quintile),
         min_yr_start = as.factor(min_start_yr),
         bmi_category = factor(bmi_category, levels = bmi_levels))
@@ -57,7 +67,7 @@ var_labels_list <- list(
                 )
 
 # COVID cohort baseline table by ethnicity
-desc_covid_by <- baseline_covid_2021 %>% 
+desc_covid_by <- outcomes_covid_2021 %>% 
         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
         urban_rural_5, imd_quintile, migrant, english_language, 
         flu_atrisk_grp, covid_atrisk_grp, bmi_category) %>% 
@@ -85,10 +95,10 @@ desc_covid_redact_round <- fn_redact_tbl_summary(
 write_csv(desc_covid_redact_round, file.path(outdir, "baseline_table_covid_r.csv"))
 write_csv(desc_covid_by$table_body, file.path(outdir, "baseline_table_covid.csv"))
 
-# # Flu/RSV cohort baseline table by ethnicity
+# # Flu/RSV cohort baseline table by ethnicity - same cohort so using flu outcome files
 # # Grouped table
 
-desc_flu_rsv_2021_by <- baseline_flu_rsv_2021 %>% 
+desc_flu_rsv_2021_by <- outcomes_flu_2021 %>% 
         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
                urban_rural_5, imd_quintile, migrant, english_language, 
                flu_atrisk_grp, covid_atrisk_grp, bmi_category) %>% 
@@ -109,7 +119,7 @@ desc_flu_rsv_2021_redact_round <- fn_redact_tbl_summary(
         rename_cols = c("Overall", "Asian", "Black", "Chinese", "Missing", "Mixed", "White")
         ) 
 
-desc_flu_rsv_2018_by <- baseline_flu_rsv_2018 %>% 
+desc_flu_rsv_2018_by <- outcomes_flu_2018 %>% 
         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
                urban_rural_5, imd_quintile, migrant, english_language, 
                flu_atrisk_grp, covid_atrisk_grp, bmi_category) %>% 
@@ -163,13 +173,6 @@ write_csv(desc_flu_rsv_2018_redact_round, file.path(outdir, "baseline_table_flu_
 write_csv(desc_flu_rsv_2018_by$table_body, file.path(outdir, "baseline_table_flu_rsv_2018.csv"))
 write_csv(desc_flu_rsv_2021_redact_round, file.path(outdir, "baseline_table_flu_rsv_2021_r.csv"))
 write_csv(desc_flu_rsv_2021_by$table_body, file.path(outdir, "baseline_table_flu_rsv_2021.csv"))
-
-# # Table of outcomes - first event for Cox models
-outcomes_covid_2021 <- read_feather(here("output/an_outcome_first_covid_2021.arrow")) 
-outcomes_flu_2018 <- read_feather(here("output/an_outcome_first_flu_2018.arrow")) 
-outcomes_rsv_2018 <- read_feather(here("output/an_outcome_first_rsv_2018.arrow")) 
-outcomes_flu_2021 <- read_feather(here("output/an_outcome_first_flu_2021.arrow")) 
-outcomes_rsv_2021 <- read_feather(here("output/an_outcome_first_rsv_2021.arrow")) 
 
 # #Function to create table with number of outcomes, person-time, rate and flag for outcome type - no rounding yet
 create_event_table <- function(data, time, status, outcome, group = NULL, rate_multiplier = 1000) {
