@@ -22,6 +22,7 @@ fs::dir_create(outdir)
 args <- commandArgs(trailingOnly = TRUE)
 
 disease <- args[1]
+strat <- args[2]
 
 
 # Stratified models - unadjusted
@@ -137,12 +138,18 @@ strat_params <- bind_rows(
         expand.grid(strat_var = "sex",         strat_level = c("male", "female"),   stringsAsFactors = FALSE),
         expand.grid(strat_var = "imd_quintile", strat_level = c("1","2","3","4","5"), stringsAsFactors = FALSE)
 )
-
+# Need to stratify by age for RSV as most cases in infants
+strat_params_rsv <- bind_rows(
+        expand.grid(strat_var = "age_infants",         strat_level = c("infant", "not infant"),   stringsAsFactors = FALSE),
+        expand.grid(strat_var = "sex",         strat_level = c("male", "female"),   stringsAsFactors = FALSE),
+        expand.grid(strat_var = "imd_quintile", strat_level = c("1","2","3","4","5"), stringsAsFactors = FALSE)
+)
+strat <- get(strat)
 param_grid_strat <- expand.grid(
         disease    = disease,
         difference = eth_vars,
         stringsAsFactors = FALSE
-) %>% cross_join(strat_params)
+) %>% cross_join(strat)
 
 cox_table_stratified <- pmap_dfr(param_grid_strat, function(disease, difference, strat_var, strat_level) {
         run_cox_models_stratified(disease, difference, strat_var, strat_level)

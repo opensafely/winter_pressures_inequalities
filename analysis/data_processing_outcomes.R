@@ -104,8 +104,11 @@ print(dim(multiple_ons))
 # Find first year in follow-up and first GP and secondary care healthcare utilisation
 # Find first deregistration date as people could deregister one year and then re-register one of the years after, so taking first registration period
 
-safe_min_date <- function(x) {
+safe_min_date <- function(x, fu_start = NULL) {
   x <- x[!is.na(x)]
+  if (!is.null(fu_start)) {
+        x <- x[x >= fu_start]
+    }
   if (!length(x)) as.Date(NA) else min(x)
 }
 
@@ -118,6 +121,14 @@ cr_data[, `:=`(
   first_dereg_date = safe_min_date(dereg_date)
 
 ), by = patient_id]
+
+# Checking event dates are after start date and not in the future
+print("Number of events prior to follow-up start")
+event_yr_prior <- cr_data[year(sc_col) < min_start_yr_out, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(event_yr_prior))
+
 # filter to only rows 
 cr_data <- cr_data[min_start_yr_out == year]
 
@@ -135,6 +146,32 @@ cr_data[, `:=`(
     ons_death_date = as.Date(ons_death_date),
     fu_start = as.Date(sprintf("%d-%02d-01", min_start_yr_out, fu_start_month))
 )]
+print("Check fu_start")
+print(summary(cr_data$fu_start))
+print(summary(cr_data$min_start_yr_out))
+# Checking event dates are after start date and not in the future
+print("Number of events prior to first follow-up start")
+events_prior <- cr_data[first_sc_col < fu_start, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(events_prior))
+print("First dereg prior to follow-up start")
+dereg_prior <- cr_data[first_dereg_date < fu_start, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(dereg_prior))
+print("Death prior to follow-up start")
+death_prior <- cr_data[ons_death_date < fu_start, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(death_prior))
+# number of people in dataset prior to filtering on ONS death prior to start of follow-up
+print(dim(cr_data))
+# take out people who have an ONS death date prior to the start of follow-up
+cr_data <- cr_data[is.na(ons_death_date<fu_start) | ons_death_date >= fu_start]
+# number of people in dataset after filtering on ONS death prior to start of follow-up 
+print(dim(cr_data))
+
 
 # safer fu_end with all-NA handling
 
@@ -187,6 +224,37 @@ cr_data[, `:=`(
     year_end = year(date_stop)
     )]
 
+print("Check stop times")
+print(summary(cr_data$stop_gp))
+print(summary(cr_data$stop_gp_sens))
+print(summary(cr_data$stop_sc))
+print(summary(cr_data$stop_emerg))
+print("GP")
+neg_gp <- cr_data[stop_gp < -0.5, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(neg_gp))
+print("GP sens")
+neg_gp_sens <- cr_data[stop_gp_sens < -0.5, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(neg_gp_sens))
+print("SC")
+neg_sc <- cr_data[stop_sc < -0.5, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(neg_sc))
+print("AE")
+neg_ae <- cr_data[stop_emerg < -0.5, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(neg_ae))
+print("Check fu_end")
+neg_end <- cr_data[fu_end < fu_start, .(
+    n_prior_events = .N
+), by = patient_id]
+print(dim(neg_end))
+
 output_file <- paste0("an_outcome_data_", disease,"_", min_year,".rds")
 # File with outcome data only
 cr_data %>%
@@ -208,6 +276,6 @@ final_file <- paste0("an_outcome_first_",disease,"_",min_year,".arrow")
 
 # choose left_join if outcomes are the analysis denominator
 outcome_bl <- baseline %>%
-  left_join(outcomes, by = "patient_id")
+  inner_join(outcomes, by = "patient_id")
 
 write_feather(outcome_bl, here("output", final_file))
