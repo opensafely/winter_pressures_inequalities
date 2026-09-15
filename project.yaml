@@ -292,7 +292,6 @@ actions:
       outputs:
         moderately_sensitive:
           text: output/tables/skim*.txt
-
   tables:
       run: r:v2 analysis/1_1_tables.R 
       needs: 

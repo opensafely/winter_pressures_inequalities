@@ -171,7 +171,7 @@ dataset.prior_flu_vaccination = (
 vaccinations.where(vaccinations.target_disease.is_in(["INFLUENZA"]))
 .sort_by(vaccinations.date)
 .where(vaccinations.date.is_on_or_between(start_date - years(1), start_date - days(1)))
-.last_for_patient().date
+.exists_for_patient()
 )
 
 #extract flu vaccination in current season
@@ -187,7 +187,7 @@ dataset.prior_covid_vaccination = (
     vaccinations.where(vaccinations.target_disease.is_in(["SARS-2 Coronavirus"]))
     .sort_by(vaccinations.date)
     .where(vaccinations.date.is_on_or_between(start_date - years(1), start_date - days(1)))
-    .last_for_patient().date
+    .exists_for_patient()
 )
 
 #extract covid vaccination in current season if applicable

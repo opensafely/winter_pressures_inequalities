@@ -197,12 +197,10 @@ print(param_grid[4, ])
 
 cox_table <- pmap(
   param_grid,
-  function(disease, difference, adjustment) run_cox_models(disease, difference, adjustment)
-) %>% list_rbind()
+  function(disease, difference, adjustment) run_cox_models(disease, difference, adjustment)) %>%
+  list_rbind()
 
-#table(data_df$your_difference_var, data_df$gp_binary)
-#table(data_df$age_group, data_df$gp_binary)
-#table(data_df$imd_quintile, data_df$gp_binary)
+print(cox_table)
 
 cox_table <- cox_table %>% 
                 mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 2))) %>%
