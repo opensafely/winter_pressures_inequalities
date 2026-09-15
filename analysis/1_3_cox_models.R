@@ -56,7 +56,9 @@ run_cox_models <- function(disease, difference, adjustment) {
                         age_group = relevel(factor(as.character(age_group), ordered = FALSE), ref = "adult_under_65"),
                         sex = factor(as.character(sex), ordered = FALSE),
                         urban_rural_5 = relevel(factor(as.character(urban_rural_5), ordered = FALSE), ref = "Urban minor conurbation"),
-                        migrant = relevel(factor(as.character(migrant), ordered = FALSE), ref = "Non-migrant")
+                        migrant = relevel(factor(as.character(migrant), ordered = FALSE), ref = "Non-migrant"),
+                        english_language = relevel(factor(as.character(english_language), ordered = FALSE), ref = "TRUE"),
+                        #bmi_category = relevel(factor(as.character(bmi_category), ordered = FALSE), ref = "ideal")
                         )
 
         # Define adjustment terms - taking out rsv eligibility as is same as one of the age groups
@@ -65,9 +67,13 @@ run_cox_models <- function(disease, difference, adjustment) {
                 "unadjusted"  = "",
                 "age_sex"     = " + age_group + sex",
                 "migration"        = " + age_group + sex + migrant + english_language",
-                "area"  = " + age_group + sex + imd_quintile + urban_rural_5",
-                "health" = " + age_group + sex + vacc_elig_covid + vacc_elig_flu + prior_flu_vacc_bin + prior_covid_vacc_bin + bmi_category",
-                "health_2018" = " + age_group + sex + vacc_elig_flu + prior_flu_vacc_bin +bmi_category",
+                "area"  = if (difference == "imd_quintile") {
+                        " + age_group + sex + urban_rural_5"
+                        } else{
+                        " + age_group + sex + imd_quintile + urban_rural_5"
+                        },
+                "health" = " + age_group + sex + vacc_elig_covid + vacc_elig_flu + prior_flu_vacc_bin + prior_covid_vacc_bin", #+ bmi_category",
+                "health_2018" = " + age_group + sex + vacc_elig_flu + prior_flu_vacc_bin", #+bmi_category",
                 stop("Unknown adjustment: ", adjustment)
         )
 
@@ -87,9 +93,10 @@ run_cox_models <- function(disease, difference, adjustment) {
         fit_or_redact <- function(formula, binary_var, outcome_name) {
                 n_events <- sum(data_df[[binary_var]] == 1, na.rm = TRUE)
                 if (n_events > 7) {
-                        coxph(formula, data = data_df) %>%
+                        fit <- coxph(formula, data = data_df)
+                        fit %>% 
                                 tidy(exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>%
-                                mutate(outcome = outcome_name, by_var = difference, disease = disease, adjustment = adjustment)
+                                mutate(outcome = outcome_name, by_var = difference, disease = disease, adjustment = adjustment, n = fit$n, n_events = fit$nevent)
                 } else {
                         message("Redacted: 7 or fewer ", disease, " ", outcome_name, " events")
                         tibble(
@@ -104,6 +111,8 @@ run_cox_models <- function(disease, difference, adjustment) {
                                 by_var      = difference,
                                 disease     = disease,
                                 adjustment = adjustment,
+                                n           = NA_real_,
+                                n_events    = NA_real_,    
                                 redacted    = TRUE
                         )
                 }
@@ -133,15 +142,16 @@ param_grid <- expand.grid(
   )
 print(param_grid)
 
-cox_table <- pmap_dfr(
+cox_table <- pmap(
   param_grid,
-  function(disease, difference, adjustment) run_cox_models(disease, difference, adjustment)
-)
+  function(disease, difference, adjustment) run_cox_models(disease, difference, adjustment)) %>%
+  list_rbind()
+
 print(cox_table)
 
 cox_table <- cox_table %>% 
                 mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 2))) %>%
                 # don't need std.error or statistic
-                select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "adjustment")
+                select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "adjustment", "n", "n_events", "redacted")
 file_name <- paste0("cox_models_",disease,".csv")
 write_csv(cox_table, file.path(outdir, file_name))

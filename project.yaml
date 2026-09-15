@@ -281,6 +281,17 @@ actions:
           data_o_covid: output/an_outcome_data_rsv_2021.rds
           data_f_covid: output/an_outcome_first_rsv_2021.arrow
 
+  data_check: 
+      run: r:v2 analysis/data_check.R 
+      needs: 
+        - data_process_outcome_covid_2021
+        - data_process_outcome_flu_2018
+        - data_process_outcome_rsv_2018
+        - data_process_outcome_flu_2021
+        - data_process_outcome_rsv_2021
+      outputs:
+        moderately_sensitive:
+          text: output/tables/skim*.txt
   tables:
       run: r:v2 analysis/1_1_tables.R 
       needs: 

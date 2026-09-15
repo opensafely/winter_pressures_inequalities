@@ -103,7 +103,7 @@ test_data = {
             "covid_emerg_date": None,
             "has_covid_admission": True,
             "covid_admission_date": date(2022, 9, 8),
-            "prior_flu_vaccination": date(2021,11,3),
+            "prior_flu_vaccination": True,
         },
     },
     # Not expected in population, age >110
