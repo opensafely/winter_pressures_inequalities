@@ -222,7 +222,7 @@ entry_uk = has_prior_event(codelists.entry_uk_codelist, start_date)
 born_in_uk = has_prior_event(codelists.born_in_uk_codelist, start_date)
 british_ethnicities = has_prior_event(codelists.british_ethnicities_codelist, start_date)
 
-dataset.migrant = case(
+dataset.migrant_cat = case(
    when(migrant_status).then("Migrant"),
    when(entry_uk).then("Non-migrant"),
    when(british_ethnicities).then("Non-migrant"),
@@ -231,11 +231,12 @@ dataset.migrant = case(
 
 # English language proficiency
 english_spoken = has_prior_event(codelists.english_language_codelist, start_date)
-interpreter = has_prior_event(codelists.interpreter_codelist, start_date)
+dataset.interpreter = has_prior_event(codelists.interpreter_codelist, start_date)
 
+# Definition below seems to cover vast majority of people identified as migrants. 
 dataset.english_language = case(
    when(english_spoken).then(True),
-   when(interpreter).then(True),
+   when(dataset.interpreter).then(True),
    otherwise=False
 )
 

@@ -68,8 +68,10 @@ run_cox_models <- function(disease, difference, adjustment) {
                         urban_rural_5 = relevel(factor(as.character(urban_rural_5), ordered = FALSE), ref = "Urban minor conurbation"),
                         migrant = relevel(factor(as.character(migrant), ordered = FALSE), ref = "Non-migrant"),
                         english_language = relevel(factor(as.character(english_language), ordered = FALSE), ref = "TRUE"),
-                        bmi_category = relevel(factor(as.character(bmi_category), ordered = FALSE), ref = "ideal")
-                        )
+                        #bmi_category = relevel(factor(as.character(bmi_category), ordered = FALSE), ref = "ideal")
+                        ) %>%
+                filter(imd_quintile != "Unknown") %>% 
+                filter(ethnicity6_combined != "Unknown")
 
         # Define adjustment terms - taking out rsv eligibility as is same as one of the age groups
         # taking out BMI for now as problems identifying
@@ -82,8 +84,9 @@ run_cox_models <- function(disease, difference, adjustment) {
                         } else{
                         " + age_group + sex + imd_quintile + urban_rural_5"
                         },
-                "health" = " + age_group + sex + vacc_elig_covid + vacc_elig_flu + prior_flu_vacc_bin + prior_covid_vacc_bin + bmi_category",
-                "health_2018" = " + age_group + sex + vacc_elig_flu + prior_flu_vacc_bin +bmi_category",
+                "health" = " + age_group + sex + vacc_elig_covid + vacc_elig_flu + prior_flu_vacc_bin + prior_covid_vacc_bin", #+ bmi_category",
+                "health_2018" = " + age_group + sex + vacc_elig_flu + prior_flu_vacc_bin", #+ bmi_category",
+                "all" =  " + age_group + sex + migrant + english_language + imd_quintile + urban_rural_5 + vacc_elig_covid + vacc_elig_flu + prior_flu_vacc_bin + prior_covid_vacc_bin", # + bmi_category",
                 stop("Unknown adjustment: ", adjustment)
         )
 
@@ -121,7 +124,15 @@ run_cox_models <- function(disease, difference, adjustment) {
                         tryCatch({
                                 coxph(formula, data = data_df) %>%
                                         tidy(exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>%
-                                        mutate(outcome = outcome_name, by_var = difference, disease = disease, adjustment = adjustment)
+                                        mutate(
+                                                outcome = outcome_name, 
+                                                by_var = difference, 
+                                                disease = disease, 
+                                                adjustment = adjustment, 
+                                                n = fit$n, 
+                                                n_events   = fit$nevent,
+                                                redacted   = FALSE
+                                                )
                                 }, error = function(e) {
                                 message("Model failed for ", disease, " ", outcome_name, ": ", e$message)
                                 tibble(
@@ -129,7 +140,7 @@ run_cox_models <- function(disease, difference, adjustment) {
                                         statistic = NA_real_, p.value = NA_real_, conf.low = NA_real_,
                                         conf.high = NA_real_, outcome = outcome_name, by_var = difference,
                                         disease = disease, adjustment = adjustment, n = NA_real_,
-                                        n_events    = NA_real_,    
+                                        n_events    = NA_real_, redacted = FALSE   
                                 )
                                 })
                 } else if (n_events <= 7) {
@@ -182,7 +193,8 @@ run_cox_models <- function(disease, difference, adjustment) {
 }
 
 by_vars <- c("imd_quintile", "ethnicity6_combined", "ethnicity16_combined")
-adjustments_2021 <- c("unadjusted", "age_sex", "migration", "area", "health")
+adjustments_2021 <- c("unadjusted", "age_sex", "migration", "area", "health", "all")
+# 2018 adjustments to be updated to add all when doing flu/RSV outcomes
 adjustments_2018 <- c("unadjusted", "age_sex", "migration", "area", "health_2018")
 
 adj <- get(paste0("adjustments_",adj_yr))
@@ -192,7 +204,7 @@ param_grid <- expand.grid(
   difference = by_vars, 
   adjustment = adj,
   stringsAsFactors = FALSE
-  )
+  ) 
 print(param_grid[4, ])
 
 cox_table <- pmap(
@@ -203,7 +215,7 @@ cox_table <- pmap(
 print(cox_table)
 
 cox_table <- cox_table %>% 
-                mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 2))) %>%
+                mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 4))) %>%
                 # don't need std.error or statistic
                 select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "adjustment", "n", "n_events", "redacted")
 file_name <- paste0("cox_models_",disease,".csv")

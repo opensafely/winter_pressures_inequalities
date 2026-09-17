@@ -98,7 +98,7 @@ prepare_data <- function(file_patterns, output_file) {
                 is.na(ethnicity16_from_codes), if_else(is.na(ethnicity16_from_sus), "Unknown", ethnicity16_from_sus), 
                 ethnicity16_from_codes
             ),
-            imd_quintile = forcats::fct_na_value_to_level(factor(na_if(imd_quintile, 99)), level = "Missing"),
+            imd_quintile = forcats::fct_na_value_to_level(factor(na_if(imd_quintile, 99)), level = "Unknown"),
             across(c(migrant, english_language, age_group, sex),
                 ~factor(as.character(.x), ordered = FALSE)),
             prior_covid_vacc_bin = case_when(
