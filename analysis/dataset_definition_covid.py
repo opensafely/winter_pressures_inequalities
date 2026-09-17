@@ -222,7 +222,7 @@ entry_uk = has_prior_event(codelists.entry_uk_codelist, start_date)
 born_in_uk = has_prior_event(codelists.born_in_uk_codelist, start_date)
 british_ethnicities = has_prior_event(codelists.british_ethnicities_codelist, start_date)
 
-dataset.migrant_cat = case(
+dataset.migrant = case(
    when(migrant_status).then("Migrant"),
    when(entry_uk).then("Non-migrant"),
    when(british_ethnicities).then("Non-migrant"),
