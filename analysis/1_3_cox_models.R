@@ -84,9 +84,9 @@ run_cox_models <- function(disease, difference, adjustment) {
                         } else{
                         " + age_group + sex + imd_quintile + urban_rural_5"
                         },
-                "health" = " + age_group + sex + vacc_elig_covid + vacc_elig_flu + prior_flu_vacc_bin + prior_covid_vacc_bin", #+ bmi_category",
-                "health_2018" = " + age_group + sex + vacc_elig_flu + prior_flu_vacc_bin", #+ bmi_category",
-                "all" =  " + age_group + sex + migrant + english_language + imd_quintile + urban_rural_5 + vacc_elig_covid + vacc_elig_flu + prior_flu_vacc_bin + prior_covid_vacc_bin", # + bmi_category",
+                "health" = " + age_group + sex + vacc_elig_covid + vacc_elig_flu + prior_flu_vacc_bin + prior_covid_vacc_bin + bmi_category",
+                "health_2018" = " + age_group + sex + vacc_elig_flu + prior_flu_vacc_bin + bmi_category",
+                "all" =  " + age_group + sex + migrant + english_language + imd_quintile + urban_rural_5 + vacc_elig_covid + vacc_elig_flu + prior_flu_vacc_bin + prior_covid_vacc_bin + bmi_category",
                 stop("Unknown adjustment: ", adjustment)
         )
 
