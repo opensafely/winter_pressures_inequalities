@@ -9,26 +9,6 @@ roundmid_any <- function(x, to = 6) {
   ceiling(x/to)*to - (floor(to/2)*(x != 0))
   
 }
-# Function to add a row where level is redacted in stratified analysis
-redacted_row <- function(disease, difference, strat_var, strat_level, reason) {
-        tibble(
-                term        = difference,
-                estimate    = NA_real_,
-                std.error   = NA_real_,
-                statistic   = NA_real_,
-                p.value     = NA_real_,
-                conf.low    = NA_real_,
-                conf.high   = NA_real_,
-                outcome     = NA_character_,
-                by_var      = difference,
-                disease     = disease,
-                strat_var   = strat_var,
-                strat_level = strat_level,
-                redacted    = TRUE,
-                redact_reason = reason
-        )
-}
-
 
 # taken from ckd-coverage-ve
 redactor <- function(n, threshold){
