@@ -25,13 +25,17 @@ args <- commandArgs(trailingOnly = TRUE)
 disease <- args[1]
 adj_yr <- args[2]
 
-restrict_period <- function(df, stop_var, binary_var, period_start, period_end) {
+# stop_var/start are numeric day-offsets from each patient's own fu_start,
+# not calendar dates, so the overlap with [period_start, period_end] has to
+# be worked out on the calendar-date columns (date_stop_var, fu_start) and
+# then converted back to that same per-patient numeric scale for Surv().
+restrict_period <- function(df, stop_var, date_stop_var, binary_var, period_start, period_end) {
   df %>%
-    filter(.data[[stop_var]] > period_start, start < period_end) %>%  # fixed
+    filter(.data[[date_stop_var]] > period_start, fu_start < period_end) %>%
     mutate(
-      !!binary_var := if_else(.data[[stop_var]] > period_end, 0L, .data[[binary_var]]),
-      !!stop_var  := pmin(.data[[stop_var]], period_end),
-      start        = pmax(start, period_start)
+      !!binary_var := if_else(.data[[date_stop_var]] > period_end, 0L, .data[[binary_var]]),
+      !!stop_var   := as.numeric(pmin(.data[[date_stop_var]], period_end) - fu_start),
+      start         = pmax(start, as.numeric(period_start - fu_start))
     )
 }
 
@@ -128,20 +132,20 @@ run_cox_models <- function(disease, difference, adjustment, period_start, period
         full_emerg = all(check_events_full$total_events_emerg > 2) 
 
         # # Helper to either fit model or return redacted row
-        fit_or_redact <- function(formula, stop_var, binary_var, full_var, outcome_name) {
-                df_period <- restrict_period(data_df, stop_var, binary_var, period_start, period_end)
+        fit_or_redact <- function(formula, stop_var, date_stop_var, binary_var, full_var, outcome_name) {
+                df_period <- restrict_period(data_df, stop_var, date_stop_var, binary_var, period_start, period_end)
                 n_events <- sum(data_df[[binary_var]] == 1, na.rm = TRUE)
                 if (n_events > 7 & full_var) {
                         tryCatch({
-                                coxph(formula, data = df_period) %>%
-                                        tidy(exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>%
+                                fit <- coxph(formula, data = df_period)
+                                tidy(fit, exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>%
                                         mutate(
-                                            outcome = outcome_name, 
-                                            by_var = difference, 
-                                            disease = disease, 
+                                            outcome = outcome_name,
+                                            by_var = difference,
+                                            disease = disease,
                                             adjustment = adjustment,
                                             period = period_end,
-                                            n = fit$n, 
+                                            n = fit$n,
                                             n_events   = fit$nevent,
                                             redacted   = FALSE
                                             )
@@ -197,10 +201,10 @@ run_cox_models <- function(disease, difference, adjustment, period_start, period
         }
 
         new_rows <- bind_rows(
-                fit_or_redact(f_gp,  "stop_gp",  "gp_binary",  full_gp,  "gp_binary"),
-                fit_or_redact(f_gp_sens,  "stop_gp_sens",  "gp_sens_binary",  full_gp_s,  "gp_sens_binary"),
-                fit_or_redact(f_sc,  "stop_sc",  "sc_binary",  full_sc,  "sc_binary"),
-                fit_or_redact(f_emerg, "stop_emerg", "emerg_binary", full_emerg, "emerg_binary")
+                fit_or_redact(f_gp,  "stop_gp",  "date_stop_gp",  "gp_binary",  full_gp,  "gp_binary"),
+                fit_or_redact(f_gp_sens,  "stop_gp_sens",  "date_stop_gp_sens",  "gp_sens_binary",  full_gp_s,  "gp_sens_binary"),
+                fit_or_redact(f_sc,  "stop_sc",  "date_stop_sc",  "sc_binary",  full_sc,  "sc_binary"),
+                fit_or_redact(f_emerg, "stop_emerg", "date_stop_emerg", "emerg_binary", full_emerg, "emerg_binary")
         )
 
         return(new_rows)
@@ -238,5 +242,5 @@ cox_table <- cox_table %>%
                 mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 4))) %>%
                 # don't need std.error or statistic
                 select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "adjustment", "period", "n", "n_events", "redacted")
-file_name <- paste0("cox_models_time_",disease,".csv")
+file_name <- paste0("cox_models_time_orig_",disease,".csv")
 write_csv(cox_table, file.path(outdir, file_name))

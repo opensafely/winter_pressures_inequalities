@@ -160,6 +160,6 @@ cox_table_stratified <- cox_table_stratified %>%
                 # don't need std.error or statistic
                 select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "strat_var", "strat_level")
 
-file_name <- paste0("cox_models_stratified_",disease,".csv")
+file_name <- paste0("cox_models_stratified_orig_",disease,".csv")
 
 write_csv(cox_table_stratified, file.path(outdir, file_name))

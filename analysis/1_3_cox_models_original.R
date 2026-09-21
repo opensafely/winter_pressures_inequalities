@@ -122,14 +122,14 @@ run_cox_models <- function(disease, difference, adjustment) {
                 n_events <- sum(data_df[[binary_var]] == 1, na.rm = TRUE)
                 if (n_events > 7 & full_var) {
                         tryCatch({
-                                coxph(formula, data = data_df) %>%
-                                        tidy(exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>%
+                                fit <- coxph(formula, data = data_df)
+                                tidy(fit, exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>%
                                         mutate(
-                                                outcome = outcome_name, 
-                                                by_var = difference, 
-                                                disease = disease, 
-                                                adjustment = adjustment, 
-                                                n = fit$n, 
+                                                outcome = outcome_name,
+                                                by_var = difference,
+                                                disease = disease,
+                                                adjustment = adjustment,
+                                                n = fit$n,
                                                 n_events   = fit$nevent,
                                                 redacted   = FALSE
                                                 )
@@ -218,5 +218,5 @@ cox_table <- cox_table %>%
                 mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 4))) %>%
                 # don't need std.error or statistic
                 select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "adjustment", "n", "n_events", "redacted")
-file_name <- paste0("cox_models_",disease,".csv")
+file_name <- paste0("cox_models_orig_",disease,".csv")
 write_csv(cox_table, file.path(outdir, file_name))
