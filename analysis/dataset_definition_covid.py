@@ -231,11 +231,12 @@ dataset.migrant = case(
 
 # English language proficiency
 english_spoken = has_prior_event(codelists.english_language_codelist, start_date)
-interpreter = has_prior_event(codelists.interpreter_codelist, start_date)
+dataset.interpreter = has_prior_event(codelists.interpreter_codelist, start_date)
 
+# Definition below seems to cover vast majority of people identified as migrants. 
 dataset.english_language = case(
    when(english_spoken).then(True),
-   when(interpreter).then(True),
+   when(dataset.interpreter).then(True),
    otherwise=False
 )
 

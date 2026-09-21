@@ -42,6 +42,16 @@ actions:
         highly_sensitive:
           population: output/dataset_covid_2024.arrow
 
+  generate_dataset_covid_2025:
+      run: >
+        ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
+        --output output/dataset_covid_2025.arrow
+        --
+        --start_date 2025-03-01
+      outputs:
+        highly_sensitive:
+          population: output/dataset_covid_2025.arrow
+
   generate_dataset_flu_rsv_2018:
       run: >
         ehrql:v1 generate-dataset analysis/dataset_definition_flu_rsv.py 
@@ -109,7 +119,7 @@ actions:
         --output output/measures/measures_covid.csv 
         --
         --start-date 2021-03-01
-        --intervals 48
+        --intervals 60
       outputs:
         moderately_sensitive:
           measures_csv: output/measures/measures_covid.csv
@@ -209,6 +219,7 @@ actions:
       - generate_dataset_covid_2022
       - generate_dataset_covid_2023
       - generate_dataset_covid_2024
+      - generate_dataset_covid_2025
       - generate_dataset_flu_rsv_2018
       - generate_dataset_flu_rsv_2019
       - generate_dataset_flu_rsv_2021
@@ -227,6 +238,7 @@ actions:
       - generate_dataset_covid_2022
       - generate_dataset_covid_2023
       - generate_dataset_covid_2024
+      - generate_dataset_covid_2025
       - data_process_bl
       outputs: 
         highly_sensitive:
@@ -368,6 +380,24 @@ actions:
         moderately_sensitive:
           table_cox: output/tables/cox_models_rsv_2021.csv
 
+  cox_models_time_covid_2021:
+      run: r:v2 analysis/1_5_cox_models_time.R covid_2021 2021
+      needs: 
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          table_cox_s: output/tables/cox_models_time_covid_2021.csv
+
+  cox_models_int_covid_2021:
+      run: r:v2 analysis/1_6_cox_models_int.R covid_2021 2021
+      needs: 
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          table_cox_s: output/tables/cox_models_int_covid_2021.csv
+
   cox_models_strat_covid_2021:
       run: r:v2 analysis/1_4_cox_models_stratified.R covid_2021 strat_params
       needs: 
@@ -438,3 +468,40 @@ actions:
       outputs:
         moderately_sensitive:
           med: output/tables/mediation.csv 
+
+# Original Cox models code
+  cox_models_covid_2021_orig:
+      run: r:v2 analysis/1_3_cox_models_original.R covid_2021 2021
+      needs: 
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          table_cox: output/tables/cox_models_orig_covid_2021.csv
+
+  cox_models_time_covid_2021_orig:
+      run: r:v2 analysis/1_5_cox_models_time_original.R covid_2021 2021
+      needs: 
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          table_cox_s: output/tables/cox_models_time_orig_covid_2021.csv
+
+  cox_models_int_covid_2021_orig:
+      run: r:v2 analysis/1_6_cox_models_int_original.R covid_2021 2021
+      needs: 
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          table_cox_s: output/tables/cox_models_int_orig_covid_2021.csv
+
+  cox_models_strat_covid_2021_orig:
+      run: r:v2 analysis/1_4_cox_models_stratified_original.R covid_2021 strat_params
+      needs: 
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          table_cox_s: output/tables/cox_models_stratified_orig_covid_2021.csv
