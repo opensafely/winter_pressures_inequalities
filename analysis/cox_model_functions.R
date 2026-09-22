@@ -204,6 +204,12 @@ fit_or_redact <- function(data_df, difference, outcome_name, stop_var, date_stop
   }
 
   formula <- make_cox_formula(difference, rhs_extra, stop_var, binary_var, strata_var)
+  # car::Anova() (used for the interaction LRT) refits reduced models by
+  # re-evaluating the stored call in environment(formula(fit)). Since
+  # make_cox_formula() is a top-level function (not nested inside this one,
+  # unlike the pre-refactor scripts), its as.formula() call captures its own
+  # environment rather than this one - re-point it here so df_fit is visible.
+  environment(formula) <- environment()
 
   tryCatch({
     fit <- coxph(formula, data = df_fit)
