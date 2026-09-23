@@ -24,7 +24,10 @@ fs::dir_create(outdir)
 args <- commandArgs(trailingOnly = TRUE)
 
 disease <- args[1]
-adj_yr <- args[2]
+# Which interaction variable to run (e.g. "sex" or "imd_quintile") - split
+# out per-run via the yaml to keep memory down, since ethnicity16_combined's
+# interaction with imd_quintile alone is ~80 terms under car::Anova type III.
+interaction_arg <- args[2]
 
 # # Cox PH models to measure differences in utilisation by ethnicity and IMD
 run_cox_models <- function(disease, difference, interactions) {
@@ -50,7 +53,7 @@ run_cox_models <- function(disease, difference, interactions) {
 }
 
 by_vars <- c("ethnicity6_combined", "ethnicity16_combined")
-int <- c("sex", "imd_quintile")
+int <- c(interaction_arg)
 
 param_grid <- expand.grid(
   disease = disease,
@@ -71,5 +74,5 @@ cox_table <- cox_table %>%
                 mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 4))) %>%
                 # don't need std.error or statistic
                 select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "interactions", "n", "n_events", "redacted", "lrt_chisq", "lrt_df", "lrt_p")
-file_name <- paste0("cox_models_int_",disease,".csv")
+file_name <- paste0("cox_models_int_",disease,"_",interaction_arg,".csv")
 write_csv(cox_table, file.path(outdir, file_name))
