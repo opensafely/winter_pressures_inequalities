@@ -52,7 +52,7 @@ run_cox_models <- function(disease, difference, interactions) {
         )
 }
 
-by_vars <- c("ethnicity6_combined", "ethnicity16_combined")
+by_vars <- c("ethnicity6_combined")
 int <- c(interaction_arg)
 
 param_grid <- expand.grid(

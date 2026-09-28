@@ -78,7 +78,12 @@ prep_covariates <- function(data_df) {
       english_language = relevel(factor(as.character(english_language), ordered = FALSE), ref = "TRUE")
     ) %>%
     filter(imd_quintile != "Unknown") %>%
-    filter(ethnicity6_combined != "Unknown")
+    filter(ethnicity6_combined != "Unknown") %>%
+    # filter() drops rows but not the now-unused "Unknown" factor level; left
+    # in place, that phantom level gets its own (all-zero) dummy column in
+    # any interaction term, which car::Anova(type = "III") then rejects
+    # model-wide as "aliased coefficients".
+    droplevels()
 }
 
 # Adjustment term sets shared by scripts that take an `adjustment` argument
@@ -123,10 +128,14 @@ restrict_period <- function(df, stop_var, date_stop_var, binary_var, period_star
     )
 }
 
-# For each outcome, checks whether every level of `difference` has > 2 events
-check_sufficient_events <- function(data_df, difference) {
+# For each outcome, checks whether every combination of levels of
+# `group_vars` has > 2 events. Pass just `difference` for main-effects
+# models, or c(difference, interaction_var) for interaction models - an
+# interaction term can only be estimated if every difference x interaction
+# cell has enough events, not just every difference level on its own.
+check_sufficient_events <- function(data_df, group_vars) {
   data_df %>%
-    group_by(across(all_of(difference))) %>%
+    group_by(across(all_of(group_vars))) %>%
     summarise(
       gp_binary      = sum(gp_binary),
       gp_sens_binary = sum(gp_sens_binary),
@@ -134,7 +143,7 @@ check_sufficient_events <- function(data_df, difference) {
       emerg_binary   = sum(emerg_binary),
       .groups = "drop"
     ) %>%
-    summarise(across(-all_of(difference), ~ all(.x > 2))) %>%
+    summarise(across(-all_of(group_vars), ~ all(.x > 2))) %>%
     as.list()
 }
 
@@ -194,8 +203,9 @@ fit_or_redact <- function(data_df, difference, outcome_name, stop_var, date_stop
     return(cox_redacted_row(difference, outcome_name, disease, "min events not met", extra_cols))
   }
   if (!full_var) {
-    message("Redacted: 2 or fewer ", disease, " ", outcome_name, " events per strata", context_label)
-    return(cox_redacted_row(difference, outcome_name, disease, "insufficient events per exposure level", extra_cols))
+    cell_desc <- if (!is.null(interaction_var)) "exposure x interaction cell" else "exposure level"
+    message("Redacted: 2 or fewer ", disease, " ", outcome_name, " events per ", cell_desc, context_label)
+    return(cox_redacted_row(difference, outcome_name, disease, paste0("insufficient events per ", cell_desc), extra_cols))
   }
 
   df_fit <- data_df
@@ -251,7 +261,12 @@ run_all_outcomes <- function(data_df, disease, difference, rhs_extra,
                               interaction_var = NULL, extra_cols = list(),
                               context_label = "") {
 
-  events_ok <- if (full_events_check) check_sufficient_events(data_df, difference) else list()
+  # For interaction models, every difference x interaction_var cell needs
+  # enough events (not just every difference level on its own), otherwise
+  # the interaction term can't be estimated and car::Anova() errors out on
+  # aliased coefficients rather than getting a clean redaction.
+  group_vars <- if (!is.null(interaction_var)) c(difference, interaction_var) else difference
+  events_ok <- if (full_events_check) check_sufficient_events(data_df, group_vars) else list()
 
   pmap_dfr(COX_OUTCOMES, function(outcome_name, stop_var, date_stop_var, binary_var, strata_var) {
     fit_or_redact(
