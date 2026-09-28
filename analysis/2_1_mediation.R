@@ -3,6 +3,7 @@ library(survival)
 library(mediation)
 library(tidyverse)
 library(broom)
+library(here)
 
 outdir <- here("output", "tables")
 fs::dir_create(outdir)
@@ -12,17 +13,48 @@ fs::dir_create(outdir)
 data_covid <- read_feather(here("output/an_outcome_first_covid_2021.arrow"), as_data_frame = TRUE) 
 
 #print(levels(data_covid$ethnicity6_combined))
+
+# Mediators with a natural order are modelled with an ordered logistic
+# mediator model (MASS::polr) rather than binomial glm, since glm(family =
+# binomial) silently collapses any factor with >2 levels into a "reference
+# vs everything else" binary, which mediate() then can't reconcile with the
+# real multi-level mediator used in the outcome model.
+ordinal_levels <- list(
+  imd_quintile  = c("1", "2", "3", "4", "5"),
+  urban_rural_5 = c("Urban major conurbation", "Urban minor conurbation", "Urban city and town",
+                     "Rural town and fringe", "Rural village and dispersed"),
+  bmi_category  = c("underweight", "ideal", "overweight", "obese")
+)
+
 # Currently runs for secondary care outcome only but will update to loop over each outcome
 run_mediation <- function(group, mediator) {
-  data_df <- data_covid %>% 
+  data_df <- data_covid %>%
     # setting events on same day as follow up at half day
-    mutate(stop_sc = if_else(stop_sc == 0, 0.5, stop_sc)) %>% 
+    mutate(stop_sc = if_else(stop_sc == 0, 0.5, stop_sc)) %>%
     filter(ethnicity6_combined %in% c(group, "White")) %>%
     droplevels()
-  
+
+  is_ordinal <- mediator %in% names(ordinal_levels)
+
+  if (is_ordinal) {
+    # Restrict to the well-defined ordered categories and set their order
+    # (drops e.g. "Unknown"/"Missing"/"unknown or outlier")
+    data_df <- data_df %>% filter(.data[[mediator]] %in% ordinal_levels[[mediator]])
+    data_df[[mediator]] <- factor(data_df[[mediator]], levels = ordinal_levels[[mediator]], ordered = TRUE)
+  } else if ("Unknown" %in% levels(factor(data_df[[mediator]]))) {
+    # Binary mediator: drop the "Unknown" category so both the mediator and
+    # outcome model treat it as a genuine 2-level factor
+    data_df <- data_df %>% filter(.data[[mediator]] != "Unknown")
+  }
+  data_df <- droplevels(data_df)
+
   # Mediator model
   med_formula <- as.formula(paste0(mediator, " ~ ethnicity6_combined + age_group + sex"))
-  med_fit <- glm(med_formula, data = data_df, family = binomial(link = "logit"))
+  med_fit <- if (is_ordinal) {
+    MASS::polr(med_formula, data = data_df, Hess = TRUE)
+  } else {
+    glm(med_formula, data = data_df, family = binomial(link = "logit"))
+  }
   print(summary(med_fit))
   # Outcome model
   out_formula <- as.formula(paste0("Surv(stop_sc, sc_binary) ~ ethnicity6_combined + sex + age_group + ", mediator))
