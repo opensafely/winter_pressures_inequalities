@@ -456,18 +456,86 @@ actions:
         moderately_sensitive:
           plots: output/tables/plot_*.svg
 
-  mediation:
-      run: r:v2 analysis/2_1_mediation.R 
-      needs: 
+  mediation_migrant:
+      run: r:v2 analysis/2_1_mediation.R migrant
+      needs:
         - data_process_bl
         - data_process_outcome_covid_2021
-        - data_process_outcome_flu_2018
-        - data_process_outcome_rsv_2018
-        - data_process_outcome_flu_2021
-        - data_process_outcome_rsv_2021
       outputs:
         moderately_sensitive:
-          med: output/tables/mediation.csv 
+          med: output/tables/mediation_covid_aft_migrant.csv
+
+  mediation_english_language:
+      run: r:v2 analysis/2_1_mediation.R english_language
+      needs:
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          med: output/tables/mediation_covid_aft_english_language.csv
+
+  mediation_imd_quintile:
+      run: r:v2 analysis/2_1_mediation.R imd_quintile
+      needs:
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          med: output/tables/mediation_covid_aft_imd_quintile.csv
+
+  mediation_urban_rural_5:
+      run: r:v2 analysis/2_1_mediation.R urban_rural_5
+      needs:
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          med: output/tables/mediation_covid_aft_urban_rural_5.csv
+
+  mediation_vacc_elig_covid:
+      run: r:v2 analysis/2_1_mediation.R vacc_elig_covid
+      needs:
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          med: output/tables/mediation_covid_aft_vacc_elig_covid.csv
+
+  mediation_vacc_elig_flu:
+      run: r:v2 analysis/2_1_mediation.R vacc_elig_flu
+      needs:
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          med: output/tables/mediation_covid_aft_vacc_elig_flu.csv
+
+  mediation_prior_flu_vacc_bin:
+      run: r:v2 analysis/2_1_mediation.R prior_flu_vacc_bin
+      needs:
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          med: output/tables/mediation_covid_aft_prior_flu_vacc_bin.csv
+
+  mediation_prior_covid_vacc_bin:
+      run: r:v2 analysis/2_1_mediation.R prior_covid_vacc_bin
+      needs:
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          med: output/tables/mediation_covid_aft_prior_covid_vacc_bin.csv
+
+  mediation_bmi_category:
+      run: r:v2 analysis/2_1_mediation.R bmi_category
+      needs:
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          med: output/tables/mediation_covid_aft_bmi_category.csv
 
 # Original Cox models code
   cox_models_covid_2021_orig:

@@ -8,6 +8,13 @@ library(here)
 outdir <- here("output", "tables")
 fs::dir_create(outdir)
 
+# Which mediator to run - split out per-run via the yaml to keep memory
+# down, since mediate()'s default 1000 simulations are computed over the
+# whole (group vs White) subset for every one of the 36 group x mediator
+# combinations otherwise, in a single R session.
+args <- commandArgs(trailingOnly = TRUE)
+mediator_arg <- args[1]
+
 # use mediation package to do AFT model for COVID outcomes
 
 data_covid <- read_feather(here("output/an_outcome_first_covid_2021.arrow"), as_data_frame = TRUE) 
@@ -80,7 +87,7 @@ run_mediation <- function(group, mediator) {
 }
 
 group_vars <- c("Mixed", "Asian or Asian British", "Black or Black British", "Other Ethnic Groups")
-mediation_vars <- c("migrant", "english_language", "imd_quintile", "urban_rural_5", "vacc_elig_covid", "vacc_elig_flu", "prior_flu_vacc_bin", "prior_covid_vacc_bin", "bmi_category")
+mediation_vars <- c(mediator_arg)
 
 param_grid <- expand.grid(
   group = group_vars, 
@@ -95,7 +102,7 @@ mediation_outputs <- pmap(
 )
 
 all_results <- bind_rows(mediation_outputs)
-write.csv(all_results, file.path(outdir, "mediation_covid_aft.csv"), row.names = FALSE)
+write.csv(all_results, file.path(outdir, paste0("mediation_covid_aft_", mediator_arg, ".csv")), row.names = FALSE)
 
 # Run e-value method in COVID cohort (https://arxiv.org/pdf/2411.17533)
 # data_df <- data_covid %>% 
