@@ -61,8 +61,8 @@ var_labels_list <- list(
                 urban_rural_5 ~ "Urban-rural classification",
                 migrant ~ "Migrant",
                 english_language ~ "English not main language spoken",
-                vacc_elig_flu ~ "Eligible for Flu vaccine",
-                vacc_elig_covid ~ "Eligible for COVID-19 vaccine",
+                flu_atrisk_grp ~ "Flu CRG",
+                covid_atrisk_grp ~ "COVID-19 CRG",
                 bmi_category ~ "BMI category"
                 )
 
@@ -70,7 +70,7 @@ var_labels_list <- list(
 desc_covid_by <- outcomes_covid_2021 %>% 
         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
         urban_rural_5, imd_quintile, migrant, english_language, 
-        vacc_elig_flu, vacc_elig_covid, bmi_category) %>% 
+        flu_atrisk_grp, covid_atrisk_grp, bmi_category) %>% 
         mutate(ethnicity6_combined = fct_na_value_to_level(
                 ethnicity6_combined, 
                 level = "Missing")) %>%
