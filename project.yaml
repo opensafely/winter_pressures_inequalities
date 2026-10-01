@@ -546,6 +546,15 @@ actions:
         moderately_sensitive:
           med: output/tables/mediation_covid_aft_bmi_category.csv
 
+  mediation_pseudo:
+      run: r:v2 analysis/2_2_mediation_pseudo.R 
+      needs:
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          med: output/tables/mediation_covid_pseudo.csv
+
 # Original Cox models code
   cox_models_covid_2021_orig:
       run: r:v2 analysis/1_3_cox_models_original.R covid_2021 2021

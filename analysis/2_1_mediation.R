@@ -48,10 +48,25 @@ run_mediation <- function(group, mediator) {
     # (drops e.g. "Unknown"/"Missing"/"unknown or outlier")
     data_df <- data_df %>% filter(.data[[mediator]] %in% ordinal_levels[[mediator]])
     data_df[[mediator]] <- factor(data_df[[mediator]], levels = ordinal_levels[[mediator]], ordered = TRUE)
-  } else if ("Unknown" %in% levels(factor(data_df[[mediator]]))) {
-    # Binary mediator: drop the "Unknown" category so both the mediator and
-    # outcome model treat it as a genuine 2-level factor
-    data_df <- data_df %>% filter(.data[[mediator]] != "Unknown")
+  } else {
+    if ("Unknown" %in% levels(factor(data_df[[mediator]]))) {
+      # Binary mediator: drop the "Unknown" category so both the mediator and
+      # outcome model treat it as a genuine 2-level factor
+      data_df <- data_df %>% filter(.data[[mediator]] != "Unknown")
+    }
+    # mediate()'s internal simulation for a glm(binomial) mediator draws
+    # plain 0/1 values, but then maps them onto a factor mediator via
+    # factor(x, levels = 1:m, ...) - i.e. it expects 1/2, not 0/1. Every
+    # simulated 0 silently becomes NA, which is what was crashing pval()
+    # with "missing value where TRUE/FALSE needed" regardless of how clean
+    # the data/model fit was. Converting to plain numeric 0/1 (used
+    # consistently in both the mediator and outcome models below) avoids
+    # that factor-handling path entirely.
+    if (!is.logical(data_df[[mediator]])) {
+      data_df[[mediator]] <- as.numeric(factor(data_df[[mediator]])) - 1
+    } else {
+      data_df[[mediator]] <- as.numeric(data_df[[mediator]])
+    }
   }
   data_df <- droplevels(data_df)
 
@@ -87,7 +102,7 @@ run_mediation <- function(group, mediator) {
 }
 
 group_vars <- c("Mixed", "Asian or Asian British", "Black or Black British", "Other Ethnic Groups")
-mediation_vars <- c("migrant", "english_language", "imd_quintile", "urban_rural_5", "vacc_elig_covid", "vacc_elig_flu", "prior_flu_vacc_bin", "prior_covid_vacc_bin", "bmi_category")
+mediation_vars <- c(mediator_arg)
 
 param_grid <- expand.grid(
   group = group_vars, 
@@ -102,22 +117,5 @@ mediation_outputs <- pmap(
 )
 
 all_results <- bind_rows(mediation_outputs)
-write.csv(all_results, file.path(outdir, paste0("mediation_covid_aft_", mediator_arg,".csv")), row.names = FALSE)
+write.csv(all_results, file.path(outdir, paste0("mediation_covid_aft_", mediator_arg, ".csv")), row.names = FALSE)
 
-# Run e-value method in COVID cohort (https://arxiv.org/pdf/2411.17533)
-# data_df <- data_covid %>% 
-#     # setting events on same day as follow up at half day
-#     mutate(stop_sc = if_else(stop_sc == 0, 0.5, stop_sc)) %>% 
-#     filter(ethnicity6_combined %in% c("Mixed", "White")) %>%
-#     droplevels()
-
-# med_fit <- glm(migrant ~ ethnicity6_combined + age_group + sex, data = data_df, family = binomial(link = "logit"))
-# km_fit <- survfit(Surv(stop_sc,sc_binary) ~ 1, data = data_covid) # Kaplan-Meier Estimator 
-# # Fit pseudo values. Can fit targeting survival probability or RMST - chose RMST as gives absolute tome gained/lost
-# # set times as 730 = two years 
-# data_df$pseudo <- pseudo(fit = km_fit,times = 730 ,type = "rmst")
-# # Now fit linear mediation model
-# out_fit_pseudo <- lm(pseudo ~ ethnicity6_combined + sex + age_group + migrant, data = data_df)
-
-# med_out_pseudo <- mediate(med_fit, out_fit_pseudo, treat = "ethnicity6_combined", mediator = "migrant",
-#                     treat.value = "Mixed", control.value = "White")
