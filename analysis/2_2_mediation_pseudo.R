@@ -10,7 +10,7 @@ fs::dir_create(outdir)
 
 # use mediation package to do AFT model for COVID outcomes
 
-data_covid <- read_feather(here("output/an_outcome_first_covid_2021_balanced_test.arrow"), as_data_frame = TRUE)
+data_covid <- read_feather(here("output/an_outcome_first_covid_2021.arrow"), as_data_frame = TRUE)
 
 # Run e-value method in COVID cohort (https://arxiv.org/pdf/2411.17533)
 data_df <- data_covid %>% 
