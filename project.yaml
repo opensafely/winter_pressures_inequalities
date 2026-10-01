@@ -316,7 +316,7 @@ actions:
       outputs: 
         moderately_sensitive:
           table: output/tables/baseline_table_covid*.csv
-          table_flu_rsv: output/tables/baseline_table_flu_rsv*.csv
+          #table_flu_rsv: output/tables/baseline_table_flu_rsv*.csv
           table_out_c: output/tables/count_*.csv
         
   rates:
@@ -389,14 +389,23 @@ actions:
         moderately_sensitive:
           table_cox_s: output/tables/cox_models_time_covid_2021.csv
 
-  cox_models_int_covid_2021:
-      run: r:v2 analysis/1_6_cox_models_int.R covid_2021 2021
-      needs: 
+  cox_models_int_sex_covid_2021:
+      run: r:v2 analysis/1_6_cox_models_int.R covid_2021 sex
+      needs:
         - data_process_bl
         - data_process_outcome_covid_2021
       outputs:
         moderately_sensitive:
-          table_cox_s: output/tables/cox_models_int_covid_2021.csv
+          table_cox_s: output/tables/cox_models_int_covid_2021_sex.csv
+
+  cox_models_int_imd_quintile_covid_2021:
+      run: r:v2 analysis/1_6_cox_models_int.R covid_2021 imd_quintile
+      needs:
+        - data_process_bl
+        - data_process_outcome_covid_2021
+      outputs:
+        moderately_sensitive:
+          table_cox_s: output/tables/cox_models_int_covid_2021_imd_quintile.csv
 
   cox_models_strat_covid_2021:
       run: r:v2 analysis/1_4_cox_models_stratified.R covid_2021 strat_params

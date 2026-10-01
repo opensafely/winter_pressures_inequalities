@@ -61,8 +61,8 @@ var_labels_list <- list(
                 urban_rural_5 ~ "Urban-rural classification",
                 migrant ~ "Migrant",
                 english_language ~ "English not main language spoken",
-                flu_atrisk_grp ~ "Flu clinical risk group",
-                covid_atrisk_grp ~ "COVID-19 clinical risk group",
+                flu_atrisk_grp ~ "Flu CRG",
+                covid_atrisk_grp ~ "COVID-19 CRG",
                 bmi_category ~ "BMI category"
                 )
 
@@ -98,81 +98,81 @@ write_csv(desc_covid_by$table_body, file.path(outdir, "baseline_table_covid.csv"
 # # Flu/RSV cohort baseline table by ethnicity - same cohort so using flu outcome files
 # # Grouped table
 
-desc_flu_rsv_2021_by <- outcomes_flu_2021 %>% 
-        select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
-               urban_rural_5, imd_quintile, migrant, english_language, 
-               flu_atrisk_grp, covid_atrisk_grp, bmi_category) %>% 
-        mutate(ethnicity6_combined = fct_na_value_to_level(ethnicity6_combined, level = "Missing")) %>%
-        tbl_summary(
-                missing = "no",
-                by = ethnicity6_combined,
-                label = var_labels_list
-        )%>% 
-        add_overall(last = FALSE) %>% 
-        modify_header(all_stat_cols() ~ "{level}") 
-        
-# # Apply redactions to baseline table
-desc_flu_rsv_2021_redact_round <- fn_redact_tbl_summary(
-        tbl_summary = desc_flu_rsv_2021_by, 
-        threshold = 7,
-        col_names  = c( "stat_0", "stat_1", "stat_2", "stat_3", "stat_4", "stat_5", "stat_6"),
-        rename_cols = c("Overall", "Asian", "Black", "Chinese", "Missing", "Mixed", "White")
-        ) 
-
-desc_flu_rsv_2018_by <- outcomes_flu_2018 %>% 
-        select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
-               urban_rural_5, imd_quintile, migrant, english_language, 
-               flu_atrisk_grp, covid_atrisk_grp, bmi_category) %>% 
-        mutate(ethnicity6_combined = fct_na_value_to_level(ethnicity6_combined, level = "Missing")) %>%
-        tbl_summary(
-                missing = "no",
-                by = ethnicity6_combined,
-                label = var_labels_list
-        )%>% 
-        add_overall(last = FALSE) %>% 
-        modify_header(all_stat_cols() ~ "{level}") 
-        
-# # Apply redactions to baseline table
-desc_flu_rsv_2018_redact_round <- fn_redact_tbl_summary(
-        tbl_summary = desc_flu_rsv_2018_by, 
-        threshold = 7,
-        col_names  = c( "stat_0", "stat_1", "stat_2", "stat_3", "stat_4", "stat_5", "stat_6"),
-        rename_cols = c("Overall", "Asian", "Black", "Chinese", "Missing", "Mixed", "White")
-        ) 
-
-# # Overall table (no by)
-# desc_flu_rsv_overall <- baseline_flu_rsv %>% 
+# desc_flu_rsv_2021_by <- outcomes_flu_2021 %>% 
 #         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
 #                urban_rural_5, imd_quintile, migrant, english_language, 
-#                flu_atrisk_grp, covid_atrisk_grp) %>% 
+#                vacc_elig_flu, vacc_elig_covid, bmi_category) %>% 
 #         mutate(ethnicity6_combined = fct_na_value_to_level(ethnicity6_combined, level = "Missing")) %>%
 #         tbl_summary(
 #                 missing = "no",
+#                 by = ethnicity6_combined,
 #                 label = var_labels_list
-#         )
+#         )%>% 
+#         add_overall(last = FALSE) %>% 
+#         modify_header(all_stat_cols() ~ "{level}") 
+        
+# # # Apply redactions to baseline table
+# desc_flu_rsv_2021_redact_round <- fn_redact_tbl_summary(
+#         tbl_summary = desc_flu_rsv_2021_by, 
+#         threshold = 7,
+#         col_names  = c( "stat_0", "stat_1", "stat_2", "stat_3", "stat_4", "stat_5", "stat_6"),
+#         rename_cols = c("Overall", "Asian", "Black", "Chinese", "Missing", "Mixed", "White")
+#         ) 
 
-# raw_stats_by      <- extract_round_stats(desc_flu_rsv_by)
-# raw_stats_overall <- extract_round_stats(desc_flu_rsv_overall) %>%
-#         mutate(by = "Overall")  # add by column so pivot_wider works
+# desc_flu_rsv_2018_by <- outcomes_flu_2018 %>% 
+#         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
+#                urban_rural_5, imd_quintile, migrant, english_language, 
+#                vacc_elig_flu, vacc_elig_covid, bmi_category) %>% 
+#         mutate(ethnicity6_combined = fct_na_value_to_level(ethnicity6_combined, level = "Missing")) %>%
+#         tbl_summary(
+#                 missing = "no",
+#                 by = ethnicity6_combined,
+#                 label = var_labels_list
+#         )%>% 
+#         add_overall(last = FALSE) %>% 
+#         modify_header(all_stat_cols() ~ "{level}") 
+        
+# # # Apply redactions to baseline table
+# desc_flu_rsv_2018_redact_round <- fn_redact_tbl_summary(
+#         tbl_summary = desc_flu_rsv_2018_by, 
+#         threshold = 7,
+#         col_names  = c( "stat_0", "stat_1", "stat_2", "stat_3", "stat_4", "stat_5", "stat_6"),
+#         rename_cols = c("Overall", "Asian", "Black", "Chinese", "Missing", "Mixed", "White")
+#         ) 
 
-# # Combine and pivot
-# desc_flu_rsv_redact_round <- bind_rows(raw_stats_overall, raw_stats_by) %>%
-#         rowwise() %>%
-#         transmute(
-#                 var_label,
-#                 variable_levels,
-#                 by,
-#                 value = glue::glue(stat_display, .envir = cur_data())
-#         ) %>%
-#         pivot_wider(
-#                 names_from = by,
-#                 values_from = value
-#         )
-# # saving both rounded/redacted and not rpound/redacted versions
-write_csv(desc_flu_rsv_2018_redact_round, file.path(outdir, "baseline_table_flu_rsv_2018_r.csv"))
-write_csv(desc_flu_rsv_2018_by$table_body, file.path(outdir, "baseline_table_flu_rsv_2018.csv"))
-write_csv(desc_flu_rsv_2021_redact_round, file.path(outdir, "baseline_table_flu_rsv_2021_r.csv"))
-write_csv(desc_flu_rsv_2021_by$table_body, file.path(outdir, "baseline_table_flu_rsv_2021.csv"))
+# # # Overall table (no by)
+# # desc_flu_rsv_overall <- baseline_flu_rsv %>% 
+# #         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
+# #                urban_rural_5, imd_quintile, migrant, english_language, 
+# #                flu_atrisk_grp, covid_atrisk_grp) %>% 
+# #         mutate(ethnicity6_combined = fct_na_value_to_level(ethnicity6_combined, level = "Missing")) %>%
+# #         tbl_summary(
+# #                 missing = "no",
+# #                 label = var_labels_list
+# #         )
+
+# # raw_stats_by      <- extract_round_stats(desc_flu_rsv_by)
+# # raw_stats_overall <- extract_round_stats(desc_flu_rsv_overall) %>%
+# #         mutate(by = "Overall")  # add by column so pivot_wider works
+
+# # # Combine and pivot
+# # desc_flu_rsv_redact_round <- bind_rows(raw_stats_overall, raw_stats_by) %>%
+# #         rowwise() %>%
+# #         transmute(
+# #                 var_label,
+# #                 variable_levels,
+# #                 by,
+# #                 value = glue::glue(stat_display, .envir = cur_data())
+# #         ) %>%
+# #         pivot_wider(
+# #                 names_from = by,
+# #                 values_from = value
+# #         )
+# # # saving both rounded/redacted and not rpound/redacted versions
+# write_csv(desc_flu_rsv_2018_redact_round, file.path(outdir, "baseline_table_flu_rsv_2018_r.csv"))
+# write_csv(desc_flu_rsv_2018_by$table_body, file.path(outdir, "baseline_table_flu_rsv_2018.csv"))
+# write_csv(desc_flu_rsv_2021_redact_round, file.path(outdir, "baseline_table_flu_rsv_2021_r.csv"))
+# write_csv(desc_flu_rsv_2021_by$table_body, file.path(outdir, "baseline_table_flu_rsv_2021.csv"))
 
 # #Function to create table with number of outcomes, person-time, rate and flag for outcome type - no rounding yet
 create_event_table <- function(data, time, status, outcome, group = NULL, rate_multiplier = 1000) {

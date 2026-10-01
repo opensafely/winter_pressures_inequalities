@@ -33,7 +33,7 @@ ordinal_levels <- list(
   bmi_category  = c("underweight", "ideal", "overweight", "obese")
 )
 
-# Currently runs for secondary care outcome only but will update to loop over each outcome
+# Function to run mediation models
 run_mediation <- function(group, mediator) {
   data_df <- data_covid %>%
     # setting events on same day as follow up at half day
