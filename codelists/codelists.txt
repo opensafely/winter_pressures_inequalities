@@ -34,11 +34,11 @@ opensafely/british-ethnicities/6a897fb0/
 opensafely/english-not-main-language/0eb92f0a/ 
 opensafely/interpreter-required/5734c8b3/
 
-nhsd-primary-care-domain-refsets/hyp_cod/20250627
-nhsd-primary-care-domain-refsets/ast_cod/20250627
-bristol/multimorbidity_copd/11c97d7b
+#Multimorbidity codelists
 bristol/multimorbidity_alcoholproblems/625d5706
+bristol/multimorbidity_anxietydepression/67c2d6f2
 bristol/multimorbidity_atrial-fibrillation/0f16bd85
+bristol/multimorbidity_copd/11c97d7b
 bristol/multimorbidity_cancer/7e1f8a31
 bristol/multimorbidity_chronic-kidney-disease/651016fc
 bristol/multimorbidity_dementia/43e863e5
@@ -47,11 +47,25 @@ bristol/multimorbidity_epilepsy/78ba0a45
 bristol/multimorbidity_heart-failure/4c00a3c7
 bristol/multimorbidity_irritable-bowel-syndrome/32f13092
 bristol/multimorbidity_psychosisbipolar-disorder/19e1bd5d
-bristol/multimorbidity_anxietydepression/67c2d6f2/
+nhsd-primary-care-domain-refsets/hyp_cod/20250912
+nhsd-primary-care-domain-refsets/ast_cod/20250627
 bristol/multimorbidity_coronary-heart-disease/6b200f80
 bristol/multimorbidity_stroketransient-ischemic-attack/39012916
 bristol/multimorbidity_connective-tissue-disorder/52109c4b
 bristol/multimorbidity_hearing-loss/6c165b67
+bristol/multimorbidity_prescription_analgesics_opiods_exc_migraine_bnf/26bf845e
+bristol/multimorbidity_prescription_antiepileptics_for_pain_bnf/4534777f
+bristol/multimorbidity_prescription_constipation_bnf/3b302b36
+bristol/multimorbidity_prescription_epilepsy_bnf/14a2f833
+# need updating?
+user/ZoeMZou/multimorbidity_prescription_anxiolytics_anti_depressants/55b9a828/
+opensafely/asthma-inhaler-salbutamol-medication/2020-04-15
+user/ZoeMZou/multimorbidity_prescription_chronic_constipation/5306e832
+user/ZoeMZou/multimorbidity_prescription_epilepsy/39f774fd
+user/ZoeMZou/multimorbidity_prescription_anti_spasmodic/20e801c8
+user/ZoeMZou/multimorbidity_prescription_analgesics_opiods_not_migraine/07d88e93
+user/ZoeMZou/multimorbidity_prescription_anti_epileptic_for_pain_only/6ec91b5d
+user/ZoeMZou/multimorbidity_prescription_schizophrenia_bipolar_disorder/3caa34f3
 
 #clinical risk group codelists
 #Asthma

@@ -29,7 +29,8 @@ from variable_lib import (
   has_prior_meds,
   is_gp_event,
   first_gp_event_with_washout,
-  most_recent_bmi
+  most_recent_bmi,
+  get_cms_on_date,
 )
 
 from clinical_risk_grps import *
@@ -124,7 +125,11 @@ dataset.imd_quintile = case(
     otherwise = 99
     )
 
-# Comorbidity - add cms once finalised by Zoe and Shrinkhala
+constipation = medications.where(medications.dmd_code.is_in(codelists.cons_drug)
+                                 ).where(medications.date.is_on_or_before(start_date))
+
+# Comorbidity 
+cms = get_cms_on_date(start_date, return_components=False)
 
 #******** High risk vaccination group for COVID at start date - code from comparative spring booster 2023 
 # Clinical risk groups stay the same but age restrictions change through follow-up
