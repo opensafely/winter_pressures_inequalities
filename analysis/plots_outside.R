@@ -273,8 +273,15 @@ plot_hr_time <- function(file, by_var_val, outcome_val, terms, labs, title_prefi
 
   raw_levels <- str_remove(terms, by_var_val)
 
-  p <- file %>%
-    filter(by_var == by_var_val & term %in% terms & outcome == outcome_val) %>%
+  plot_data <- file %>%
+    filter(by_var == by_var_val & term %in% terms & outcome == outcome_val)
+
+  if (nrow(plot_data) == 0) {
+    message("Skipping ", outcome_val, " - no non-redacted ", by_var_val, " estimates in any adjustment/period")
+    return(NULL)
+  }
+
+  p <- plot_data %>%
     mutate(term = factor(str_remove(term, by_var_val),
                          levels = raw_levels,
                          labels = labs),
@@ -314,8 +321,28 @@ for (out in outcomes) {
 }
 
 for (out in names(time_plots)) {
+  if (is.null(time_plots[[out]])) next
   ggsave(
     filename = file.path(outdir, paste0("hr_plot_time_ethnicity6_combined_", out, ".svg")),
+    plot = time_plots[[out]],
+    width = 10, height = 6, dpi = 300
+  )
+}
+
+for (out in outcomes) {
+  time_plots[[out]] <- plot_hr_time(
+    file = cox_models_time_covid_2021,
+    by_var_val = "ethnicity16_combined",
+    outcome_val = out,
+    terms = ethnic16_terms,
+    labs = ethnic16_labs
+  )
+}
+
+for (out in names(time_plots)) {
+  if (is.null(time_plots[[out]])) next
+  ggsave(
+    filename = file.path(outdir, paste0("hr_plot_time_ethnicity16_combined_", out, ".svg")),
     plot = time_plots[[out]],
     width = 10, height = 6, dpi = 300
   )
