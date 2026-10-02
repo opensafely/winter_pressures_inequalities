@@ -452,6 +452,17 @@ actions:
         moderately_sensitive:
           table_cox_s: output/tables/cox_models_stratified_rsv_2021.csv
 
+  cox_models_round:
+      run: r:v2 analysis/round_cox_tables.R 
+      needs:
+        - cox_models_covid_2021
+        - cox_models_time_covid_2021
+        - cox_models_int_sex_covid_2021
+        - cox_models_int_imd_quintile_covid_2021 
+      outputs:
+        moderately_sensitive:
+          tables_r: output/tables/cox_models_*_r.csv
+
   km_plots:
       run: r:v2 analysis/1_5_km_plots.R
       needs: 
