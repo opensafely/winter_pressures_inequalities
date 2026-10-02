@@ -265,52 +265,61 @@ plot_hr_combined_stratified <- function(file, by_var_val, outcomes_val, terms, s
 
 # Split by time period
 # cox_models_time_covid_2021 has `adjustment` and `period` columns (not
-# strat_var/strat_level like the stratified output), and 6 adjustment sets
-# per period - facet by outcome x adjustment, colour by period, so every
-# adjustment set is shown rather than overplotting them together.
-plot_hr_combined_time <- function(file, by_var_val, outcomes_val, terms, labs, title_prefix = "Exposure",
-                                   adjustment_order = c("unadjusted", "age_sex", "area", "migration", "health", "all")) {
+# strat_var/strat_level like the stratified output). One plot per outcome;
+# within each, all 6 adjustments shown as coloured/dodged dots, faceted by
+# period (so both periods appear side by side rather than overplotted).
+plot_hr_time <- function(file, by_var_val, outcome_val, terms, labs, title_prefix = "Outcome",
+                          adjustment_order = c("unadjusted", "age_sex", "area", "migration", "health", "all")) {
+
+  raw_levels <- str_remove(terms, by_var_val)
 
   p <- file %>%
-    filter(by_var == by_var_val & term %in% terms & outcome %in% outcomes_val) %>%
-    mutate(term = factor(str_remove(term, by_var_val), levels = labs),
-           outcome = factor(outcome, levels = outcomes_val),
+    filter(by_var == by_var_val & term %in% terms & outcome == outcome_val) %>%
+    mutate(term = factor(str_remove(term, by_var_val),
+                         levels = raw_levels,
+                         labels = labs),
            adjustment = factor(adjustment, levels = adjustment_order),
            period = factor(period)) %>%
-    ggplot(aes(x = estimate, y = term, colour = period)) +
+    ggplot(aes(x = estimate, y = term, colour = adjustment)) +
     geom_pointrange(aes(xmin = conf.low, xmax = conf.high),
                     position = position_dodge(width = 0.6)) +
     geom_vline(xintercept = 1, linetype = "dashed", colour = "grey40") +
-    facet_grid(outcome ~ adjustment, scales = "free_x", drop = FALSE,
-               labeller = labeller(outcome = outcome_labels)) +
+    facet_wrap(~ period, drop = FALSE) +
+    scale_colour_discrete(drop = FALSE) +
     labs(
-      #title = paste(title_prefix, ":", by_var_val),
+      #title = paste(title_prefix, ":", outcome_val),
       x = "Hazard ratio (95% CI)",
       y = NULL
     ) +
     theme_minimal(base_size = 10) +
     theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
       strip.text = element_text(face = "bold"),
-      legend.position = "right",
-      panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.5)
+      legend.position = "right"
     )
 
   return(p)
 }
 
-combined_plot5 <- plot_hr_combined_time(
-  file = cox_models_time_covid_2021,
-  by_var_val = "ethnicity6_combined",
-  outcomes_val = outcomes,
-  terms = ethnic_terms,
-  labs = ethnic_labs
-)
+time_plots <- list()
 
-ggsave(
-  filename = file.path(outdir, paste0("hr_plot_time_ethnicity6_combined.svg")),
-  plot = combined_plot5,
-  width = 16, height = 10, dpi = 300
-)
+for (out in outcomes) {
+  time_plots[[out]] <- plot_hr_time(
+    file = cox_models_time_covid_2021,
+    by_var_val = "ethnicity6_combined",
+    outcome_val = out,
+    terms = ethnic_terms,
+    labs = ethnic_labs
+  )
+}
+
+for (out in names(time_plots)) {
+  ggsave(
+    filename = file.path(outdir, paste0("hr_plot_time_ethnicity6_combined_", out, ".svg")),
+    plot = time_plots[[out]],
+    width = 10, height = 6, dpi = 300
+  )
+}
 
 # Ethnicity in 16 groups needs separate plots
 
