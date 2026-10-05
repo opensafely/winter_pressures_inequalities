@@ -382,38 +382,6 @@ ggsave(
   width = 8, height = 6, dpi = 300
 )
 
-interaction_plot_sex16 <- plot_hr_interaction(
-  file = cox_models_int_sex,
-  by_var_val = "ethnicity16_combined",
-  outcomes_val = outcomes,
-  terms = ethnic16_terms,
-  labs = ethnic16_labs,
-  interaction_terms = "sexmale",
-  interaction_labs = "Male"
-)
-
-ggsave(
-  filename = file.path(outdir, "hr_plot_int_sex_ethnicity16_combined.svg"),
-  plot = interaction_plot_sex16,
-  width = 8, height = 10, dpi = 300
-)
-
-interaction_plot_imd16 <- plot_hr_interaction(
-  file = cox_models_int_imd,
-  by_var_val = "ethnicity16_combined",
-  outcomes_val = outcomes,
-  terms = ethnic16_terms,
-  labs = ethnic16_labs,
-  interaction_terms = imd_terms,
-  interaction_labs = imd_labs
-)
-
-ggsave(
-  filename = file.path(outdir, "hr_plot_int_imd_ethnicity16_combined.svg"),
-  plot = interaction_plot_imd16,
-  width = 8, height = 10, dpi = 300
-)
-
 # Split by time period
 # cox_models_time_covid_2021 has `adjustment` and `period` columns (not
 # strat_var/strat_level like the stratified output). One plot per outcome;
