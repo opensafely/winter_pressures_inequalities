@@ -8,16 +8,47 @@ library(here)
 outdir <- here("output", "tables")
 fs::dir_create(outdir)
 
-# Which mediator to run - split out per-run via the yaml to keep memory
-# down, since mediate()'s default 1000 simulations are computed over the
-# whole (group vs White) subset for every one of the 36 group x mediator
-# combinations otherwise, in a single R session.
+# Which mediator and time period to run - split out per-run via the yaml
+# to keep memory down, since mediate()'s default 1000 simulations are
+# computed over the whole (group vs White) subset for every one of the 36
+# group x mediator combinations otherwise, in a single R session.
 args <- commandArgs(trailingOnly = TRUE)
 mediator_arg <- args[1]
+period_arg <- args[2]
+
+# Same two calendar periods as 1_5_cox_models_time.R
+periods <- list(
+  period1 = list(start = as.Date("2021-03-01"), end = as.Date("2022-08-31")),
+  period2 = list(start = as.Date("2022-09-01"), end = as.Date("2026-02-28"))
+)
+period <- periods[[period_arg]]
+if (is.null(period)) {
+  stop("Unknown period: ", period_arg, " (expected one of: ", paste(names(periods), collapse = ", "), ")")
+}
+
+# stop_sc/sc_binary are numeric day-offsets from each person's own
+# fu_start, not calendar dates, and this script's survreg() call uses the
+# plain 2-argument Surv(stop_sc, sc_binary) - no start/left-truncation
+# support like coxph's 3-argument form. So rather than reusing
+# cox_model_functions.R's restrict_period() (which measures time from the
+# original fu_start, appropriate for left-truncated Cox models), time is
+# re-anchored here at whichever is later: the person's actual entry, or
+# the period start. Everyone then contributes only the portion of
+# follow-up that falls inside the period, with their clock starting at 0
+# for that window - no truncation handling needed for the 2-arg Surv().
+restrict_period_reanchored <- function(df, stop_var, date_stop_var, binary_var, period_start, period_end,
+                                        fu_start_col = "fu_start") {
+  df %>%
+    filter(.data[[date_stop_var]] > period_start, .data[[fu_start_col]] < period_end) %>%
+    mutate(
+      !!binary_var := if_else(.data[[date_stop_var]] > period_end, 0L, .data[[binary_var]]),
+      !!stop_var   := as.numeric(pmin(.data[[date_stop_var]], period_end) - pmax(.data[[fu_start_col]], period_start))
+    )
+}
 
 # use mediation package to do AFT model for COVID outcomes
 
-data_covid <- read_feather(here("output/an_outcome_first_covid_2021.arrow"), as_data_frame = TRUE) 
+data_covid <- read_feather(here("output/an_outcome_first_covid_2021.arrow"), as_data_frame = TRUE)
 
 #print(levels(data_covid$ethnicity6_combined))
 
@@ -36,10 +67,14 @@ ordinal_levels <- list(
 # Function to run mediation models
 run_mediation <- function(group, mediator) {
   data_df <- data_covid %>%
-    # setting events on same day as follow up at half day
-    mutate(stop_sc = if_else(stop_sc == 0, 0.5, stop_sc)) %>%
     filter(ethnicity6_combined %in% c(group, "White")) %>%
-    droplevels()
+    droplevels() %>%
+    restrict_period_reanchored("stop_sc", "date_stop_sc", "sc_binary", period$start, period$end) %>%
+    # setting events on same day as follow up at half day - re-applied
+    # after period restriction, since that can itself produce new
+    # stop_sc == 0 values for people whose event/censoring lands right at
+    # the start of their at-risk window within the period
+    mutate(stop_sc = if_else(stop_sc == 0, 0.5, stop_sc))
 
   is_ordinal <- mediator %in% names(ordinal_levels)
 
@@ -94,7 +129,8 @@ run_mediation <- function(group, mediator) {
     conf.high = c(med_out$d.avg.ci[2], med_out$z.avg.ci[2], med_out$tau.ci[2], med_out$n.avg.ci[2]),
     p.value  = c(med_out$d.avg.p, med_out$z.avg.p, med_out$tau.p, med_out$n.avg.p),
     group    = group,
-    mediator = mediator
+    mediator = mediator,
+    period   = period$end
   )
   
   return(med_tidy)
@@ -117,5 +153,5 @@ mediation_outputs <- pmap(
 )
 
 all_results <- bind_rows(mediation_outputs)
-write.csv(all_results, file.path(outdir, paste0("mediation_covid_aft_", mediator_arg, ".csv")), row.names = FALSE)
+write.csv(all_results, file.path(outdir, paste0("mediation_covid_aft_", mediator_arg, "_", period_arg, ".csv")), row.names = FALSE)
 
