@@ -603,13 +603,14 @@ actions:
         moderately_sensitive:
           table_cox_s: output/tables/cox_models_stratified_orig_covid_2021.csv
 
-  plots_outside: 
-      run: r:v2 analysis/plots_outside.R 
-      needs: 
+  plots_outside:
+      run: r:v2 analysis/plots_outside.R
+      needs:
         - cox_models_covid_2021
         - cox_models_time_covid_2021
         - cox_models_int_sex_covid_2021
-        - cox_models_int_imd_quintile_covid_2021 
+        - cox_models_int_imd_quintile_covid_2021
+        - cox_models_strat_covid_2021
       outputs:
         moderately_sensitive:
-          plots: output/covid_plots/hr_plot*.svg 
+          plots: output/covid_plots/*.svg

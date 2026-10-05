@@ -169,8 +169,15 @@ for (out in names(plots)) {
 }
 
 # Plot stratified Cox models
-#cox_models_stratified_covid_2021 <- read_csv(here("output/tables/cox_models_stratified_covid_2021.csv")) 
+cox_models_stratified_covid_2021 <- read_csv(here("output/tables/cox_models_stratified_covid_2021.csv"))
 cox_models_time_covid_2021 <- read_csv(here("output/tables/cox_models_time_covid_2021.csv"))
+
+# Interaction model results (1_6_cox_models_int.R) - used only for their
+# omnibus Wald test p-value (lrt_p), to annotate the stratified HR plots
+# below with whether the apparent difference between strata is
+# statistically supported.
+cox_models_int_sex <- read_csv(here("output/tables/cox_models_int_covid_2021_sex.csv"))
+cox_models_int_imd <- read_csv(here("output/tables/cox_models_int_covid_2021_imd_quintile.csv"))
 
 # Same code but different legend
 # want each exposure grouped by strata - code for individual plots
@@ -204,20 +211,24 @@ plot_hr_stratified <- function(file, by_var_val, outcome_val, terms, strata, lab
 }
 
 # Combined plot
+# int_file (optional): output from 1_6_cox_models_int.R for the matching
+# interaction variable (e.g. cox_models_int_sex for strata = "sex") - if
+# given, each outcome facet is annotated with that model's omnibus Wald
+# test p-value (lrt_p), showing whether the visible difference between
+# strata is statistically supported.
 plot_hr_combined_stratified <- function(file, by_var_val, outcomes_val, terms, strata, labs, title_prefix = "Exposure",
-    adjustment_order = c("unadjusted", "age_sex", "area", "migration", "health", "all")) {
-  
+    int_file = NULL) {
+
   p <- file %>%
     filter(by_var == by_var_val & term %in% terms & outcome %in% outcomes_val &  strat_var == strata) %>%
     mutate(term = factor(str_remove(term, by_var_val), levels = labs),
-           outcome = factor(outcome, levels = outcomes_val),
-           adjustment = factor(adjustment, levels = adjustment_order),) %>%
+           outcome = factor(outcome, levels = outcomes_val)) %>%
     ggplot(aes(x = estimate, y = term, colour = strat_level)) +
     geom_pointrange(aes(xmin = conf.low, xmax = conf.high),
                     position = position_dodge(width = 0.6)) +
     geom_vline(xintercept = 1, linetype = "dashed", colour = "grey40") +
     facet_wrap(~ outcome, scales = "free_x",
-               , labeller = labeller(outcome = outcome_labels)) +
+               labeller = labeller(outcome = outcome_labels)) +
     labs(
       #title = paste(title_prefix, ":", by_var_val),
       x = "Hazard ratio (95% CI)",
@@ -229,39 +240,127 @@ plot_hr_combined_stratified <- function(file, by_var_val, outcomes_val, terms, s
       legend.position = "right",
       panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.5)
     )
-  
+
+  if (!is.null(int_file)) {
+    p_labels <- int_file %>%
+      filter(by_var == by_var_val & outcome %in% outcomes_val) %>%
+      distinct(outcome, lrt_p) %>%
+      mutate(
+        outcome = factor(outcome, levels = outcomes_val),
+        label = if_else(lrt_p < 0.001, "p-interaction < 0.001",
+                        paste0("p-interaction = ", formatC(lrt_p, digits = 3, format = "g")))
+      )
+
+    p <- p + geom_text(
+      data = p_labels,
+      aes(x = Inf, y = Inf, label = label),
+      inherit.aes = FALSE,
+      hjust = 1.05, vjust = 1.5,
+      size = 3, fontface = "italic"
+    )
+  }
+
   return(p)
 }
 
-# combined_plot3 <- plot_hr_combined_stratified(
-#   file = cox_models_stratified_covid_2021,
-#   by_var_val = "ethnicity6_combined",
-#   outcomes_val = outcomes,
-#   terms = ethnic_terms,
-#   strata = "sex",
-#   labs = ethnic_labs
-# )
+combined_plot3 <- plot_hr_combined_stratified(
+  file = cox_models_stratified_covid_2021,
+  by_var_val = "ethnicity6_combined",
+  outcomes_val = outcomes,
+  terms = ethnic_terms,
+  strata = "sex",
+  labs = ethnic_labs,
+  int_file = cox_models_int_sex
+)
 
-# ggsave(
-#   filename = file.path(outdir, paste0("hr_s_sex_plot_ethnicity6_combined.svg")),
-#   plot = combined_plot3,
-#   width = 8, height = 6, dpi = 300
-# )
+ggsave(
+  filename = file.path(outdir, paste0("hr_s_sex_plot_ethnicity6_combined.svg")),
+  plot = combined_plot3,
+  width = 8, height = 6, dpi = 300
+)
 
-# combined_plot4 <- plot_hr_combined_stratified(
-#   file = cox_models_stratified_covid_2021,
-#   by_var_val = "ethnicity6_combined",
-#   outcomes_val = outcomes,
-#   terms = ethnic_terms,
-#   strata = "imd_quintile",
-#   labs = ethnic_labs
-# )
+combined_plot4 <- plot_hr_combined_stratified(
+  file = cox_models_stratified_covid_2021,
+  by_var_val = "ethnicity6_combined",
+  outcomes_val = outcomes,
+  terms = ethnic_terms,
+  strata = "imd_quintile",
+  labs = ethnic_labs,
+  int_file = cox_models_int_imd
+)
 
-# ggsave(
-#   filename = file.path(outdir, paste0("hr_s_imd_plot_ethnicity6_combined.svg")),
-#   plot = combined_plot4,
-#   width = 8, height = 6, dpi = 300
-# )
+ggsave(
+  filename = file.path(outdir, paste0("hr_s_imd_plot_ethnicity6_combined.svg")),
+  plot = combined_plot4,
+  width = 8, height = 6, dpi = 300
+)
+
+# Interaction-term forest plot - self-contained from 1_6_cox_models_int.R's
+# output alone, no stratified model needed. Plots the interaction
+# coefficient itself (a ratio of hazard ratios - e.g. "how much more/less
+# the ethnicity effect is in males vs females") rather than the HR within
+# each subgroup directly. Always comparable, since it comes from one
+# consistently-specified model, but less intuitive to read than the
+# stratified HR view above.
+plot_hr_interaction <- function(file, by_var_val, outcomes_val, terms, labs,
+                                 interaction_terms, interaction_labs, title_prefix = "Exposure") {
+
+  combo_terms <- as.vector(outer(terms, interaction_terms, paste, sep = ":"))
+  combo_labs  <- as.vector(outer(labs, interaction_labs, paste, sep = " x "))
+
+  p <- file %>%
+    filter(by_var == by_var_val & term %in% combo_terms & outcome %in% outcomes_val) %>%
+    mutate(term = factor(term, levels = combo_terms, labels = combo_labs),
+           outcome = factor(outcome, levels = outcomes_val)) %>%
+    ggplot(aes(x = estimate, y = term)) +
+    geom_pointrange(aes(xmin = conf.low, xmax = conf.high)) +
+    geom_vline(xintercept = 1, linetype = "dashed", colour = "grey40") +
+    facet_wrap(~ outcome, scales = "free_x", labeller = labeller(outcome = outcome_labels)) +
+    labs(
+      #title = paste(title_prefix, ":", by_var_val),
+      x = "Interaction hazard ratio (ratio of HRs, 95% CI)",
+      y = NULL
+    ) +
+    theme_minimal(base_size = 10) +
+    theme(
+      strip.text = element_text(face = "bold"),
+      panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.5)
+    )
+
+  return(p)
+}
+
+interaction_plot_sex <- plot_hr_interaction(
+  file = cox_models_int_sex,
+  by_var_val = "ethnicity6_combined",
+  outcomes_val = outcomes,
+  terms = ethnic_terms,
+  labs = ethnic_labs,
+  interaction_terms = "sexmale",
+  interaction_labs = "Male"
+)
+
+ggsave(
+  filename = file.path(outdir, "hr_plot_int_sex_ethnicity6_combined.svg"),
+  plot = interaction_plot_sex,
+  width = 8, height = 6, dpi = 300
+)
+
+interaction_plot_imd <- plot_hr_interaction(
+  file = cox_models_int_imd,
+  by_var_val = "ethnicity6_combined",
+  outcomes_val = outcomes,
+  terms = ethnic_terms,
+  labs = ethnic_labs,
+  interaction_terms = imd_terms,
+  interaction_labs = imd_labs
+)
+
+ggsave(
+  filename = file.path(outdir, "hr_plot_int_imd_ethnicity6_combined.svg"),
+  plot = interaction_plot_imd,
+  width = 8, height = 6, dpi = 300
+)
 
 # Split by time period
 # cox_models_time_covid_2021 has `adjustment` and `period` columns (not

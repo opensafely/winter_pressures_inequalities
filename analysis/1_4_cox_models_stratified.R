@@ -26,7 +26,11 @@ disease <- args[1]
 strat <- args[2]
 
 
-# Stratified models - unadjusted
+# Stratified models - adjusted for age_group and sex (matching
+# 1_6_cox_models_int.R's covariate set), except whichever of those is the
+# stratifying variable itself. age_group is also dropped when stratifying
+# by age_infants, since the two are near-collinear (age_group has almost
+# no variation within the infant/not-infant split).
 run_cox_models_stratified <- function(disease, difference,
                                        strat_var, strat_level) {
         data_df <- read_outcome_data(disease)
@@ -61,8 +65,19 @@ run_cox_models_stratified <- function(disease, difference,
         # Make sure age and sex are unordered factors, drop unknown imd/ethnicity
         data_df <- prep_covariates(data_df)
 
+        adjustment_covariates <- c("age_group", "sex")
+        if (strat_var == "age_infants") {
+                adjustment_covariates <- setdiff(adjustment_covariates, "age_group")
+        }
+        adjustment_covariates <- setdiff(adjustment_covariates, strat_var)
+        rhs_extra <- if (length(adjustment_covariates) > 0) {
+                paste0(" + ", paste(adjustment_covariates, collapse = " + "))
+        } else {
+                ""
+        }
+
         run_all_outcomes(
-                data_df, disease, difference, rhs_extra = "",
+                data_df, disease, difference, rhs_extra,
                 full_events_check = FALSE,
                 extra_cols = extra_cols,
                 context_label = context_label
