@@ -327,6 +327,26 @@ plot_hr_interaction <- function(file, by_var_val, outcomes_val, terms, labs,
       panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.5)
     )
 
+  # Annotate each outcome facet with the same model's omnibus Wald test
+  # p-value (lrt_p) - already in `file` itself, since this is the
+  # interaction model's own output.
+  p_labels <- file %>%
+    filter(by_var == by_var_val & outcome %in% outcomes_val) %>%
+    distinct(outcome, lrt_p) %>%
+    mutate(
+      outcome = factor(outcome, levels = outcomes_val),
+      label = if_else(lrt_p < 0.001, "p-interaction < 0.001",
+                      paste0("p-interaction = ", formatC(lrt_p, digits = 3, format = "g")))
+    )
+
+  p <- p + geom_text(
+    data = p_labels,
+    aes(x = Inf, y = Inf, label = label),
+    inherit.aes = FALSE,
+    hjust = 1.05, vjust = 1.5,
+    size = 3, fontface = "italic"
+  )
+
   return(p)
 }
 
@@ -360,6 +380,38 @@ ggsave(
   filename = file.path(outdir, "hr_plot_int_imd_ethnicity6_combined.svg"),
   plot = interaction_plot_imd,
   width = 8, height = 6, dpi = 300
+)
+
+interaction_plot_sex16 <- plot_hr_interaction(
+  file = cox_models_int_sex,
+  by_var_val = "ethnicity16_combined",
+  outcomes_val = outcomes,
+  terms = ethnic16_terms,
+  labs = ethnic16_labs,
+  interaction_terms = "sexmale",
+  interaction_labs = "Male"
+)
+
+ggsave(
+  filename = file.path(outdir, "hr_plot_int_sex_ethnicity16_combined.svg"),
+  plot = interaction_plot_sex16,
+  width = 8, height = 10, dpi = 300
+)
+
+interaction_plot_imd16 <- plot_hr_interaction(
+  file = cox_models_int_imd,
+  by_var_val = "ethnicity16_combined",
+  outcomes_val = outcomes,
+  terms = ethnic16_terms,
+  labs = ethnic16_labs,
+  interaction_terms = imd_terms,
+  interaction_labs = imd_labs
+)
+
+ggsave(
+  filename = file.path(outdir, "hr_plot_int_imd_ethnicity16_combined.svg"),
+  plot = interaction_plot_imd16,
+  width = 8, height = 10, dpi = 300
 )
 
 # Split by time period

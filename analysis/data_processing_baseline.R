@@ -159,6 +159,6 @@ filter_years <- function(files, years) {
 # 2018-2019
 prepare_data(filter_years(flu_rsv_files, 2018:2019), "an_bl_data_flu_rsv_2018.arrow")
 
-# 2021-2024
-prepare_data(filter_years(covid_files, 2021:2024), "an_bl_data_covid_2021.arrow")
-prepare_data(filter_years(flu_rsv_files, 2021:2024), "an_bl_data_flu_rsv_2021.arrow")
+# 2021-2025 
+prepare_data(filter_years(covid_files, 2021:2025), "an_bl_data_covid_2021.arrow")
+prepare_data(filter_years(flu_rsv_files, 2021:2025), "an_bl_data_flu_rsv_2021.arrow")

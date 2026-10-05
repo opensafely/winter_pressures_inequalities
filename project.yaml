@@ -113,6 +113,16 @@ actions:
         highly_sensitive:
           population: output/dataset_flu_rsv_2024.arrow
 
+  generate_dataset_flu_rsv_2025:
+      run: >
+        ehrql:v1 generate-dataset analysis/dataset_definition_flu_rsv.py 
+        --output output/dataset_flu_rsv_2025.arrow
+        --
+        --start_date 2025-09-01
+      outputs:
+        highly_sensitive:
+          population: output/dataset_flu_rsv_2025.arrow
+
   measures_covid: 
       run: >
         ehrql:v1 generate-measures analysis/measures_covid.py
@@ -141,7 +151,7 @@ actions:
         --output output/measures/measures_flu_2021.csv 
         --
         --start-date 2021-09-01
-        --intervals 48
+        --intervals 60
       outputs:
         moderately_sensitive:
           measures_csv: output/measures/measures_flu_2021.csv
@@ -174,7 +184,7 @@ actions:
         --output output/measures/measures_rsv_2023.csv 
         --
         --start-date 2023-09-01
-        --intervals 24
+        --intervals 36
       outputs:
         moderately_sensitive:
           measures_csv: output/measures/measures_rsv_2023.csv
@@ -207,7 +217,7 @@ actions:
         --output output/measures/measures_rsv_age_2023.csv 
         --
         --start-date 2023-09-01
-        --intervals 24
+        --intervals 36
       outputs:
         moderately_sensitive:
           measures_csv: output/measures/measures_rsv_age_2023.csv
@@ -226,6 +236,7 @@ actions:
       - generate_dataset_flu_rsv_2022
       - generate_dataset_flu_rsv_2023
       - generate_dataset_flu_rsv_2024
+      - generate_dataset_flu_rsv_2025
       outputs: 
         highly_sensitive:
           data: output/an_bl_data_covid_2021.arrow
@@ -263,6 +274,7 @@ actions:
       - generate_dataset_flu_rsv_2022
       - generate_dataset_flu_rsv_2023
       - generate_dataset_flu_rsv_2024
+      - generate_dataset_flu_rsv_2025
       - data_process_bl
       outputs: 
         highly_sensitive:
@@ -287,6 +299,7 @@ actions:
       - generate_dataset_flu_rsv_2022
       - generate_dataset_flu_rsv_2023
       - generate_dataset_flu_rsv_2024
+      - generate_dataset_flu_rsv_2025
       - data_process_bl
       outputs: 
         highly_sensitive:
