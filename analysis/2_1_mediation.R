@@ -119,7 +119,7 @@ run_mediation <- function(group, mediator) {
   print(summary(out_fit))
   # Mediation
   med_out <- mediate(med_fit, out_fit, treat = "ethnicity6_combined", mediator = mediator,
-                     treat.value = group, control.value = "White")
+                     treat.value = group, control.value = "White", sims = 50)
   print(summary(med_out))
   
   med_tidy <- data.frame(
