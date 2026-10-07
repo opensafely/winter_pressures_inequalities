@@ -81,3 +81,23 @@ med_tidy <- data.frame(
 )
 
 write.csv(med_tidy, file.path(outdir, paste0("mediation_covid_pseudo_", period_arg, ".csv")), row.names = FALSE)
+
+# ---------------------------------------------------------------------------
+# Mediation calculated over covariate patterns instead of per person, to
+# avoid mediate() running out of memory (see mediation_collapsed_functions.R).
+# Uses the same med_fit and out_fit_pseudo models fitted above.
+# ---------------------------------------------------------------------------
+source(here("analysis", "mediation_collapsed_functions.R"))
+
+med_tidy_collapsed <- mediate_collapsed(med_fit, out_fit_pseudo, data = data_df,
+                                        treat = "ethnicity6_combined", mediator = "migrant",
+                                        treat.value = "Mixed", control.value = "White", sims = 1000) %>%
+  mutate(
+    group    = "Mixed",
+    mediator = "migrant",
+    period   = period$end,
+    rmst_tau = period$rmst_tau
+  )
+print(med_tidy_collapsed)
+
+write.csv(med_tidy_collapsed, file.path(outdir, paste0("mediation_covid_pseudo_collapsed_", period_arg, ".csv")), row.names = FALSE)
