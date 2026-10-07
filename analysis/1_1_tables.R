@@ -229,6 +229,15 @@ count_outcomes <- function(disease,
       outcome = paste(disease, "- GP sens"),
       group = strata
     ),
+    if (disease == "covid") {
+      create_event_table(
+        data,
+        time = "stop_gp_appt",
+        status = "gp_appt_binary",
+        outcome = paste(disease, "- GP appt"),
+        group = strata
+      )
+    },
     create_event_table(
       data,
       time = "stop_sc",

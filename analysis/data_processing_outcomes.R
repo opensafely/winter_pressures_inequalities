@@ -122,6 +122,10 @@ cr_data[, `:=`(
 
 ), by = patient_id]
 
+if (disease == "covid") {
+    cr_data[, first_gp_appt_col := safe_min_date(primary_col[covid_primary_appt %in% TRUE]), by = patient_id]
+}
+
 # Checking event dates are after start date and not in the future
 print("Number of events prior to follow-up start")
 event_yr_prior <- cr_data[year(sc_col) < min_start_yr_out, .(
@@ -129,7 +133,7 @@ event_yr_prior <- cr_data[year(sc_col) < min_start_yr_out, .(
 ), by = patient_id]
 print(dim(event_yr_prior))
 
-# filter to only rows 
+# filter to only individual rows 
 cr_data <- cr_data[min_start_yr_out == year]
 
 study_end <- as.Date(paste0(max_year,"-08-31"))
@@ -223,6 +227,17 @@ cr_data[, `:=`(
     year_end_emerg = year(date_stop_emerg),
     year_end = year(date_stop)
     )]
+
+if (disease == "covid") {
+    cr_data[, `:=`(
+        gp_appt_binary = fifelse(!is.na(first_gp_appt_col) & first_gp_appt_col < fu_end, 1L, 0L),
+        date_stop_gp_appt = fifelse(is.na(first_gp_appt_col), fu_end, pmin(first_gp_appt_col, fu_end))
+    )]
+    cr_data[, `:=`(
+        stop_gp_appt = as.numeric(date_stop_gp_appt - fu_start),
+        year_end_gp_appt = year(date_stop_gp_appt)
+    )]
+}
 
 print("Check stop times")
 print(summary(cr_data$stop_gp))
