@@ -465,16 +465,37 @@ actions:
         moderately_sensitive:
           table_cox_s: output/tables/cox_models_stratified_rsv_2021.csv
 
-  cox_models_round:
-      run: r:v2 analysis/round_cox_tables.R 
+  redact_cox_models_covid_2021:
+      run: r:v2 analysis/redact_cox_tables.R cox_models_covid_2021
       needs:
         - cox_models_covid_2021
-        - cox_models_time_covid_2021
-        - cox_models_int_sex_covid_2021
-        - cox_models_int_imd_quintile_covid_2021 
       outputs:
         moderately_sensitive:
-          tables_r: output/tables/cox_models_*_r.csv
+          table_r: output/tables/cox_models_covid_2021_r.csv
+
+  redact_cox_models_time_covid_2021:
+      run: r:v2 analysis/redact_cox_tables.R cox_models_time_covid_2021
+      needs:
+        - cox_models_time_covid_2021
+      outputs:
+        moderately_sensitive:
+          table_r: output/tables/cox_models_time_covid_2021_r.csv
+
+  redact_cox_models_int_sex_covid_2021:
+      run: r:v2 analysis/redact_cox_tables.R cox_models_int_covid_2021_sex
+      needs:
+        - cox_models_int_sex_covid_2021
+      outputs:
+        moderately_sensitive:
+          table_r: output/tables/cox_models_int_covid_2021_sex_r.csv
+
+  redact_cox_models_int_imd_quintile_covid_2021:
+      run: r:v2 analysis/redact_cox_tables.R cox_models_int_covid_2021_imd_quintile
+      needs:
+        - cox_models_int_imd_quintile_covid_2021
+      outputs:
+        moderately_sensitive:
+          table_r: output/tables/cox_models_int_covid_2021_imd_quintile_r.csv
 
   km_plots:
       run: r:v2 analysis/1_5_km_plots.R

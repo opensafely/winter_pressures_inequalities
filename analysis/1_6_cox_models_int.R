@@ -73,6 +73,6 @@ print(cox_table)
 cox_table <- cox_table %>%
                 mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 4))) %>%
                 # don't need std.error or statistic
-                select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "interactions", "n", "n_events", "redacted", "lrt_chisq", "lrt_df", "lrt_p")
+                select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "interactions", "n", "n_events", "n_level", "n_events_level", "redacted", "lrt_chisq", "lrt_df", "lrt_p")
 file_name <- paste0("cox_models_int_",disease,"_",interaction_arg,".csv")
 write_csv(cox_table, file.path(outdir, file_name))

@@ -128,22 +128,29 @@ restrict_period <- function(df, stop_var, date_stop_var, binary_var, period_star
     )
 }
 
+# Population size (n) and number of events for each outcome within every
+# combination of levels of `group_vars`
+count_events_by_level <- function(data_df, group_vars) {
+  data_df %>%
+    group_by(across(all_of(group_vars))) %>%
+    summarise(
+      n              = n(),
+      gp_binary      = sum(gp_binary),
+      gp_sens_binary = sum(gp_sens_binary),
+      sc_binary      = sum(sc_binary),
+      emerg_binary   = sum(emerg_binary),
+      .groups = "drop"
+    )
+}
+
 # For each outcome, checks whether every combination of levels of
 # `group_vars` has > 2 events. Pass just `difference` for main-effects
 # models, or c(difference, interaction_var) for interaction models - an
 # interaction term can only be estimated if every difference x interaction
 # cell has enough events, not just every difference level on its own.
 check_sufficient_events <- function(data_df, group_vars) {
-  data_df %>%
-    group_by(across(all_of(group_vars))) %>%
-    summarise(
-      gp_binary      = sum(gp_binary),
-      gp_sens_binary = sum(gp_sens_binary),
-      sc_binary      = sum(sc_binary),
-      emerg_binary   = sum(emerg_binary),
-      .groups = "drop"
-    ) %>%
-    summarise(across(-all_of(group_vars), ~ all(.x > 2))) %>%
+  count_events_by_level(data_df, group_vars) %>%
+    summarise(across(-all_of(c(group_vars, "n")), ~ all(.x > 7))) %>%
     as.list()
 }
 
@@ -162,6 +169,8 @@ cox_redacted_row <- function(difference, outcome_name, disease, reason, extra_co
     !!!extra_cols,
     n             = NA_real_,
     n_events      = NA_real_,
+    n_level       = NA_real_,
+    n_events_level = NA_real_,
     redacted      = TRUE,
     redact_reason = reason
   )
@@ -179,15 +188,17 @@ cox_redacted_grid <- function(difference, disease, reason, extra_cols = list()) 
 #   - min_events: total event threshold below which the outcome is redacted
 #   - full_var: whether every level of `difference` has enough events
 #     (set to TRUE to skip this check, e.g. for the stratified models)
-#   - period: optional list(start=, end=) to restrict follow-up to
-#     (a calendar date range - restriction is done via date_stop_var/fu_start,
-#     then converted back to the numeric day-offset scale used by Surv())
 #   - interaction_var: if set, runs a type III LRT for difference:interaction_var
 #   - extra_cols: named list of additional columns to attach to every row
 #     (e.g. adjustment, period, interactions, strat_var, strat_level)
+#   - level_counts: optional tibble of term, n_level, n_events_level giving
+#     the population and events within each level of `difference`; a
+#     reference level row (HR = 1) is added so its counts are reported too
+# Any period restriction must already have been applied to data_df, so that
+# the event checks count only events within the period being modelled.
 fit_or_redact <- function(data_df, difference, outcome_name, stop_var, date_stop_var, binary_var, strata_var,
                            disease, rhs_extra, full_var = TRUE, min_events = 7,
-                           period = NULL, interaction_var = NULL,
+                           interaction_var = NULL, level_counts = NULL,
                            extra_cols = list(), context_label = "") {
 
   # Every row must carry the same columns, so redacted/failed rows get
@@ -209,9 +220,6 @@ fit_or_redact <- function(data_df, difference, outcome_name, stop_var, date_stop
   }
 
   df_fit <- data_df
-  if (!is.null(period)) {
-    df_fit <- restrict_period(df_fit, stop_var, date_stop_var, binary_var, period$start, period$end)
-  }
 
   formula <- make_cox_formula(difference, rhs_extra, stop_var, binary_var, strata_var)
   # car::Anova() (used for the interaction LRT) refits reduced models by
@@ -235,6 +243,16 @@ fit_or_redact <- function(data_df, difference, outcome_name, stop_var, date_stop
         redacted = FALSE
       )
 
+    if (!is.null(level_counts)) {
+      ref_term <- paste0(difference, levels(factor(df_fit[[difference]]))[1])
+      result <- result %>%
+        bind_rows(result[1, ] %>%
+                    mutate(term = ref_term, estimate = 1,
+                           across(c(std.error, statistic, p.value, conf.low, conf.high), ~ NA_real_)),
+                  .) %>%
+        left_join(level_counts, by = "term")
+    }
+
     if (!is.null(interaction_var)) {
       int_test <- car::Anova(fit, type = "III")
       int_term <- paste0(difference, ":", interaction_var)
@@ -256,6 +274,11 @@ fit_or_redact <- function(data_df, difference, outcome_name, stop_var, date_stop
 
 # Fits every outcome in COX_OUTCOMES for a single difference/adjustment/etc
 # combination and row-binds the results
+#   - period: optional list(start=, end=) to restrict follow-up to
+#     (a calendar date range - restriction is done via date_stop_var/fu_start,
+#     then converted back to the numeric day-offset scale used by Surv()).
+#     The restriction is applied per outcome before the event checks, so
+#     redaction is based on events within the period only.
 run_all_outcomes <- function(data_df, disease, difference, rhs_extra,
                               full_events_check = TRUE, period = NULL,
                               interaction_var = NULL, extra_cols = list(),
@@ -266,15 +289,29 @@ run_all_outcomes <- function(data_df, disease, difference, rhs_extra,
   # the interaction term can't be estimated and car::Anova() errors out on
   # aliased coefficients rather than getting a clean redaction.
   group_vars <- if (!is.null(interaction_var)) c(difference, interaction_var) else difference
-  events_ok <- if (full_events_check) check_sufficient_events(data_df, group_vars) else list()
-
   pmap_dfr(COX_OUTCOMES, function(outcome_name, stop_var, date_stop_var, binary_var, strata_var) {
+    df_outcome <- data_df
+    if (!is.null(period)) {
+      df_outcome <- restrict_period(df_outcome, stop_var, date_stop_var, binary_var, period$start, period$end)
+    }
+
+    full_var <- if (full_events_check) check_sufficient_events(df_outcome, group_vars)[[binary_var]] else TRUE
+
+    # Counts within each level of `difference` for this outcome (as in
+    # count_outcomes() in 1_1_tables.R), matched to the model terms
+    level_counts <- count_events_by_level(df_outcome, difference) %>%
+      transmute(
+        term           = paste0(difference, .data[[difference]]),
+        n_level        = n,
+        n_events_level = .data[[binary_var]]
+      )
+
     fit_or_redact(
-      data_df, difference, outcome_name, stop_var, date_stop_var, binary_var, strata_var,
+      df_outcome, difference, outcome_name, stop_var, date_stop_var, binary_var, strata_var,
       disease, rhs_extra,
-      full_var = if (full_events_check) events_ok[[binary_var]] else TRUE,
-      period = period,
+      full_var = full_var,
       interaction_var = interaction_var,
+      level_counts = level_counts,
       extra_cols = extra_cols,
       context_label = context_label
     )
