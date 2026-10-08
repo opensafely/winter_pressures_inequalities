@@ -113,6 +113,9 @@ ordinal_levels <- list(
    }
    data_df <- droplevels(data_df)
 
+  print("Checking size dataset")
+  print(table(data_df$ethnicity6_combined))
+
    # Mediator model
    med_formula <- as.formula(paste0(mediator, " ~ ethnicity6_combined + age_group + sex"))
    med_fit <- if (is_ordinal) {
