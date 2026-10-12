@@ -137,7 +137,7 @@ ordinal_levels <- list(
 
    # Mediation
    med_out <- mediate(med_fit, out_fit, treat = "ethnicity6_combined", mediator = mediator,
-                      treat.value = group, control.value = "White", sims = 1000, long = FALSE)
+                      treat.value = group, control.value = "White", sims = 500, long = FALSE)
    print(summary(med_out))
  
    med_tidy <- data.frame(
