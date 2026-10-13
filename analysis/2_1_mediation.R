@@ -67,94 +67,94 @@ ordinal_levels <- list(
 )
 
 # Function to run mediation models
- run_mediation <- function(group, mediator) {
-   data_df <- data_covid %>%
-     filter(ethnicity6_combined %in% c(group, "White"))
+#  run_mediation <- function(group, mediator) {
+#    data_df <- data_covid %>%
+#      filter(ethnicity6_combined %in% c(group, "White"))
 
-    # Keep everyone in the comparison group but only a random 20% of the
-     # White group, to reduce memory use
-    data_df <- bind_rows(
-    data_df %>% filter(ethnicity6_combined == group),
-    data_df %>% filter(ethnicity6_combined == "White") %>% slice_sample(prop = 0.2)
-  ) %>%
-     droplevels() %>%
-     restrict_period_reanchored("stop_sc", "date_stop_sc", "sc_binary", period$start, period$end) %>%
-     # setting events on same day as follow up at half day - re-applied
-     # after period restriction, since that can itself produce new
-     # stop_sc == 0 values for people whose event/censoring lands right at
-     # the start of their at-risk window within the period
-     mutate(stop_sc = if_else(stop_sc == 0, 0.5, stop_sc))
+#     # Keep everyone in the comparison group but only a random 20% of the
+#      # White group, to reduce memory use
+#     data_df <- bind_rows(
+#     data_df %>% filter(ethnicity6_combined == group),
+#     data_df %>% filter(ethnicity6_combined == "White") %>% slice_sample(prop = 0.2)
+#   ) %>%
+#      droplevels() %>%
+#      restrict_period_reanchored("stop_sc", "date_stop_sc", "sc_binary", period$start, period$end) %>%
+#      # setting events on same day as follow up at half day - re-applied
+#      # after period restriction, since that can itself produce new
+#      # stop_sc == 0 values for people whose event/censoring lands right at
+#      # the start of their at-risk window within the period
+#      mutate(stop_sc = if_else(stop_sc == 0, 0.5, stop_sc))
 
-   is_ordinal <- mediator %in% names(ordinal_levels)
+#    is_ordinal <- mediator %in% names(ordinal_levels)
 
-   if (is_ordinal) {
-     # Restrict to the well-defined ordered categories and set their order
-     # (drops e.g. "Unknown"/"Missing"/"unknown or outlier")
-     data_df <- data_df %>% filter(.data[[mediator]] %in% ordinal_levels[[mediator]])
-     data_df[[mediator]] <- factor(data_df[[mediator]], levels = ordinal_levels[[mediator]], ordered = TRUE)
-   } else {
-     if ("Unknown" %in% levels(factor(data_df[[mediator]]))) {
-       # Binary mediator: drop the "Unknown" category so both the mediator and
-       # outcome model treat it as a genuine 2-level factor
-       data_df <- data_df %>% filter(.data[[mediator]] != "Unknown")
-     }
-     # mediate()'s internal simulation for a glm(binomial) mediator draws
-     # plain 0/1 values, but then maps them onto a factor mediator via
-     # factor(x, levels = 1:m, ...) - i.e. it expects 1/2, not 0/1. Every
-     # simulated 0 silently becomes NA, which is what was crashing pval()
-     # with "missing value where TRUE/FALSE needed" regardless of how clean
-     # the data/model fit was. Converting to plain numeric 0/1 (used
-     # consistently in both the mediator and outcome models below) avoids
-     # that factor-handling path entirely.
-     if (!is.logical(data_df[[mediator]])) {
-       data_df[[mediator]] <- as.numeric(factor(data_df[[mediator]])) - 1
-     } else {
-       data_df[[mediator]] <- as.numeric(data_df[[mediator]])
-     }
-   }
-   data_df <- droplevels(data_df)
+#    if (is_ordinal) {
+#      # Restrict to the well-defined ordered categories and set their order
+#      # (drops e.g. "Unknown"/"Missing"/"unknown or outlier")
+#      data_df <- data_df %>% filter(.data[[mediator]] %in% ordinal_levels[[mediator]])
+#      data_df[[mediator]] <- factor(data_df[[mediator]], levels = ordinal_levels[[mediator]], ordered = TRUE)
+#    } else {
+#      if ("Unknown" %in% levels(factor(data_df[[mediator]]))) {
+#        # Binary mediator: drop the "Unknown" category so both the mediator and
+#        # outcome model treat it as a genuine 2-level factor
+#        data_df <- data_df %>% filter(.data[[mediator]] != "Unknown")
+#      }
+#      # mediate()'s internal simulation for a glm(binomial) mediator draws
+#      # plain 0/1 values, but then maps them onto a factor mediator via
+#      # factor(x, levels = 1:m, ...) - i.e. it expects 1/2, not 0/1. Every
+#      # simulated 0 silently becomes NA, which is what was crashing pval()
+#      # with "missing value where TRUE/FALSE needed" regardless of how clean
+#      # the data/model fit was. Converting to plain numeric 0/1 (used
+#      # consistently in both the mediator and outcome models below) avoids
+#      # that factor-handling path entirely.
+#      if (!is.logical(data_df[[mediator]])) {
+#        data_df[[mediator]] <- as.numeric(factor(data_df[[mediator]])) - 1
+#      } else {
+#        data_df[[mediator]] <- as.numeric(data_df[[mediator]])
+#      }
+#    }
+#    data_df <- droplevels(data_df)
 
-  print("Checking size dataset")
-  print(table(data_df$ethnicity6_combined))
+#   print("Checking size dataset")
+#   print(table(data_df$ethnicity6_combined))
 
-   # Mediator model
-   med_formula <- as.formula(paste0(mediator, " ~ ethnicity6_combined + age_group + sex"))
-   med_fit <- if (is_ordinal) {
-    MASS::polr(med_formula, data = data_df, Hess = TRUE)
-   } else {
-     glm(med_formula, data = data_df, family = binomial(link = "logit"))
-   }
-   print(summary(med_fit))
+#    # Mediator model
+#    med_formula <- as.formula(paste0(mediator, " ~ ethnicity6_combined + age_group + sex"))
+#    med_fit <- if (is_ordinal) {
+#     MASS::polr(med_formula, data = data_df, Hess = TRUE)
+#    } else {
+#      glm(med_formula, data = data_df, family = binomial(link = "logit"))
+#    }
+#    print(summary(med_fit))
 
-   med_fit$data <- NULL 
+#    med_fit$data <- NULL 
 
-   # Outcome model
-   out_formula <- as.formula(paste0("Surv(stop_sc, sc_binary) ~ ethnicity6_combined + sex + age_group + ", mediator))
-   out_fit <- survreg(out_formula, data = data_df, dist = "weibull", robust = TRUE)
-   print(summary(out_fit))
+#    # Outcome model
+#    out_formula <- as.formula(paste0("Surv(stop_sc, sc_binary) ~ ethnicity6_combined + sex + age_group + ", mediator))
+#    out_fit <- survreg(out_formula, data = data_df, dist = "weibull", robust = TRUE)
+#    print(summary(out_fit))
 
-   out_fit$data <- NULL 
+#    out_fit$data <- NULL 
 
-   # Mediation
-   med_out <- mediate(med_fit, out_fit, treat = "ethnicity6_combined", mediator = mediator,
-                      treat.value = group, control.value = "White", sims = 500, long = FALSE)
-   print(summary(med_out))
+#    # Mediation
+#    med_out <- mediate(med_fit, out_fit, treat = "ethnicity6_combined", mediator = mediator,
+#                       treat.value = group, control.value = "White", sims = 500, long = FALSE)
+#    print(summary(med_out))
  
-   med_tidy <- data.frame(
-     term    = c("ACME", "ADE", "Total Effect", "Prop. Mediated"),
-     estimate = c(med_out$d.avg,  med_out$z.avg,  med_out$tau.coef, med_out$n.avg),
-     conf.low = c(med_out$d.avg.ci[1], med_out$z.avg.ci[1], med_out$tau.ci[1], med_out$n.avg.ci[1]),
-     conf.high = c(med_out$d.avg.ci[2], med_out$z.avg.ci[2], med_out$tau.ci[2], med_out$n.avg.ci[2]),
-     p.value  = c(med_out$d.avg.p, med_out$z.avg.p, med_out$tau.p, med_out$n.avg.p),
-     group    = group,
-     mediator = mediator,
-     period   = period$end
-   )
+#    med_tidy <- data.frame(
+#      term    = c("ACME", "ADE", "Total Effect", "Prop. Mediated"),
+#      estimate = c(med_out$d.avg,  med_out$z.avg,  med_out$tau.coef, med_out$n.avg),
+#      conf.low = c(med_out$d.avg.ci[1], med_out$z.avg.ci[1], med_out$tau.ci[1], med_out$n.avg.ci[1]),
+#      conf.high = c(med_out$d.avg.ci[2], med_out$z.avg.ci[2], med_out$tau.ci[2], med_out$n.avg.ci[2]),
+#      p.value  = c(med_out$d.avg.p, med_out$z.avg.p, med_out$tau.p, med_out$n.avg.p),
+#      group    = group,
+#      mediator = mediator,
+#      period   = period$end
+#    )
  
-   return(med_tidy)
-    rm(med_fit, out_fit, med_out)
-    gc()
- }
+#    return(med_tidy)
+#     rm(med_fit, out_fit, med_out)
+#     gc()
+#  }
 
 group_vars <- c("Mixed", "Asian or Asian British", "Black or Black British", "Other Ethnic Groups")
 mediation_vars <- c(mediator_arg)
@@ -166,83 +166,83 @@ param_grid <- expand.grid(
 )
 print(param_grid)
 
-mediation_outputs <- pmap(
-  param_grid,
-  function(group, mediator) run_mediation(group, mediator)
-)
+# mediation_outputs <- pmap(
+#   param_grid,
+#   function(group, mediator) run_mediation(group, mediator)
+# )
 
-all_results <- bind_rows(mediation_outputs)
-write.csv(all_results, file.path(outdir, paste0("mediation_covid_aft_", mediator_arg, "_", period_arg, ".csv")), row.names = FALSE)
+# all_results <- bind_rows(mediation_outputs)
+# write.csv(all_results, file.path(outdir, paste0("mediation_covid_aft_", mediator_arg, "_", period_arg, ".csv")), row.names = FALSE)
 
 # ---------------------------------------------------------------------------
 # Mediation calculated over covariate patterns instead of per person, to
 # avoid mediate() running out of memory (see mediation_collapsed_functions.R).
 # Data preparation and models are the same as run_mediation() above.
 # ---------------------------------------------------------------------------
-# source(here("analysis", "mediation_collapsed_functions.R"))
+source(here("analysis", "mediation_collapsed_functions.R"))
 
-# run_mediation_collapsed <- function(group, mediator) {
-#   data_df <- data_covid %>%
-#     filter(ethnicity6_combined %in% c(group, "White"))
+run_mediation_collapsed <- function(group, mediator) {
+  data_df <- data_covid %>%
+    filter(ethnicity6_combined %in% c(group, "White"))
 
-#   # Keep everyone in the comparison group but only a random 20% of the
-#   # White group, to reduce memory use
-#   data_df <- bind_rows(
-#     data_df %>% filter(ethnicity6_combined == group),
-#     data_df %>% filter(ethnicity6_combined == "White") %>% slice_sample(prop = 0.2)
-#   ) %>%
-#     droplevels() %>%
-#     restrict_period_reanchored("stop_sc", "date_stop_sc", "sc_binary", period$start, period$end) %>%
-#     mutate(stop_sc = if_else(stop_sc == 0, 0.5, stop_sc))
+  # Keep everyone in the comparison group but only a random 20% of the
+  # White group, to reduce memory use
+  data_df <- bind_rows(
+    data_df %>% filter(ethnicity6_combined == group),
+    data_df %>% filter(ethnicity6_combined == "White") %>% slice_sample(prop = 0.2)
+  ) %>%
+    droplevels() %>%
+    restrict_period_reanchored("stop_sc", "date_stop_sc", "sc_binary", period$start, period$end) %>%
+    mutate(stop_sc = if_else(stop_sc == 0, 0.5, stop_sc))
 
-#   is_ordinal <- mediator %in% names(ordinal_levels)
+  is_ordinal <- mediator %in% names(ordinal_levels)
 
-#   if (is_ordinal) {
-#     data_df <- data_df %>% filter(.data[[mediator]] %in% ordinal_levels[[mediator]])
-#     data_df[[mediator]] <- factor(data_df[[mediator]], levels = ordinal_levels[[mediator]], ordered = TRUE)
-#   } else {
-#     if ("Unknown" %in% levels(factor(data_df[[mediator]]))) {
-#       data_df <- data_df %>% filter(.data[[mediator]] != "Unknown")
-#     }
-#     if (!is.logical(data_df[[mediator]])) {
-#       data_df[[mediator]] <- as.numeric(factor(data_df[[mediator]])) - 1
-#     } else {
-#       data_df[[mediator]] <- as.numeric(data_df[[mediator]])
-#     }
-#   }
-#   data_df <- droplevels(data_df)
+  if (is_ordinal) {
+    data_df <- data_df %>% filter(.data[[mediator]] %in% ordinal_levels[[mediator]])
+    data_df[[mediator]] <- factor(data_df[[mediator]], levels = ordinal_levels[[mediator]], ordered = TRUE)
+  } else {
+    if ("Unknown" %in% levels(factor(data_df[[mediator]]))) {
+      data_df <- data_df %>% filter(.data[[mediator]] != "Unknown")
+    }
+    if (!is.logical(data_df[[mediator]])) {
+      data_df[[mediator]] <- as.numeric(factor(data_df[[mediator]])) - 1
+    } else {
+      data_df[[mediator]] <- as.numeric(data_df[[mediator]])
+    }
+  }
+  data_df <- droplevels(data_df)
 
-#   print("Checking size dataset")
-#   print(table(data_df$ethnicity6_combined))
+  print("Checking size dataset")
+  print(table(data_df$ethnicity6_combined))
 
-#   # Mediator model
-#   med_formula <- as.formula(paste0(mediator, " ~ ethnicity6_combined + age_group + sex"))
-#   med_fit <- if (is_ordinal) {
-#     MASS::polr(med_formula, data = data_df, Hess = TRUE)
-#   } else {
-#     glm(med_formula, data = data_df, family = binomial(link = "logit"))
-#   }
-#   # Outcome model
-#   out_formula <- as.formula(paste0("Surv(stop_sc, sc_binary) ~ ethnicity6_combined + sex + age_group + ", mediator))
-#   out_fit <- survreg(out_formula, data = data_df, dist = "weibull", robust = TRUE)
+  # Mediator model
+  med_formula <- as.formula(paste0(mediator, " ~ ethnicity6_combined + age_group + sex"))
+  med_fit <- if (is_ordinal) {
+    MASS::polr(med_formula, data = data_df, Hess = TRUE)
+  } else {
+    glm(med_formula, data = data_df, family = binomial(link = "logit"))
+  }
+  # Outcome model
+  out_formula <- as.formula(paste0("Surv(stop_sc, sc_binary) ~ ethnicity6_combined + sex + age_group + ", mediator))
+  out_fit <- survreg(out_formula, data = data_df, dist = "weibull", robust = TRUE)
 
-#   # Mediation
-#   med_tidy <- mediate_collapsed(med_fit, out_fit, data = data_df,
-#                                 treat = "ethnicity6_combined", mediator = mediator,
-#                                 treat.value = group, control.value = "White", sims = 1000)
-#   print(med_tidy)
+  # Mediation
+  med_tidy <- mediate_collapsed(med_fit, out_fit, data = data_df,
+                                treat = "ethnicity6_combined", mediator = mediator,
+                                treat.value = group, control.value = "White", sims = 1000)
+  print(med_tidy)
 
-#   rm(data_df, med_fit, out_fit)
-#   gc()
+  rm(data_df, med_fit, out_fit)
+  gc()
 
-#   med_tidy %>% mutate(group = group, mediator = mediator, period = period$end)
-# }
+  med_tidy %>% mutate(group = group, mediator = mediator, period = period$end)
+}
 
-# collapsed_outputs <- pmap(
-#   param_grid,
-#   function(group, mediator) run_mediation_collapsed(group, mediator)
-# )
+collapsed_outputs <- pmap(
+  param_grid,
+  function(group, mediator) run_mediation_collapsed(group, mediator)
+)
 
-# all_results_collapsed <- bind_rows(collapsed_outputs)
-# write.csv(all_results_collapsed, file.path(outdir, paste0("mediation_covid_aft_collapsed_", mediator_arg, "_", period_arg, ".csv")), row.names = FALSE)
+all_results_collapsed <- bind_rows(collapsed_outputs)
+write.csv(all_results_collapsed, file.path(outdir, paste0("mediation_covid_aft_collapsed_", mediator_arg, "_", period_arg, ".csv")), row.names = FALSE)
 
