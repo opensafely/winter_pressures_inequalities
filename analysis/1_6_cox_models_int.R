@@ -30,7 +30,7 @@ disease <- args[1]
 interaction_arg <- args[2]
 
 # # Cox PH models to measure differences in utilisation by ethnicity and IMD
-run_cox_models <- function(disease, difference, interactions) {
+run_cox_models <- function(disease, difference, interactions, period_start, period_end) {
         data_df <- read_outcome_data(disease)
 
         message(paste0("Disease: ", disease, " | Difference: ", difference, " | interactions: ", interactions))
@@ -47,25 +47,32 @@ run_cox_models <- function(disease, difference, interactions) {
 
         run_all_outcomes(
                 data_df, disease, difference, rhs_extra,
+                period = list(start = period_start, end = period_end),
                 interaction_var = interactions,
-                extra_cols = list(interactions = interactions)
+                extra_cols = list(interactions = interactions, period = period_end)
         )
 }
 
 by_vars <- c("ethnicity6_combined")
 int <- c(interaction_arg)
 
+periods <- tibble(
+  period_start = as.Date(c("2021-03-01", "2022-09-01")),
+  period_end   = as.Date(c("2022-08-31", "2026-02-28"))
+)
+
 param_grid <- expand.grid(
   disease = disease,
   difference = by_vars,
   interactions = int,
   stringsAsFactors = FALSE
-  )
+  ) %>% 
+  cross_join(periods)
 print(param_grid[4, ])
 
 cox_table <- pmap(
   param_grid,
-  function(disease, difference, interactions) run_cox_models(disease, difference, interactions)) %>%
+  function(disease, difference, interactions, period_start, period_end) run_cox_models(disease, difference, interactions, period_start, period_end)) %>%
   list_rbind()
 
 print(cox_table)
@@ -73,6 +80,6 @@ print(cox_table)
 cox_table <- cox_table %>%
                 mutate(across(c("estimate", "conf.low", "conf.high"), ~round(.x, 4))) %>%
                 # don't need std.error or statistic
-                select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "interactions", "n", "n_events", "n_level", "n_events_level", "redacted", "lrt_chisq", "lrt_df", "lrt_p")
+                select("term", "estimate", "conf.low", "conf.high", "outcome", "by_var", "disease", "interactions", "period", "n", "n_events", "n_level", "n_events_level", "redacted", "lrt_chisq", "lrt_df", "lrt_p")
 file_name <- paste0("cox_models_int_",disease,"_",interaction_arg,".csv")
 write_csv(cox_table, file.path(outdir, file_name))
