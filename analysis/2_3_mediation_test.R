@@ -178,6 +178,7 @@ source(here("analysis", "mediation_collapsed_functions.R"))
 
 run_mediation_collapsed <- function(group, mediator) {
   data_df <- data_covid %>%
+    filter(ethnicity6_combined %in% c(group, "White")) %>%
     restrict_period_reanchored("stop_sc", "date_stop_sc", "sc_binary", period$start, period$end) %>%
     mutate(stop_sc = if_else(stop_sc == 0, 0.5, stop_sc))
 
