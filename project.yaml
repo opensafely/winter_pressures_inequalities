@@ -17,7 +17,7 @@ actions:
         --output output/dataset_covid_2022.arrow
         --test-data-file analysis/test_dataset_definition_covid.py
         --
-        --start_date 2022-09-01
+        --start_date 2022-08-01
       outputs:
         highly_sensitive:
           population: output/dataset_covid_2022.arrow
@@ -27,7 +27,7 @@ actions:
         ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
         --output output/dataset_covid_2023.arrow
         --
-        --start_date 2023-09-01
+        --start_date 2023-08-01
       outputs:
         highly_sensitive:
           population: output/dataset_covid_2023.arrow
@@ -37,7 +37,7 @@ actions:
         ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
         --output output/dataset_covid_2024.arrow
         --
-        --start_date 2024-09-01
+        --start_date 2024-08-01
       outputs:
         highly_sensitive:
           population: output/dataset_covid_2024.arrow
@@ -47,7 +47,7 @@ actions:
         ehrql:v1 generate-dataset analysis/dataset_definition_covid.py 
         --output output/dataset_covid_2025.arrow
         --
-        --start_date 2025-09-01
+        --start_date 2025-08-01
       outputs:
         highly_sensitive:
           population: output/dataset_covid_2025.arrow
