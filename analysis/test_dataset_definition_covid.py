@@ -202,7 +202,7 @@ test_data = {
         "emergency_care_attendances": [
             {
                 "diagnosis_01": "1240751000000100", # covid
-                "arrival_date": date(2022, 5, 2),
+                "arrival_date": date(2022, 9, 2),
             },
             ],
         "practice_registrations": [
@@ -241,9 +241,9 @@ test_data = {
             "covid_primary_date": None,
             "covid_primary_appt": False,
             "covid_sc_date": None,
-            "covid_emerg_date": date(2022, 5, 2),
+            "covid_emerg_date": date(2022, 9, 2),
             "has_covid_admission": True,
-            "covid_admission_date": date(2022, 5, 2),
+            "covid_admission_date": date(2022, 9, 2),
         },
     },
     # Not expected in population - registration ends prior to index date
@@ -370,7 +370,7 @@ test_data = {
             },
             {
                 "snomedct_code": "1157045004", # covid
-                "date": date(2022, 7, 1),
+                "date": date(2022, 10, 1),
             },
             #{
             #    "snomedct_code": "108241001", # CKD - ckd_cov codelist
@@ -412,7 +412,7 @@ test_data = {
         "vaccinations": [],
         "appointments": [
             {
-                "seen_date": date(2022, 7, 1),
+                "seen_date": date(2022, 10, 1),
             }
         ],
         "expected_in_population": True,
@@ -434,7 +434,7 @@ test_data = {
             "recent_bmi_date": None,
             "recent_bmi_age": None,
             "migrant": "Unknown",
-            "covid_primary_date": date(2022, 7, 1),
+            "covid_primary_date": date(2022, 10, 1),
             "covid_primary_appt": True,
             "covid_sc_date": None,
             "covid_emerg_date": None,
