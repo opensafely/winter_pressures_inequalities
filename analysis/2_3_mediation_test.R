@@ -131,6 +131,7 @@ ordinal_levels <- list(
    out_fit$data <- NULL 
 
    # Mediation
+   set.seed(123)
    med_out <- mediate(med_fit, out_fit, treat = "ethnicity6_combined", mediator = mediator,
                       treat.value = group, control.value = "White", sims = 500, long = FALSE)
    print(summary(med_out))
@@ -145,10 +146,10 @@ ordinal_levels <- list(
      mediator = mediator,
      period   = period$end
    )
- 
-   return(med_tidy)
     rm(med_fit, out_fit, med_out)
     gc()
+   return(med_tidy)
+    
  }
 
 group_vars <- c("Asian or Asian British")
@@ -214,9 +215,10 @@ run_mediation_collapsed <- function(group, mediator) {
   out_fit <- survreg(out_formula, data = data_df, dist = "weibull", robust = TRUE)
 
   # Mediation
+  set.seed(123)
   med_tidy <- mediate_collapsed(med_fit, out_fit, data = data_df,
                                 treat = "ethnicity6_combined", mediator = mediator,
-                                treat.value = group, control.value = "White", sims = 1000)
+                                treat.value = group, control.value = "White", sims = 500)
   print(med_tidy)
 
   rm(data_df, med_fit, out_fit)
