@@ -38,7 +38,7 @@ restrict_period_reanchored <- function(df, stop_var, date_stop_var, binary_var, 
 
 # use mediation package to do AFT model for COVID outcomes
 
-data_covid <- read_feather(here("output/an_outcome_first_covid_2021.arrow"), as_data_frame = TRUE)
+data_covid <- read_feather(here("output/an_outcome_first_covid_2022.arrow"), as_data_frame = TRUE)
 
 # Run e-value method in COVID cohort (https://arxiv.org/pdf/2411.17533)
 data_df <- data_covid %>%

@@ -225,7 +225,7 @@ actions:
   data_process_bl:
       run: r:v2 analysis/data_processing_baseline.R 
       needs: 
-      - generate_dataset_covid_2021
+      #- generate_dataset_covid_2021
       - generate_dataset_covid_2022
       - generate_dataset_covid_2023
       - generate_dataset_covid_2024
@@ -239,13 +239,13 @@ actions:
       - generate_dataset_flu_rsv_2025
       outputs: 
         highly_sensitive:
-          data: output/an_bl_data_covid_2021.arrow
+          data: output/an_bl_data_covid_2022.arrow
           data_flu_rsv: output/an_bl_data_flu_rsv_*.arrow
 
-  data_process_outcome_covid_2021:
-      run: r:v2 analysis/data_processing_outcomes.R covid covid 2021 2025
+  data_process_outcome_covid_2022:
+      run: r:v2 analysis/data_processing_outcomes.R covid covid 2022 2025
       needs: 
-      - generate_dataset_covid_2021
+      #- generate_dataset_covid_2021
       - generate_dataset_covid_2022
       - generate_dataset_covid_2023
       - generate_dataset_covid_2024
@@ -253,8 +253,8 @@ actions:
       - data_process_bl
       outputs: 
         highly_sensitive:
-          data_o_covid: output/an_outcome_data_covid_2021.rds
-          data_f_covid: output/an_outcome_first_covid_2021.arrow
+          data_o_covid: output/an_outcome_data_covid_2022.rds
+          data_f_covid: output/an_outcome_first_covid_2022.arrow
 
   data_process_outcome_flu_2018:
       run: r:v2 analysis/data_processing_outcomes.R flu flu_rsv 2018 2019
@@ -309,7 +309,7 @@ actions:
   data_check: 
       run: r:v2 analysis/data_check.R 
       needs: 
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
         - data_process_outcome_flu_2018
         - data_process_outcome_rsv_2018
         - data_process_outcome_flu_2021
@@ -321,7 +321,7 @@ actions:
       run: r:v2 analysis/1_1_tables.R 
       needs: 
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
         - data_process_outcome_flu_2018
         - data_process_outcome_rsv_2018
         - data_process_outcome_flu_2021
@@ -348,14 +348,14 @@ actions:
         moderately_sensitive:
           rates_covid: output/tables/rounded_rates_*.csv
 
-  cox_models_covid_2021:
-      run: r:v2 analysis/1_3_cox_models.R covid_2021 2021
+  cox_models_covid_2022:
+      run: r:v2 analysis/1_3_cox_models.R covid_2022 2022
       needs: 
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
-          table_cox: output/tables/cox_models_covid_2021.csv
+          table_cox: output/tables/cox_models_covid_2022.csv
 
   cox_models_flu_2018:
       run: r:v2 analysis/1_3_cox_models.R flu_2018 2018
@@ -397,34 +397,34 @@ actions:
       run: r:v2 analysis/1_5_cox_models_time.R covid_2021 2021
       needs: 
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
           table_cox_s: output/tables/cox_models_time_covid_2021.csv
 
-  cox_models_int_sex_covid_2021:
-      run: r:v2 analysis/1_6_cox_models_int.R covid_2021 sex
+  cox_models_int_sex_covid_2022:
+      run: r:v2 analysis/1_6_cox_models_int.R covid_2022 sex
       needs:
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
-          table_cox_s: output/tables/cox_models_int_covid_2021_sex.csv
+          table_cox_s: output/tables/cox_models_int_covid_2022_sex.csv
 
-  cox_models_int_imd_quintile_covid_2021:
-      run: r:v2 analysis/1_6_cox_models_int.R covid_2021 imd_quintile
+  cox_models_int_imd_quintile_covid_2022:
+      run: r:v2 analysis/1_6_cox_models_int.R covid_2022 imd_quintile
       needs:
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
-          table_cox_s: output/tables/cox_models_int_covid_2021_imd_quintile.csv
+          table_cox_s: output/tables/cox_models_int_covid_2022_imd_quintile.csv
 
   cox_models_strat_covid_2021:
       run: r:v2 analysis/1_4_cox_models_stratified.R covid_2021 strat_params
       needs: 
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
           table_cox_s: output/tables/cox_models_stratified_covid_2021.csv
@@ -465,13 +465,13 @@ actions:
         moderately_sensitive:
           table_cox_s: output/tables/cox_models_stratified_rsv_2021.csv
 
-  redact_cox_models_covid_2021:
-      run: r:v2 analysis/redact_cox_tables.R cox_models_covid_2021
+  redact_cox_models_covid_2022:
+      run: r:v2 analysis/redact_cox_tables.R cox_models_covid_2022
       needs:
-        - cox_models_covid_2021
+        - cox_models_covid_2022
       outputs:
         moderately_sensitive:
-          table_r: output/tables/cox_models_covid_2021_r.csv
+          table_r: output/tables/cox_models_covid_2022_r.csv
 
   redact_cox_models_time_covid_2021:
       run: r:v2 analysis/redact_cox_tables.R cox_models_time_covid_2021
@@ -481,27 +481,27 @@ actions:
         moderately_sensitive:
           table_r: output/tables/cox_models_time_covid_2021_r.csv
 
-  redact_cox_models_int_sex_covid_2021:
-      run: r:v2 analysis/redact_cox_tables.R cox_models_int_covid_2021_sex
+  redact_cox_models_int_sex_covid_2022:
+      run: r:v2 analysis/redact_cox_tables.R cox_models_int_covid_2022_sex
       needs:
-        - cox_models_int_sex_covid_2021
+        - cox_models_int_sex_covid_2022
       outputs:
         moderately_sensitive:
-          table_r: output/tables/cox_models_int_covid_2021_sex_r.csv
+          table_r: output/tables/cox_models_int_covid_2022_sex_r.csv
 
-  redact_cox_models_int_imd_quintile_covid_2021:
-      run: r:v2 analysis/redact_cox_tables.R cox_models_int_covid_2021_imd_quintile
+  redact_cox_models_int_imd_quintile_covid_2022:
+      run: r:v2 analysis/redact_cox_tables.R cox_models_int_covid_2022_imd_quintile
       needs:
-        - cox_models_int_imd_quintile_covid_2021
+        - cox_models_int_imd_quintile_covid_2022
       outputs:
         moderately_sensitive:
-          table_r: output/tables/cox_models_int_covid_2021_imd_quintile_r.csv
+          table_r: output/tables/cox_models_int_covid_2022_imd_quintile_r.csv
 
   km_plots:
       run: r:v2 analysis/1_5_km_plots.R
       needs: 
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
         - data_process_outcome_flu_2018
         - data_process_outcome_rsv_2018
         - data_process_outcome_flu_2021
@@ -510,173 +510,92 @@ actions:
         moderately_sensitive:
           plots: output/tables/plot_*.svg
 
-  mediation_migrant_period1:
-      run: r:v2 analysis/2_1_mediation.R migrant period1
+  mediation_migrant:
+      run: r:v2 analysis/2_1_mediation.R migrant 
       needs:
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_migrant_period1.csv
+          med: output/tables/mediation_covid_aft*_migrant.csv
 
-  mediation_migrant_period2:
-      run: r:v2 analysis/2_1_mediation.R migrant period2
+  mediation_english_language:
+      run: r:v2 analysis/2_1_mediation.R english_language
       needs:
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_migrant_period2.csv
+          med: output/tables/mediation_covid_aft*_english_language.csv
 
-  mediation_english_language_period1:
-      run: r:v2 analysis/2_1_mediation.R english_language period1
+  mediation_imd_quintile:
+      run: r:v2 analysis/2_1_mediation.R imd_quintile
       needs:
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_english_language_period1.csv
+          med: output/tables/mediation_covid_aft*_imd_quintile.csv
 
-  mediation_english_language_period2:
-      run: r:v2 analysis/2_1_mediation.R english_language period2
+  mediation_urban_rural_5:
+      run: r:v2 analysis/2_1_mediation.R urban_rural_5
       needs:
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_english_language_period2.csv
+          med: output/tables/mediation_covid_aft*_urban_rural_5.csv
 
-  mediation_imd_quintile_period1:
-      run: r:v2 analysis/2_1_mediation.R imd_quintile period1
+  mediation_vacc_elig_covid:
+      run: r:v2 analysis/2_1_mediation.R vacc_elig_covid
       needs:
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_imd_quintile_period1.csv
+          med: output/tables/mediation_covid_aft*_vacc_elig_covid.csv
 
-  mediation_imd_quintile_period2:
-      run: r:v2 analysis/2_1_mediation.R imd_quintile period2
+  mediation_vacc_elig_flu:
+      run: r:v2 analysis/2_1_mediation.R vacc_elig_flu
       needs:
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_imd_quintile_period2.csv
+          med: output/tables/mediation_covid_aft*_vacc_elig_flu.csv
 
-  mediation_urban_rural_5_period1:
-      run: r:v2 analysis/2_1_mediation.R urban_rural_5 period1
+  mediation_prior_flu_vacc_bin:
+      run: r:v2 analysis/2_1_mediation.R prior_flu_vacc_bin
       needs:
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_urban_rural_5_period1.csv
+          med: output/tables/mediation_covid_aft*_prior_flu_vacc_bin.csv
 
-  mediation_urban_rural_5_period2:
-      run: r:v2 analysis/2_1_mediation.R urban_rural_5 period2
+  mediation_prior_covid_vacc_bin:
+      run: r:v2 analysis/2_1_mediation.R prior_covid_vacc_bin
       needs:
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_urban_rural_5_period2.csv
+          med: output/tables/mediation_covid_aft*_prior_covid_vacc_bin.csv
 
-  mediation_vacc_elig_covid_period1:
-      run: r:v2 analysis/2_1_mediation.R vacc_elig_covid period1
+  mediation_bmi_category:
+      run: r:v2 analysis/2_1_mediation.R bmi_category
       needs:
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_vacc_elig_covid_period1.csv
-
-  mediation_vacc_elig_covid_period2:
-      run: r:v2 analysis/2_1_mediation.R vacc_elig_covid period2
-      needs:
-        - data_process_bl
-        - data_process_outcome_covid_2021
-      outputs:
-        moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_vacc_elig_covid_period2.csv
-
-  mediation_vacc_elig_flu_period1:
-      run: r:v2 analysis/2_1_mediation.R vacc_elig_flu period1
-      needs:
-        - data_process_bl
-        - data_process_outcome_covid_2021
-      outputs:
-        moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_vacc_elig_flu_period1.csv
-
-  mediation_vacc_elig_flu_period2:
-      run: r:v2 analysis/2_1_mediation.R vacc_elig_flu period2
-      needs:
-        - data_process_bl
-        - data_process_outcome_covid_2021
-      outputs:
-        moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_vacc_elig_flu_period2.csv
-
-  mediation_prior_flu_vacc_bin_period1:
-      run: r:v2 analysis/2_1_mediation.R prior_flu_vacc_bin period1
-      needs:
-        - data_process_bl
-        - data_process_outcome_covid_2021
-      outputs:
-        moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_prior_flu_vacc_bin_period1.csv
-
-  mediation_prior_flu_vacc_bin_period2:
-      run: r:v2 analysis/2_1_mediation.R prior_flu_vacc_bin period2
-      needs:
-        - data_process_bl
-        - data_process_outcome_covid_2021
-      outputs:
-        moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_prior_flu_vacc_bin_period2.csv
-
-  mediation_prior_covid_vacc_bin_period1:
-      run: r:v2 analysis/2_1_mediation.R prior_covid_vacc_bin period1
-      needs:
-        - data_process_bl
-        - data_process_outcome_covid_2021
-      outputs:
-        moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_prior_covid_vacc_bin_period1.csv
-
-  mediation_prior_covid_vacc_bin_period2:
-      run: r:v2 analysis/2_1_mediation.R prior_covid_vacc_bin period2
-      needs:
-        - data_process_bl
-        - data_process_outcome_covid_2021
-      outputs:
-        moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_prior_covid_vacc_bin_period2.csv
-
-  mediation_bmi_category_period1:
-      run: r:v2 analysis/2_1_mediation.R bmi_category period1
-      needs:
-        - data_process_bl
-        - data_process_outcome_covid_2021
-      outputs:
-        moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_bmi_category_period1.csv
-
-  mediation_bmi_category_period2:
-      run: r:v2 analysis/2_1_mediation.R bmi_category period2
-      needs:
-        - data_process_bl
-        - data_process_outcome_covid_2021
-      outputs:
-        moderately_sensitive:
-          med: output/tables/mediation_covid_aft*_bmi_category_period2.csv
+          med: output/tables/mediation_covid_aft*_bmi_category.csv
 
   mediation_pseudo_period1:
       run: r:v2 analysis/2_2_mediation_pseudo.R period1
       needs:
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
           med: output/tables/mediation_covid_pseudo*_period1.csv
@@ -685,7 +604,7 @@ actions:
       run: r:v2 analysis/2_2_mediation_pseudo.R period2
       needs:
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
           med: output/tables/mediation_covid_pseudo*_period2.csv
@@ -694,17 +613,17 @@ actions:
       run: r:v2 analysis/2_3_mediation_test.R imd_quintile period1 
       needs:
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
-          med: output/tables/mediation_covid_test*_period1.csv
+          med: output/tables/mediation_covid_test*.csv
 
 # Original Cox models code
   cox_models_covid_2021_orig:
       run: r:v2 analysis/1_3_cox_models_original.R covid_2021 2021
       needs: 
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
           table_cox: output/tables/cox_models_orig_covid_2021.csv
@@ -713,7 +632,7 @@ actions:
       run: r:v2 analysis/1_5_cox_models_time_original.R covid_2021 2021
       needs: 
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
           table_cox_s: output/tables/cox_models_time_orig_covid_2021.csv
@@ -722,7 +641,7 @@ actions:
       run: r:v2 analysis/1_6_cox_models_int_original.R covid_2021 2021
       needs: 
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
           table_cox_s: output/tables/cox_models_int_orig_covid_2021.csv
@@ -731,7 +650,7 @@ actions:
       run: r:v2 analysis/1_4_cox_models_stratified_original.R covid_2021 strat_params
       needs: 
         - data_process_bl
-        - data_process_outcome_covid_2021
+        - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
           table_cox_s: output/tables/cox_models_stratified_orig_covid_2021.csv
@@ -739,10 +658,10 @@ actions:
   plots_outside:
       run: r:v2 analysis/plots_outside.R
       needs:
-        - cox_models_covid_2021
+        - cox_models_covid_2022
         - cox_models_time_covid_2021
-        - cox_models_int_sex_covid_2021
-        - cox_models_int_imd_quintile_covid_2021
+        - cox_models_int_sex_covid_2022
+        - cox_models_int_imd_quintile_covid_2022
         - cox_models_strat_covid_2021
       outputs:
         moderately_sensitive:

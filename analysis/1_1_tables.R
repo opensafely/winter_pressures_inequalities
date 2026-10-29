@@ -31,7 +31,7 @@ bmi_levels <- c("ideal", "underweight", "overweight", "obese", "unknown or outli
 #Creating baseline tables - first import data
 # using tables with outcomes as people removed with ONS death date prior to start of follow-up in that file
 # # Table of outcomes - first event for Cox models
-outcomes_covid_2021 <- read_feather(here("output/an_outcome_first_covid_2021.arrow"))%>% 
+outcomes_covid_2022 <- read_feather(here("output/an_outcome_first_covid_2022.arrow"))%>% 
         mutate(imd_quintile = as.factor(imd_quintile),
         min_yr_start = as.factor(min_start_yr),
         bmi_category = factor(bmi_category, levels = bmi_levels)) 
@@ -67,7 +67,7 @@ var_labels_list <- list(
                 )
 
 # COVID cohort baseline table by ethnicity
-desc_covid_by <- outcomes_covid_2021 %>% 
+desc_covid_by <- outcomes_covid_2022 %>% 
         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
         urban_rural_5, imd_quintile, migrant, english_language, 
         flu_atrisk_grp, covid_atrisk_grp, bmi_category) %>% 
@@ -301,13 +301,13 @@ count_outcomes <- function(disease,
 
 count_outcomes(
   disease = "covid",
-  year = "2021",
+  year = "2022",
   strata = "ethnicity6_combined",
 )
 
 count_outcomes(
   disease = "covid",
-  year = "2021",
+  year = "2022",
   strata = "imd_quintile"
 )
 
@@ -362,7 +362,7 @@ count_outcomes(
 # 16 ethnic groups 
 count_outcomes(
   disease = "covid",
-  year = "2021",
+  year = "2022",
   strata = "ethnicity16_combined",
 )
 
@@ -393,15 +393,15 @@ count_outcomes(
 
 #test KM plot
 
-km_gp <- survfit(Surv(stop_gp, gp_binary) ~ ethnicity6_combined, data = outcomes_covid_2021)
+km_gp <- survfit(Surv(stop_gp, gp_binary) ~ ethnicity6_combined, data = outcomes_covid_2022)
 # Generate GP plot 
 names(km_gp$strata) <- gsub("ethnicity6_combined=", "", names(km_gp$strata))
-gp_plot <- ggsurvplot_facet(km_gp, data = outcomes_covid_2021, facet.by = "year_end_gp", fun = "event", risk.table = FALSE,
+gp_plot <- ggsurvplot_facet(km_gp, data = outcomes_covid_2022, facet.by = "year_end_gp", fun = "event", risk.table = FALSE,
         conf.int = TRUE, pval = FALSE, legend = "right", #title = ("Kaplan-Meier: COVID-19 (GP)"),
         legend.labs = c("Asian", "Black", "Chinese", "Missing", "Mixed", "White"),
         ggtheme = theme_bw())
 
-ggsave(file.path(outdir, "plot_km_covid_2021_gp.svg"), gp_plot)
+ggsave(file.path(outdir, "plot_km_covid_2022_gp.svg"), gp_plot)
 
 
 

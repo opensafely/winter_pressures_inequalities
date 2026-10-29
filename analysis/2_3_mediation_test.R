@@ -14,45 +14,45 @@ fs::dir_create(outdir)
 # group x mediator combinations otherwise, in a single R session.
 args <- commandArgs(trailingOnly = TRUE)
 mediator_arg <- args[1]
-period_arg <- args[2]
+#period_arg <- args[2]
 #ethnic_arg <- args[3]
 
 set.seed(123)
-# Same two calendar periods as 1_5_cox_models_time.R
-periods <- list(
-  period1 = list(start = as.Date("2021-09-01"), end = as.Date("2021-12-31")),
-  period2 = list(start = as.Date("2022-09-01"), end = as.Date("2026-02-28"))
-)
-period <- periods[[period_arg]]
-if (is.null(period)) {
-  stop("Unknown period: ", period_arg, " (expected one of: ", paste(names(periods), collapse = ", "), ")")
-}
+# # Same two calendar periods as 1_5_cox_models_time.R
+# periods <- list(
+#   period1 = list(start = as.Date("2021-09-01"), end = as.Date("2021-12-31")),
+#   period2 = list(start = as.Date("2022-09-01"), end = as.Date("2026-02-28"))
+# )
+# period <- periods[[period_arg]]
+# if (is.null(period)) {
+#   stop("Unknown period: ", period_arg, " (expected one of: ", paste(names(periods), collapse = ", "), ")")
+# }
 
-# stop_sc/sc_binary are numeric day-offsets from each person's own
-# fu_start, not calendar dates, and this script's survreg() call uses the
-# plain 2-argument Surv(stop_sc, sc_binary) - no start/left-truncation
-# support like coxph's 3-argument form. So rather than reusing
-# cox_model_functions.R's restrict_period() (which measures time from the
-# original fu_start, appropriate for left-truncated Cox models), time is
-# re-anchored here at whichever is later: the person's actual entry, or
-# the period start. Everyone then contributes only the portion of
-# follow-up that falls inside the period, with their clock starting at 0
-# for that window - no truncation handling needed for the 2-arg Surv().
-restrict_period_reanchored <- function(df, stop_var, date_stop_var, binary_var, period_start, period_end,
-                                        fu_start_col = "fu_start") {
-  df %>%
-    filter(.data[[date_stop_var]] > period_start, .data[[fu_start_col]] < period_end) %>%
-    mutate(
-      !!binary_var := if_else(.data[[date_stop_var]] > period_end, 0L, .data[[binary_var]]),
-      !!stop_var   := as.numeric(pmin(.data[[date_stop_var]], period_end) - pmax(.data[[fu_start_col]], period_start))
-    )
-}
+# # stop_sc/sc_binary are numeric day-offsets from each person's own
+# # fu_start, not calendar dates, and this script's survreg() call uses the
+# # plain 2-argument Surv(stop_sc, sc_binary) - no start/left-truncation
+# # support like coxph's 3-argument form. So rather than reusing
+# # cox_model_functions.R's restrict_period() (which measures time from the
+# # original fu_start, appropriate for left-truncated Cox models), time is
+# # re-anchored here at whichever is later: the person's actual entry, or
+# # the period start. Everyone then contributes only the portion of
+# # follow-up that falls inside the period, with their clock starting at 0
+# # for that window - no truncation handling needed for the 2-arg Surv().
+# restrict_period_reanchored <- function(df, stop_var, date_stop_var, binary_var, period_start, period_end,
+#                                         fu_start_col = "fu_start") {
+#   df %>%
+#     filter(.data[[date_stop_var]] > period_start, .data[[fu_start_col]] < period_end) %>%
+#     mutate(
+#       !!binary_var := if_else(.data[[date_stop_var]] > period_end, 0L, .data[[binary_var]]),
+#       !!stop_var   := as.numeric(pmin(.data[[date_stop_var]], period_end) - pmax(.data[[fu_start_col]], period_start))
+#     )
+# }
 
 # use mediation package to do AFT model for COVID outcomes
 
-data_covid <- read_feather(here("output/an_outcome_first_covid_2021.arrow"), as_data_frame = TRUE) 
+data_covid <- read_feather(here("output/an_outcome_first_covid_2022.arrow"), as_data_frame = TRUE) 
 
-data_covid <- data_covid %>% slice_sample(prop = 0.02) %>%
+data_covid <- data_covid %>% slice_sample(prop = 0.1) %>%
      droplevels() 
 
 #print(levels(data_covid$ethnicity6_combined))
@@ -73,7 +73,7 @@ ordinal_levels <- list(
  run_mediation <- function(group, mediator) {
    data_df <- data_covid %>%
      filter(ethnicity6_combined %in% c(group, "White")) %>%
-     restrict_period_reanchored("stop_sc", "date_stop_sc", "sc_binary", period$start, period$end) %>%
+     #restrict_period_reanchored("stop_sc", "date_stop_sc", "sc_binary", period$start, period$end) %>%
      # setting events on same day as follow up at half day - re-applied
      # after period restriction, since that can itself produce new
      # stop_sc == 0 values for people whose event/censoring lands right at
@@ -143,8 +143,8 @@ ordinal_levels <- list(
      conf.high = c(med_out$d.avg.ci[2], med_out$z.avg.ci[2], med_out$tau.ci[2], med_out$n.avg.ci[2]),
      p.value  = c(med_out$d.avg.p, med_out$z.avg.p, med_out$tau.p, med_out$n.avg.p),
      group    = group,
-     mediator = mediator,
-     period   = period$end
+     mediator = mediator
+     #period   = period$end
    )
     rm(med_fit, out_fit, med_out)
     gc()
@@ -168,7 +168,7 @@ mediation_outputs <- pmap(
 )
 
 all_results <- bind_rows(mediation_outputs)
-write.csv(all_results, file.path(outdir, paste0("mediation_covid_test_aft_", mediator_arg, "_", period_arg, ".csv")), row.names = FALSE)
+write.csv(all_results, file.path(outdir, paste0("mediation_covid_test_aft_", mediator_arg, ".csv")), row.names = FALSE)
 
 # ---------------------------------------------------------------------------
 # Mediation calculated over covariate patterns instead of per person, to
@@ -177,10 +177,53 @@ write.csv(all_results, file.path(outdir, paste0("mediation_covid_test_aft_", med
 # ---------------------------------------------------------------------------
 source(here("analysis", "mediation_collapsed_functions.R"))
 
+# Plug-in mediation effects at the fitted coefficients (no simulation), using
+# predict() directly - to check which of mediate()/mediate_collapsed() is right
+plugin_effects <- function(med_fit, out_fit, data_df, mediator, group, control = "White") {
+  model_vars <- c("ethnicity6_combined", "age_group", "sex", mediator, "stop_sc", "sc_binary")
+  data_df <- data_df[complete.cases(data_df[, model_vars]), ]
+  is_polr <- inherits(med_fit, "polr")
+  m_levels <- if (is_polr) med_fit$lev else c(0, 1)
+
+  set_treat <- function(a) {
+    nd <- data_df
+    nd$ethnicity6_combined <- if (is.factor(data_df$ethnicity6_combined)) {
+      factor(a, levels = levels(data_df$ethnicity6_combined))
+    } else a
+    nd
+  }
+  # P(M = each category | treatment a): people x categories
+  p_m <- function(a) {
+    if (is_polr) {
+      predict(med_fit, newdata = set_treat(a), type = "probs")
+    } else {
+      p1 <- predict(med_fit, newdata = set_treat(a), type = "response")
+      cbind(1 - p1, p1)
+    }
+  }
+  # predicted outcome (time scale) for treatment a at each mediator category: people x categories
+  y_m <- function(a) {
+    sapply(m_levels, function(m) {
+      nd <- set_treat(a)
+      nd[[mediator]] <- if (is_polr) factor(m, levels = m_levels, ordered = TRUE) else m
+      predict(out_fit, newdata = nd, type = "response")
+    })
+  }
+  pm1 <- p_m(group); pm0 <- p_m(control)
+  y1 <- y_m(group); y0 <- y_m(control)
+  e <- function(y, p) mean(rowSums(y * p))
+
+  acme <- ((e(y1, pm1) - e(y1, pm0)) + (e(y0, pm1) - e(y0, pm0))) / 2
+  ade  <- ((e(y1, pm1) - e(y0, pm1)) + (e(y1, pm0) - e(y0, pm0))) / 2
+  total <- e(y1, pm1) - e(y0, pm0)
+  data.frame(term = c("ACME", "ADE", "Total Effect", "ACME/Total"),
+             estimate = c(acme, ade, total, acme / total))
+}
+
 run_mediation_collapsed <- function(group, mediator) {
   data_df <- data_covid %>%
     filter(ethnicity6_combined %in% c(group, "White")) %>%
-    restrict_period_reanchored("stop_sc", "date_stop_sc", "sc_binary", period$start, period$end) %>%
+    #restrict_period_reanchored("stop_sc", "date_stop_sc", "sc_binary", period$start, period$end) %>%
     mutate(stop_sc = if_else(stop_sc == 0, 0.5, stop_sc))
 
   is_ordinal <- mediator %in% names(ordinal_levels)
@@ -214,6 +257,9 @@ run_mediation_collapsed <- function(group, mediator) {
   out_formula <- as.formula(paste0("Surv(stop_sc, sc_binary) ~ ethnicity6_combined + sex + age_group + ", mediator))
   out_fit <- survreg(out_formula, data = data_df, dist = "weibull", robust = TRUE)
 
+  print("Plug-in check")
+  print(plugin_effects(med_fit, out_fit, data_df, mediator, group))
+
   # Mediation
   set.seed(123)
   med_tidy <- mediate_collapsed(med_fit, out_fit, data = data_df,
@@ -224,7 +270,7 @@ run_mediation_collapsed <- function(group, mediator) {
   rm(data_df, med_fit, out_fit)
   gc()
 
-  med_tidy %>% mutate(group = group, mediator = mediator, period = period$end)
+  med_tidy %>% mutate(group = group, mediator = mediator)
 }
 
 collapsed_outputs <- pmap(
@@ -233,4 +279,4 @@ collapsed_outputs <- pmap(
 )
 
 all_results_collapsed <- bind_rows(collapsed_outputs)
-write.csv(all_results_collapsed, file.path(outdir, paste0("mediation_covid_test_aft_collapsed_", mediator_arg, "_", period_arg, ".csv")), row.names = FALSE)
+write.csv(all_results_collapsed, file.path(outdir, paste0("mediation_covid_test_aft_collapsed_", mediator_arg, ".csv")), row.names = FALSE)

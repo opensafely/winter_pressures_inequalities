@@ -5,10 +5,10 @@ library(arrow)
 outdir <- here("output", "tables")
 fs::dir_create(outdir)
 
-data_covid_2021 <- read_feather(here("output/an_outcome_first_covid_2021.arrow")) 
+data_covid_2022 <- read_feather(here("output/an_outcome_first_covid_2022.arrow")) 
 capture.output(
-  skimr::skim_without_charts(data_covid_2021),
-  file = here(outdir, paste0("skim_covid_2021.txt")),
+  skimr::skim_without_charts(data_covid_2022),
+  file = here(outdir, paste0("skim_covid_2022.txt")),
   split=FALSE
 )
 

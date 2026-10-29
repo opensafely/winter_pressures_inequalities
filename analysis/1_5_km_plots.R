@@ -112,7 +112,7 @@ fs::dir_create(outdir)
 
  }
 
-diseases <- c("covid_2021", "flu_2018", "rsv_2018", "flu_2021", "rsv_2021")
+diseases <- c("covid_2022", "flu_2018", "rsv_2018", "flu_2021", "rsv_2021")
 
 param_grid <- expand.grid(disease = diseases, stringsAsFactors = FALSE)
 

@@ -51,7 +51,7 @@ run_cox_models <- function(disease, difference, adjustment) {
 }
 
 by_vars <- c("imd_quintile", "ethnicity6_combined", "ethnicity16_combined")
-adjustments_2021 <- c("unadjusted", "age_sex", "migration", "area", "health", "all")
+adjustments_2022 <- c("unadjusted", "age_sex", "migration", "area", "health", "all")
 # 2018 adjustments to be updated to add all when doing flu/RSV outcomes
 adjustments_2018 <- c("unadjusted", "age_sex", "migration", "area", "health_2018")
 
