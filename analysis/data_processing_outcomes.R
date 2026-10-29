@@ -138,7 +138,7 @@ cr_data <- cr_data[min_start_yr_out == year]
 
 study_end <- as.Date(paste0(max_year,"-08-31"))
 cat("study_end:", as.character(study_end), "\n")
-fu_start_month <- if (disease == "covid") 3L else 9L
+fu_start_month <- if (disease == "covid") 8L else 9L
 
 cr_data[, `:=`(
     first_col = fifelse(
