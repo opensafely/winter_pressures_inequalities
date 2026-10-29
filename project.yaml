@@ -240,7 +240,7 @@ actions:
       outputs: 
         highly_sensitive:
           data: output/an_bl_data_covid_2022.arrow
-          data_flu_rsv: output/an_bl_data_flu_rsv_*.arrow
+          #data_flu_rsv: output/an_bl_data_flu_rsv_*.arrow
 
   data_process_outcome_covid_2022:
       run: r:v2 analysis/data_processing_outcomes.R covid covid 2022 2025
