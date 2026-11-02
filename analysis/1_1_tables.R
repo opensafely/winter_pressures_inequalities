@@ -61,8 +61,8 @@ var_labels_list <- list(
                 urban_rural_5 ~ "Urban-rural classification",
                 migrant ~ "Migrant",
                 english_language ~ "English not main language spoken",
-                flu_atrisk_grp ~ "Flu CRG",
-                covid_atrisk_grp ~ "COVID-19 CRG",
+                prior_flu_vacc_bin ~ "Vaccinated for influenza",
+                prior_covid_vacc_bin ~ "Vaccinated for COVID-19",
                 bmi_category ~ "BMI category"
                 )
 
@@ -70,7 +70,7 @@ var_labels_list <- list(
 desc_covid_by <- outcomes_covid_2022 %>% 
         select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
         urban_rural_5, imd_quintile, migrant, english_language, 
-        flu_atrisk_grp, covid_atrisk_grp, bmi_category) %>% 
+        prior_flu_vacc_bin, prior_covid_vacc_bin, bmi_category) %>% 
         mutate(ethnicity6_combined = fct_na_value_to_level(
                 ethnicity6_combined, 
                 level = "Missing")) %>%
@@ -87,7 +87,7 @@ desc_covid_redact_round <- fn_redact_tbl_summary(
         tbl_summary = desc_covid_by, 
         threshold = 7,
         col_names  = c( "stat_0", "stat_1", "stat_2", "stat_3", "stat_4", "stat_5", "stat_6"),
-        rename_cols = c("Overall", "Asian", "Black", "Chinese", "Missing", "Mixed", "White")
+        rename_cols = c("Overall", "Asian", "Black", "Other", "Missing", "Mixed", "White")
         ) 
 
 
