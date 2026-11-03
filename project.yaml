@@ -610,7 +610,7 @@ actions:
           med: output/tables/mediation_covid_pseudo*_period2.csv
 
   mediation_test_period1:
-      run: r:v2 analysis/2_3_mediation_test.R imd_quintile period1 
+      run: r:v2 analysis/2_3_mediation_test.R migrant period1 
       needs:
         - data_process_bl
         - data_process_outcome_covid_2022
