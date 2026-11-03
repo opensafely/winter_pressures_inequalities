@@ -211,6 +211,7 @@ run_mediation_collapsed <- function(group, mediator) {
     }
   }
   data_df <- droplevels(data_df)
+  data_df$ethnicity6_combined <- relevel(factor(data_df$ethnicity6_combined), ref = "White")
 
   print("Checking size dataset")
   print(table(data_df$ethnicity6_combined))
@@ -229,7 +230,8 @@ run_mediation_collapsed <- function(group, mediator) {
   # Mediation
   med_tidy <- mediate_collapsed(med_fit, out_fit, data = data_df,
                                 treat = "ethnicity6_combined", mediator = mediator,
-                                treat.value = group, control.value = "White", sims = 1000)
+                                treat.value = group, control.value = "White", sims = 1000,
+                                scale = "log")
   print(med_tidy)
 
   rm(data_df, med_fit, out_fit)

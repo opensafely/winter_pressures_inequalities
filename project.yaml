@@ -591,23 +591,14 @@ actions:
         moderately_sensitive:
           med: output/tables/mediation_covid_aft*_bmi_category.csv
 
-  mediation_pseudo_period1:
-      run: r:v2 analysis/2_2_mediation_pseudo.R period1
+  mediation_pseudo:
+      run: r:v2 analysis/2_2_mediation_pseudo.R
       needs:
         - data_process_bl
         - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
-          med: output/tables/mediation_covid_pseudo*_period1.csv
-
-  mediation_pseudo_period2:
-      run: r:v2 analysis/2_2_mediation_pseudo.R period2
-      needs:
-        - data_process_bl
-        - data_process_outcome_covid_2022
-      outputs:
-        moderately_sensitive:
-          med: output/tables/mediation_covid_pseudo*_period2.csv
+          med: output/tables/mediation_covid_pseudo*.csv
 
   mediation_test_period1:
       run: r:v2 analysis/2_3_mediation_test.R migrant period1 

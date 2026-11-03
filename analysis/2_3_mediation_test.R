@@ -108,6 +108,7 @@ ordinal_levels <- list(
      }
    }
    data_df <- droplevels(data_df)
+   data_df$ethnicity6_combined <- relevel(factor(data_df$ethnicity6_combined), ref = "White")
 
   print("Checking size dataset")
   print(table(data_df$ethnicity6_combined))
@@ -179,7 +180,9 @@ source(here("analysis", "mediation_collapsed_functions.R"))
 
 # Plug-in mediation effects at the fitted coefficients (no simulation), using
 # predict() directly - to check which of mediate()/mediate_collapsed() is right
-plugin_effects <- function(med_fit, out_fit, data_df, mediator, group, control = "White") {
+plugin_effects <- function(med_fit, out_fit, data_df, mediator, group, control = "White",
+                           scale = c("time", "log")) {
+  scale <- match.arg(scale)
   model_vars <- c("ethnicity6_combined", "age_group", "sex", mediator, "stop_sc", "sc_binary")
   data_df <- data_df[complete.cases(data_df[, model_vars]), ]
   is_polr <- inherits(med_fit, "polr")
@@ -201,12 +204,12 @@ plugin_effects <- function(med_fit, out_fit, data_df, mediator, group, control =
       cbind(1 - p1, p1)
     }
   }
-  # predicted outcome (time scale) for treatment a at each mediator category: people x categories
+  # predicted outcome (time or log time scale) for treatment a at each mediator category: people x categories
   y_m <- function(a) {
     sapply(m_levels, function(m) {
       nd <- set_treat(a)
       nd[[mediator]] <- if (is_polr) factor(m, levels = m_levels, ordered = TRUE) else m
-      predict(out_fit, newdata = nd, type = "response")
+      predict(out_fit, newdata = nd, type = if (scale == "time") "response" else "lp")
     })
   }
   pm1 <- p_m(group); pm0 <- p_m(control)
@@ -242,6 +245,7 @@ run_mediation_collapsed <- function(group, mediator) {
     }
   }
   data_df <- droplevels(data_df)
+  data_df$ethnicity6_combined <- relevel(factor(data_df$ethnicity6_combined), ref = "White")
 
   print("Checking size dataset")
   print(table(data_df$ethnicity6_combined))

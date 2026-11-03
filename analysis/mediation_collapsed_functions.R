@@ -6,8 +6,12 @@
 #     vcov() (so survreg's robust variance is used if fitted with robust = TRUE)
 #   - for polr mediators, only the coefficients are drawn; the cut-points stay
 #     fixed at model.m$zeta, as in mediate()
-#   - survreg predictions are passed through the distribution's inverse
-#     transform (exp for Weibull), so effects are on the time scale (days)
+#   - with scale = "time" (default), survreg predictions are passed through
+#     the distribution's inverse transform (exp for Weibull), so effects are
+#     on the time scale (days). With scale = "log", effects are on the linear
+#     predictor (log time) scale and are also given as time ratios - better
+#     for rare outcomes, where time-scale effects extrapolate far beyond
+#     follow-up
 #   - effects averaged over everyone in the data; point estimates are means of
 #     the draws, except proportion mediated which uses medians; CIs are
 #     percentiles of the draws
@@ -26,7 +30,9 @@
 # covariates are categorical, and that both models were fitted to `data`.
 mediate_collapsed <- function(med_fit, out_fit, data, treat, mediator,
                               treat.value, control.value,
-                              sims = 1000, conf.level = 0.95) {
+                              sims = 1000, conf.level = 0.95,
+                              scale = c("time", "log")) {
+  scale <- match.arg(scale)
   is_polr <- inherits(med_fit, "polr")
   is_survreg <- inherits(out_fit, "survreg")
 
@@ -82,7 +88,7 @@ mediate_collapsed <- function(med_fit, out_fit, data, treat, mediator,
     m_levels <- c(0, 1)
   }
 
-  itrans <- if (is_survreg) survival::survreg.distributions[[out_fit$dist]]$itrans else NULL
+  itrans <- if (is_survreg && scale == "time") survival::survreg.distributions[[out_fit$dist]]$itrans else NULL
   if (is.null(itrans)) itrans <- identity
 
   arms <- c(`1` = treat.value, `0` = control.value)
@@ -144,7 +150,7 @@ mediate_collapsed <- function(med_fit, out_fit, data, treat, mediator,
     min(2 * min(mean(x > 0), mean(x < 0)), 1)
   }
 
-  data.frame(
+  out <- data.frame(
     term      = c("ACME", "ADE", "Total Effect", "Prop. Mediated"),
     estimate  = c(d.avg, z.avg, tau.coef, n.avg),
     conf.low  = c(ci(delta.avg)[1], ci(zeta.avg)[1], ci(tau)[1], ci(nu.avg)[1]),
@@ -152,4 +158,14 @@ mediate_collapsed <- function(med_fit, out_fit, data, treat, mediator,
     p.value   = c(pval(delta.avg, d.avg), pval(zeta.avg, z.avg), pval(tau, tau.coef), pval(nu.avg, n.avg)),
     row.names = NULL
   )
+
+  # effects on the log time scale are log time ratios, so exponentiate them
+  # (not the proportion mediated, which is already a ratio)
+  if (is_survreg && scale == "log") {
+    effect_rows <- out$term != "Prop. Mediated"
+    out$time_ratio <- ifelse(effect_rows, exp(out$estimate), NA)
+    out$tr.low     <- ifelse(effect_rows, exp(out$conf.low), NA)
+    out$tr.high    <- ifelse(effect_rows, exp(out$conf.high), NA)
+  }
+  out
 }
