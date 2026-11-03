@@ -13,7 +13,8 @@ fs::dir_create(outdir)
 ## Forest plot of Cox model results
 # Results have very tight confidence intervals so to review doing this
 # Import data
-cox_models_covid_2021 <- read_csv(here("output/tables/cox_models_covid_2021.csv")) 
+#cox_models_covid_2021 <- read_csv(here("output/tables/cox_models_covid_2021.csv")) 
+cox_models_covid_2022 <- read_csv(here("output/tables/cox_models_covid_2022.csv")) 
 
 # New plots for Cox model outputs - probably take out one above
 # Labels and terms to use
@@ -36,7 +37,7 @@ plot_hr <- function(by_var_val, outcome_val, terms, labs, title_prefix = "Outcom
   
   raw_levels <- str_remove(terms, by_var_val) 
   
-  p <- cox_models_covid_2021 %>%
+  p <- cox_models_covid_2022 %>%
     filter(by_var == by_var_val & term %in% terms & outcome == outcome_val) %>%
     mutate(term = factor(str_remove(term, by_var_val), 
                          levels = raw_levels,
@@ -62,7 +63,7 @@ plot_hr <- function(by_var_val, outcome_val, terms, labs, title_prefix = "Outcom
 
 plot_hr_combined <- function(by_var_val, outcomes_val, terms, labs, title_prefix = "Exposure") {
   
-  p <- cox_models_covid_2021 %>%
+  p <- cox_models_covid_2022 %>%
     filter(by_var == by_var_val & term %in% terms & outcome %in% outcomes_val) %>%
     mutate(term = factor(str_remove(term, by_var_val), levels = labs), 
            outcome = factor(outcome, levels = outcomes_val)) %>%
@@ -169,15 +170,15 @@ for (out in names(plots)) {
 }
 
 # Plot stratified Cox models
-cox_models_stratified_covid_2021 <- read_csv(here("output/tables/cox_models_stratified_covid_2021.csv"))
-cox_models_time_covid_2021 <- read_csv(here("output/tables/cox_models_time_covid_2021.csv"))
+#cox_models_stratified_covid_2022 <- read_csv(here("output/tables/cox_models_stratified_covid_2022.csv"))
+#cox_models_time_covid_2022 <- read_csv(here("output/tables/cox_models_time_covid_2022.csv"))
 
 # Interaction model results (1_6_cox_models_int.R) - used only for their
 # omnibus Wald test p-value (lrt_p), to annotate the stratified HR plots
 # below with whether the apparent difference between strata is
 # statistically supported.
-cox_models_int_sex <- read_csv(here("output/tables/cox_models_int_covid_2021_sex.csv"))
-cox_models_int_imd <- read_csv(here("output/tables/cox_models_int_covid_2021_imd_quintile.csv"))
+cox_models_int_sex <- read_csv(here("output/tables/cox_models_int_covid_2022_sex.csv"))
+cox_models_int_imd <- read_csv(here("output/tables/cox_models_int_covid_2022_imd_quintile.csv"))
 
 # Same code but different legend
 # want each exposure grouped by strata - code for individual plots
@@ -216,84 +217,84 @@ plot_hr_stratified <- function(file, by_var_val, outcome_val, terms, strata, lab
 # given, each outcome facet is annotated with that model's omnibus Wald
 # test p-value (lrt_p), showing whether the visible difference between
 # strata is statistically supported.
-plot_hr_combined_stratified <- function(file, by_var_val, outcomes_val, terms, strata, labs, title_prefix = "Exposure",
-    int_file = NULL) {
+# plot_hr_combined_stratified <- function(file, by_var_val, outcomes_val, terms, strata, labs, title_prefix = "Exposure",
+#     int_file = NULL) {
 
-  p <- file %>%
-    filter(by_var == by_var_val & term %in% terms & outcome %in% outcomes_val &  strat_var == strata) %>%
-    mutate(term = factor(str_remove(term, by_var_val), levels = labs),
-           outcome = factor(outcome, levels = outcomes_val)) %>%
-    ggplot(aes(x = estimate, y = term, colour = strat_level)) +
-    geom_pointrange(aes(xmin = conf.low, xmax = conf.high),
-                    position = position_dodge(width = 0.6)) +
-    geom_vline(xintercept = 1, linetype = "dashed", colour = "grey40") +
-    facet_wrap(~ outcome, scales = "free_x",
-               labeller = labeller(outcome = outcome_labels)) +
-    labs(
-      #title = paste(title_prefix, ":", by_var_val),
-      x = "Hazard ratio (95% CI)",
-      y = NULL
-    ) +
-    theme_minimal(base_size = 10) +
-    theme(
-      strip.text = element_text(face = "bold"),
-      legend.position = "right",
-      panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.5)
-    )
+#   p <- file %>%
+#     filter(by_var == by_var_val & term %in% terms & outcome %in% outcomes_val &  strat_var == strata) %>%
+#     mutate(term = factor(str_remove(term, by_var_val), levels = labs),
+#            outcome = factor(outcome, levels = outcomes_val)) %>%
+#     ggplot(aes(x = estimate, y = term, colour = strat_level)) +
+#     geom_pointrange(aes(xmin = conf.low, xmax = conf.high),
+#                     position = position_dodge(width = 0.6)) +
+#     geom_vline(xintercept = 1, linetype = "dashed", colour = "grey40") +
+#     facet_wrap(~ outcome, scales = "free_x",
+#                labeller = labeller(outcome = outcome_labels)) +
+#     labs(
+#       #title = paste(title_prefix, ":", by_var_val),
+#       x = "Hazard ratio (95% CI)",
+#       y = NULL
+#     ) +
+#     theme_minimal(base_size = 10) +
+#     theme(
+#       strip.text = element_text(face = "bold"),
+#       legend.position = "right",
+#       panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.5)
+#     )
 
-  if (!is.null(int_file)) {
-    p_labels <- int_file %>%
-      filter(by_var == by_var_val & outcome %in% outcomes_val) %>%
-      distinct(outcome, lrt_p) %>%
-      mutate(
-        outcome = factor(outcome, levels = outcomes_val),
-        label = if_else(lrt_p < 0.001, "p-interaction < 0.001",
-                        paste0("p-interaction = ", formatC(lrt_p, digits = 3, format = "g")))
-      )
+#   if (!is.null(int_file)) {
+#     p_labels <- int_file %>%
+#       filter(by_var == by_var_val & outcome %in% outcomes_val) %>%
+#       distinct(outcome, lrt_p) %>%
+#       mutate(
+#         outcome = factor(outcome, levels = outcomes_val),
+#         label = if_else(lrt_p < 0.001, "p-interaction < 0.001",
+#                         paste0("p-interaction = ", formatC(lrt_p, digits = 3, format = "g")))
+#       )
 
-    p <- p + geom_text(
-      data = p_labels,
-      aes(x = Inf, y = Inf, label = label),
-      inherit.aes = FALSE,
-      hjust = 1.05, vjust = 1.5,
-      size = 3, fontface = "italic"
-    )
-  }
+#     p <- p + geom_text(
+#       data = p_labels,
+#       aes(x = Inf, y = Inf, label = label),
+#       inherit.aes = FALSE,
+#       hjust = 1.05, vjust = 1.5,
+#       size = 3, fontface = "italic"
+#     )
+#   }
 
-  return(p)
-}
+#   return(p)
+# }
 
-combined_plot3 <- plot_hr_combined_stratified(
-  file = cox_models_stratified_covid_2021,
-  by_var_val = "ethnicity6_combined",
-  outcomes_val = outcomes,
-  terms = ethnic_terms,
-  strata = "sex",
-  labs = ethnic_labs,
-  int_file = cox_models_int_sex
-)
+# combined_plot3 <- plot_hr_combined_stratified(
+#   file = cox_models_stratified_covid_2022,
+#   by_var_val = "ethnicity6_combined",
+#   outcomes_val = outcomes,
+#   terms = ethnic_terms,
+#   strata = "sex",
+#   labs = ethnic_labs,
+#   int_file = cox_models_int_sex
+# )
 
-ggsave(
-  filename = file.path(outdir, paste0("hr_s_sex_plot_ethnicity6_combined.svg")),
-  plot = combined_plot3,
-  width = 8, height = 6, dpi = 300
-)
+# ggsave(
+#   filename = file.path(outdir, paste0("hr_s_sex_plot_ethnicity6_combined.svg")),
+#   plot = combined_plot3,
+#   width = 8, height = 6, dpi = 300
+# )
 
-combined_plot4 <- plot_hr_combined_stratified(
-  file = cox_models_stratified_covid_2021,
-  by_var_val = "ethnicity6_combined",
-  outcomes_val = outcomes,
-  terms = ethnic_terms,
-  strata = "imd_quintile",
-  labs = ethnic_labs,
-  int_file = cox_models_int_imd
-)
+# combined_plot4 <- plot_hr_combined_stratified(
+#   file = cox_models_stratified_covid_2022,
+#   by_var_val = "ethnicity6_combined",
+#   outcomes_val = outcomes,
+#   terms = ethnic_terms,
+#   strata = "imd_quintile",
+#   labs = ethnic_labs,
+#   int_file = cox_models_int_imd
+# )
 
-ggsave(
-  filename = file.path(outdir, paste0("hr_s_imd_plot_ethnicity6_combined.svg")),
-  plot = combined_plot4,
-  width = 8, height = 6, dpi = 300
-)
+# ggsave(
+#   filename = file.path(outdir, paste0("hr_s_imd_plot_ethnicity6_combined.svg")),
+#   plot = combined_plot4,
+#   width = 8, height = 6, dpi = 300
+# )
 
 # Interaction-term forest plot - self-contained from 1_6_cox_models_int.R's
 # output alone, no stratified model needed. Plots the interaction
@@ -387,85 +388,85 @@ ggsave(
 # strat_var/strat_level like the stratified output). One plot per outcome;
 # within each, all 6 adjustments shown as coloured/dodged dots, faceted by
 # period (so both periods appear side by side rather than overplotted).
-plot_hr_time <- function(file, by_var_val, outcome_val, terms, labs, title_prefix = "Outcome",
-                          adjustment_order = c("unadjusted", "age_sex", "area", "migration", "health", "all")) {
+# plot_hr_time <- function(file, by_var_val, outcome_val, terms, labs, title_prefix = "Outcome",
+#                           adjustment_order = c("unadjusted", "age_sex", "area", "migration", "health", "all")) {
 
-  raw_levels <- str_remove(terms, by_var_val)
+#   raw_levels <- str_remove(terms, by_var_val)
 
-  plot_data <- file %>%
-    filter(by_var == by_var_val & term %in% terms & outcome == outcome_val)
+#   plot_data <- file %>%
+#     filter(by_var == by_var_val & term %in% terms & outcome == outcome_val)
 
-  if (nrow(plot_data) == 0) {
-    message("Skipping ", outcome_val, " - no non-redacted ", by_var_val, " estimates in any adjustment/period")
-    return(NULL)
-  }
+#   if (nrow(plot_data) == 0) {
+#     message("Skipping ", outcome_val, " - no non-redacted ", by_var_val, " estimates in any adjustment/period")
+#     return(NULL)
+#   }
 
-  p <- plot_data %>%
-    mutate(term = factor(str_remove(term, by_var_val),
-                         levels = raw_levels,
-                         labels = labs),
-           adjustment = factor(adjustment, levels = adjustment_order),
-           period = factor(period)) %>%
-    ggplot(aes(x = estimate, y = term, colour = adjustment)) +
-    geom_pointrange(aes(xmin = conf.low, xmax = conf.high),
-                    position = position_dodge(width = 0.6)) +
-    geom_vline(xintercept = 1, linetype = "dashed", colour = "grey40") +
-    facet_wrap(~ period, drop = FALSE) +
-    scale_colour_discrete(drop = FALSE) +
-    labs(
-      #title = paste(title_prefix, ":", outcome_val),
-      x = "Hazard ratio (95% CI)",
-      y = NULL
-    ) +
-    theme_minimal(base_size = 10) +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      strip.text = element_text(face = "bold"),
-      legend.position = "right"
-    )
+#   p <- plot_data %>%
+#     mutate(term = factor(str_remove(term, by_var_val),
+#                          levels = raw_levels,
+#                          labels = labs),
+#            adjustment = factor(adjustment, levels = adjustment_order),
+#            period = factor(period)) %>%
+#     ggplot(aes(x = estimate, y = term, colour = adjustment)) +
+#     geom_pointrange(aes(xmin = conf.low, xmax = conf.high),
+#                     position = position_dodge(width = 0.6)) +
+#     geom_vline(xintercept = 1, linetype = "dashed", colour = "grey40") +
+#     facet_wrap(~ period, drop = FALSE) +
+#     scale_colour_discrete(drop = FALSE) +
+#     labs(
+#       #title = paste(title_prefix, ":", outcome_val),
+#       x = "Hazard ratio (95% CI)",
+#       y = NULL
+#     ) +
+#     theme_minimal(base_size = 10) +
+#     theme(
+#       axis.text.x = element_text(angle = 45, hjust = 1),
+#       strip.text = element_text(face = "bold"),
+#       legend.position = "right"
+#     )
 
-  return(p)
-}
+#   return(p)
+# }
 
-time_plots <- list()
+# time_plots <- list()
 
-for (out in outcomes) {
-  time_plots[[out]] <- plot_hr_time(
-    file = cox_models_time_covid_2021,
-    by_var_val = "ethnicity6_combined",
-    outcome_val = out,
-    terms = ethnic_terms,
-    labs = ethnic_labs
-  )
-}
+# for (out in outcomes) {
+#   time_plots[[out]] <- plot_hr_time(
+#     file = cox_models_time_covid_2022,
+#     by_var_val = "ethnicity6_combined",
+#     outcome_val = out,
+#     terms = ethnic_terms,
+#     labs = ethnic_labs
+#   )
+# }
 
-for (out in names(time_plots)) {
-  if (is.null(time_plots[[out]])) next
-  ggsave(
-    filename = file.path(outdir, paste0("hr_plot_time_ethnicity6_combined_", out, ".svg")),
-    plot = time_plots[[out]],
-    width = 10, height = 6, dpi = 300
-  )
-}
+# for (out in names(time_plots)) {
+#   if (is.null(time_plots[[out]])) next
+#   ggsave(
+#     filename = file.path(outdir, paste0("hr_plot_time_ethnicity6_combined_", out, ".svg")),
+#     plot = time_plots[[out]],
+#     width = 10, height = 6, dpi = 300
+#   )
+# }
 
-for (out in outcomes) {
-  time_plots[[out]] <- plot_hr_time(
-    file = cox_models_time_covid_2021,
-    by_var_val = "ethnicity16_combined",
-    outcome_val = out,
-    terms = ethnic16_terms,
-    labs = ethnic16_labs
-  )
-}
+# for (out in outcomes) {
+#   time_plots[[out]] <- plot_hr_time(
+#     file = cox_models_time_covid_2022,
+#     by_var_val = "ethnicity16_combined",
+#     outcome_val = out,
+#     terms = ethnic16_terms,
+#     labs = ethnic16_labs
+#   )
+# }
 
-for (out in names(time_plots)) {
-  if (is.null(time_plots[[out]])) next
-  ggsave(
-    filename = file.path(outdir, paste0("hr_plot_time_ethnicity16_combined_", out, ".svg")),
-    plot = time_plots[[out]],
-    width = 10, height = 6, dpi = 300
-  )
-}
+# for (out in names(time_plots)) {
+#   if (is.null(time_plots[[out]])) next
+#   ggsave(
+#     filename = file.path(outdir, paste0("hr_plot_time_ethnicity16_combined_", out, ".svg")),
+#     plot = time_plots[[out]],
+#     width = 10, height = 6, dpi = 300
+#   )
+# }
 
 # Ethnicity in 16 groups needs separate plots
 
