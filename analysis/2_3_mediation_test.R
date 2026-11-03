@@ -52,7 +52,7 @@ set.seed(123)
 
 data_covid <- read_feather(here("output/an_outcome_first_covid_2022.arrow"), as_data_frame = TRUE) 
 
-data_covid <- data_covid %>% slice_sample(prop = 0.05) %>%
+data_covid <- data_covid %>% slice_sample(prop = 0.005) %>%
      droplevels() 
 
 #print(levels(data_covid$ethnicity6_combined))
