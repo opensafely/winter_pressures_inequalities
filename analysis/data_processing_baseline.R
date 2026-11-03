@@ -101,14 +101,9 @@ prepare_data <- function(file_patterns, output_file) {
             imd_quintile = forcats::fct_na_value_to_level(factor(na_if(imd_quintile, 99)), level = "Unknown"),
             across(c(migrant, english_language, age_group, sex),
                 ~factor(as.character(.x), ordered = FALSE)),
-            prior_covid_vacc_bin = case_when(
-                !is.na(prior_covid_vaccination) ~ "Vaccinated",
-                is.na(prior_covid_vaccination) ~ "Unvaccinated"    
-            ),
-            prior_flu_vacc_bin = case_when(
-                !is.na(prior_flu_vaccination) ~ "Vaccinated",
-                is.na(prior_flu_vaccination) ~ "Unvaccinated"    
-            )
+            prior_covid_vacc_bin = if_else(prior_covid_vaccination %in% TRUE, "Vaccinated", "Unvaccinated"),
+            prior_flu_vacc_bin = if_else(prior_flu_vaccination %in% TRUE, "Vaccinated", "Unvaccinated")
+
             #migrant = factor(migrant),
             #migrant = forcats::fct_na_value_to_level(migrant, level = "Missing"),
             #english_language = factor(english_language),
