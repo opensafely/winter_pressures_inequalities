@@ -189,7 +189,7 @@ run_mediation_collapsed <- function(group, mediator) {
   # White group, to reduce memory use
   data_df <- bind_rows(
     data_df %>% filter(ethnicity6_combined == group),
-    data_df %>% filter(ethnicity6_combined == "White") %>% slice_sample(prop = 0.2)
+    data_df %>% filter(ethnicity6_combined == "White") #%>% slice_sample(prop = 0.2)
   ) %>%
     droplevels() %>%
     #restrict_period_reanchored("stop_sc", "date_stop_sc", "sc_binary", period$start, period$end) %>%
