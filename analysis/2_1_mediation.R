@@ -14,6 +14,7 @@ fs::dir_create(outdir)
 # group x mediator combinations otherwise, in a single R session.
 args <- commandArgs(trailingOnly = TRUE)
 mediator_arg <- args[1]
+outcome_arg <- args[2]
 #period_arg <- args[2]
 #ethnic_arg <- args[3]
 
@@ -157,14 +158,15 @@ ordinal_levels <- list(
 #  }
 
 group_vars <- c("Mixed", "Asian or Asian British", "Black or Black British", "Other Ethnic Groups")
-mediation_vars <- c(mediator_arg)
+outcome_bin <- paste0(outcome_arg,"_binary")
+outcome_stop <- paste0("stop_",outcome_arg)
 
-param_grid <- expand.grid(
-  group = group_vars, 
-  mediator = mediation_vars,
-  stringsAsFactors = FALSE 
-)
-print(param_grid)
+# param_grid <- expand.grid(
+#   group = group_vars, 
+#   mediator = mediation_vars,
+#   stringsAsFactors = FALSE 
+# )
+# print(param_grid)
 
 # mediation_outputs <- pmap(
 #   param_grid,
@@ -193,7 +195,7 @@ run_mediation_collapsed <- function(group, mediator) {
   ) %>%
     droplevels() %>%
     #restrict_period_reanchored("stop_sc", "date_stop_sc", "sc_binary", period$start, period$end) %>%
-    mutate(stop_sc = if_else(stop_sc == 0, 0.5, stop_sc))
+    mutate(!!outcome_stop := if_else(.data[[outcome_stop]] == 0, 0.5, .data[[outcome_stop]]))
 
   is_ordinal <- mediator %in% names(ordinal_levels)
 
@@ -224,7 +226,7 @@ run_mediation_collapsed <- function(group, mediator) {
     glm(med_formula, data = data_df, family = binomial(link = "logit"))
   }
   # Outcome model
-  out_formula <- as.formula(paste0("Surv(stop_sc, sc_binary) ~ ethnicity6_combined + sex + age_group + ", mediator))
+  out_formula <- as.formula(paste0("Surv(", outcome_stop, ", ", outcome_binary, ") ~ ethnicity6_combined + sex + age_group + ", mediator))
   out_fit <- survreg(out_formula, data = data_df, dist = "weibull", robust = TRUE)
 
   # Mediation
@@ -237,14 +239,14 @@ run_mediation_collapsed <- function(group, mediator) {
   rm(data_df, med_fit, out_fit)
   gc()
 
-  med_tidy %>% mutate(group = group, mediator = mediator)
+  med_tidy %>% mutate(group = group, mediator = mediator, outcome = outcome_arg)
 }
 
-collapsed_outputs <- pmap(
-  param_grid,
-  function(group, mediator) run_mediation_collapsed(group, mediator)
+collapsed_outputs <- map(
+  group_vars,
+  function(group) run_mediation_collapsed(group, mediator_arg)
 )
 
 all_results_collapsed <- bind_rows(collapsed_outputs)
-write.csv(all_results_collapsed, file.path(outdir, paste0("mediation_covid_aft_collapsed_", mediator_arg,".csv")), row.names = FALSE)
+write.csv(all_results_collapsed, file.path(outdir, paste0("mediation_covid_aft_collapsed_", mediator_arg,"_",outcome_arg,".csv")), row.names = FALSE)
 
