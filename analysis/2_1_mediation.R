@@ -158,7 +158,7 @@ ordinal_levels <- list(
 #  }
 
 group_vars <- c("Mixed", "Asian or Asian British", "Black or Black British", "Other Ethnic Groups")
-outcome_bin <- paste0(outcome_arg,"_binary")
+outcome_binary <- paste0(outcome_arg,"_binary")
 outcome_stop <- paste0("stop_",outcome_arg)
 
 # param_grid <- expand.grid(
