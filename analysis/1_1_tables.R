@@ -65,6 +65,19 @@ var_labels_list <- list(
                 prior_covid_vacc_bin ~ "Vaccinated for COVID-19",
                 bmi_category ~ "BMI category"
                 )
+# Labels for the table by 16 ethnic groups - ethnicity16_combined is the
+# column variable there, so label the 6 groups instead
+var_labels_list_16 <- c(
+        discard(var_labels_list, ~ rlang::f_lhs(.x) == quote(ethnicity16_combined)),
+        list(ethnicity6_combined ~ "Ethnicity (6 groups)")
+)
+
+# Stat column names and their group labels from a tbl_summary, for redaction
+stat_headers <- function(tbl) {
+  tbl$table_styling$header %>%
+    filter(str_detect(column, "^stat_\\d+$")) %>%
+    mutate(label = if_else(column == "stat_0", "Overall", label))
+}
 
 # COVID cohort baseline table by ethnicity
 desc_covid_by <- outcomes_covid_2022 %>% 
@@ -81,19 +94,47 @@ desc_covid_by <- outcomes_covid_2022 %>%
         ) %>% 
         add_overall(last = FALSE) %>% 
         modify_header(all_stat_cols() ~ "{level}") 
-        
+
+hdr_6 <- stat_headers(desc_covid_by)        
 # # Apply redactions to baseline table
 desc_covid_redact_round <- fn_redact_tbl_summary(
         tbl_summary = desc_covid_by, 
         threshold = 7,
-        col_names  = c( "stat_0", "stat_1", "stat_2", "stat_3", "stat_4", "stat_5", "stat_6"),
-        rename_cols = c("Overall", "Asian", "Black", "Other", "Missing", "Mixed", "White")
+        col_names  = hdr_6$column,
+        rename_cols = hdr_6$label
+        ) 
+
+# COVID cohort baseline table by ethnicity (16)
+desc_covid_by_16 <- outcomes_covid_2022 %>% 
+        select(min_start_yr, age_group, sex, ethnicity6_combined, ethnicity16_combined, 
+        urban_rural_5, imd_quintile, migrant, english_language, 
+        prior_flu_vacc_bin, prior_covid_vacc_bin, bmi_category) %>% 
+        mutate(ethnicity16_combined = fct_na_value_to_level(
+                ethnicity16_combined, 
+                level = "Missing")) %>%
+        tbl_summary(
+                missing = "no",
+                by = ethnicity16_combined,
+                label = var_labels_list_16,
+        ) %>% 
+        add_overall(last = FALSE) %>% 
+        modify_header(all_stat_cols() ~ "{level}") 
+        
+hdr_16 <- stat_headers(desc_covid_by_16)  
+# # Apply redactions to baseline table
+desc_covid_redact_round_16 <- fn_redact_tbl_summary(
+        tbl_summary = desc_covid_by_16, 
+        threshold = 7,
+        col_names  = hdr_16$column,
+        rename_cols = hdr_16$label
         ) 
 
 
 # # saving both rounded/redacted and not rpound/redacted versions
 write_csv(desc_covid_redact_round, file.path(outdir, "baseline_table_covid_r.csv"))
 write_csv(desc_covid_by$table_body, file.path(outdir, "baseline_table_covid.csv"))
+write_csv(desc_covid_redact_round_16, file.path(outdir, "baseline_table_covid16_r.csv"))
+write_csv(desc_covid_by_16$table_body, file.path(outdir, "baseline_table_covid16.csv"))
 
 # # Flu/RSV cohort baseline table by ethnicity - same cohort so using flu outcome files
 # # Grouped table
