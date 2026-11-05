@@ -18,6 +18,9 @@ outcome_arg <- args[2]
 #period_arg <- args[2]
 #ethnic_arg <- args[3]
 
+eth_var   <- "ethnicity16_combined"
+ref_group <- "White British"
+
 set.seed(123)
 # # Same two calendar periods as 1_5_cox_models_time.R
 # periods <- list(
@@ -157,7 +160,8 @@ ordinal_levels <- list(
 #     gc()
 #  }
 
-group_vars <- c("Mixed", "Asian or Asian British", "Black or Black British", "Other Ethnic Groups")
+#group_vars <- c("Mixed", "Asian or Asian British", "Black or Black British", "Other Ethnic Groups")
+group_vars <- c("Indian", "Pakistani", "Bangladeshi", "Other Asian", "Caribbean", "African", "Other Black", "Chinese", "All other ethnic groups", "White and Caribbean", "White and African", "White and Asian", "Other Mixed", "White Irish", "Other White")
 outcome_binary <- paste0(outcome_arg,"_binary")
 outcome_stop <- paste0("stop_",outcome_arg)
 
@@ -185,13 +189,13 @@ source(here("analysis", "mediation_collapsed_functions.R"))
 
 run_mediation_collapsed <- function(group, mediator) {
   data_df <- data_covid %>%
-    filter(ethnicity6_combined %in% c(group, "White"))
+    filter(.data[[eth_var]] %in% c(group, ref_group))
 
   # Keep everyone in the comparison group but only a random 20% of the
   # White group, to reduce memory use
   data_df <- bind_rows(
-    data_df %>% filter(ethnicity6_combined == group),
-    data_df %>% filter(ethnicity6_combined == "White") #%>% slice_sample(prop = 0.2)
+    data_df %>% filter(.data[[eth_var]] == group),
+    data_df %>% filter(.data[[eth_var]] == ref_group) #%>% slice_sample(prop = 0.2)
   ) %>%
     droplevels() %>%
     #restrict_period_reanchored("stop_sc", "date_stop_sc", "sc_binary", period$start, period$end) %>%
@@ -213,26 +217,26 @@ run_mediation_collapsed <- function(group, mediator) {
     }
   }
   data_df <- droplevels(data_df)
-  data_df$ethnicity6_combined <- relevel(factor(data_df$ethnicity6_combined), ref = "White")
+  data_df[[eth_var]] <- relevel(factor(data_df[[eth_var]]), ref = ref_group)
 
   print("Checking size dataset")
-  print(table(data_df$ethnicity6_combined))
+  print(table(data_df[[eth_var]]))
 
   # Mediator model
-  med_formula <- as.formula(paste0(mediator, " ~ ethnicity6_combined + age_group + sex"))
+  med_formula <- as.formula(paste0(mediator, " ~ ", eth_var, "+ age_group + sex"))
   med_fit <- if (is_ordinal) {
     MASS::polr(med_formula, data = data_df, Hess = TRUE)
   } else {
     glm(med_formula, data = data_df, family = binomial(link = "logit"))
   }
   # Outcome model
-  out_formula <- as.formula(paste0("Surv(", outcome_stop, ", ", outcome_binary, ") ~ ethnicity6_combined + sex + age_group + ", mediator))
+  out_formula <- as.formula(paste0("Surv(", outcome_stop, ", ", outcome_binary, ") ~ ", eth_var," + sex + age_group + ", mediator))
   out_fit <- survreg(out_formula, data = data_df, dist = "weibull", robust = TRUE)
 
   # Mediation
   med_tidy <- mediate_collapsed(med_fit, out_fit, data = data_df,
-                                treat = "ethnicity6_combined", mediator = mediator,
-                                treat.value = group, control.value = "White", sims = 1000,
+                                treat = eth_var, mediator = mediator,
+                                treat.value = group, control.value = ref_group, sims = 1000,
                                 scale = "log")
   print(med_tidy)
 
@@ -242,9 +246,21 @@ run_mediation_collapsed <- function(group, mediator) {
   med_tidy %>% mutate(group = group, mediator = mediator, outcome = outcome_arg)
 }
 
+# A failure for one group (e.g. a small group whose models don't converge)
+# is recorded in the output's error column and skipped, rather than stopping
+# the other groups from running
 collapsed_outputs <- map(
   group_vars,
-  function(group) run_mediation_collapsed(group, mediator_arg)
+  function(group) {
+    tryCatch(
+      run_mediation_collapsed(group, mediator_arg),
+      error = function(e) {
+        message("Mediation failed for ", group, ": ", conditionMessage(e))
+        data.frame(group = group, mediator = mediator_arg, outcome = outcome_arg,
+                   error = conditionMessage(e))
+      }
+    )
+  }
 )
 
 all_results_collapsed <- bind_rows(collapsed_outputs)
