@@ -762,14 +762,23 @@ actions:
         moderately_sensitive:
           med: output/tables/mediation_covid_pseudo*.csv
 
-  mediation_test_period1:
-      run: r:v2 analysis/2_3_mediation_test.R migrant period1 
+  mediation_test_migrant:
+      run: r:v2 analysis/2_3_mediation_test.R migrant
       needs:
         - data_process_bl
         - data_process_outcome_covid_2022
       outputs:
         moderately_sensitive:
-          med: output/tables/mediation_covid_test*.csv
+          med: output/tables/mediation_covid_test_migrant.csv
+
+  mediation_test_imd:
+      run: r:v2 analysis/2_3_mediation_test.R imd_quintile
+      needs:
+        - data_process_bl
+        - data_process_outcome_covid_2022
+      outputs:
+        moderately_sensitive:
+          med: output/tables/mediation_covid_test_imd_quintile.csv
 
 # Original Cox models code
   cox_models_covid_2021_orig:
