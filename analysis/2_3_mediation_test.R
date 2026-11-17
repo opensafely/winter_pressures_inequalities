@@ -86,7 +86,7 @@ ordinal_levels <- list(
      # Restrict to the well-defined ordered categories and set their order
      # (drops e.g. "Unknown"/"Missing"/"unknown or outlier")
      data_df <- data_df %>% filter(.data[[mediator]] %in% ordinal_levels[[mediator]])
-     data_df[[mediator]] <- factor(data_df[[mediator]], levels = ordinal_levels[[mediator]], ordered = TRUE)
+     data_df[[mediator]] <- factor(data_df[[mediator]], levels = ordinal_levels[[mediator]])
    } else {
      if ("Unknown" %in% levels(factor(data_df[[mediator]]))) {
        # Binary mediator: drop the "Unknown" category so both the mediator and
@@ -208,7 +208,7 @@ plugin_effects <- function(med_fit, out_fit, data_df, mediator, group, control =
   y_m <- function(a) {
     sapply(m_levels, function(m) {
       nd <- set_treat(a)
-      nd[[mediator]] <- if (is_polr) factor(m, levels = m_levels, ordered = TRUE) else m
+      nd[[mediator]] <- if (is_polr) factor(m, levels = m_levels) else m
       predict(out_fit, newdata = nd, type = if (scale == "time") "response" else "lp")
     })
   }
@@ -233,7 +233,7 @@ run_mediation_collapsed <- function(group, mediator) {
 
   if (is_ordinal) {
     data_df <- data_df %>% filter(.data[[mediator]] %in% ordinal_levels[[mediator]])
-    data_df[[mediator]] <- factor(data_df[[mediator]], levels = ordinal_levels[[mediator]], ordered = TRUE)
+    data_df[[mediator]] <- factor(data_df[[mediator]], levels = ordinal_levels[[mediator]])
   } else {
     if ("Unknown" %in% levels(factor(data_df[[mediator]]))) {
       data_df <- data_df %>% filter(.data[[mediator]] != "Unknown")

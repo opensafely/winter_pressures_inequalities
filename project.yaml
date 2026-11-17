@@ -779,6 +779,23 @@ actions:
       outputs:
         moderately_sensitive:
           med: output/tables/mediation_covid_test_*_imd_quintile.csv
+  
+  mediation_test_bmi:
+      run: r:v2 analysis/2_3_mediation_test.R bmi_category
+      needs:
+        - data_process_bl
+        - data_process_outcome_covid_2022
+      outputs:
+        moderately_sensitive:
+          med: output/tables/mediation_covid_test_*_bmi_category.csv
+
+  mediation_plots:
+      run: r:v2 analysis/2_4_mediation_plots.R 
+      needs: 
+        - mediation_migrant_gp
+      outputs: 
+        moderately_sensitive:
+          plot: output/covid_plots/med_*plot.svg
 
 # Original Cox models code
   cox_models_covid_2021_orig:
